@@ -1,0 +1,6 @@
+[submodule "tools/trio-linux-tools"]
+	path = tools/trio-linux-tools
+	url = git@gitlab.com:dspread/trio-linux-tools.git
+[submodule "trio-linux-tools"]
+	path = trio-linux-tools
+	url = git@gitlab.com:dspread/trio-linux-tools.git
