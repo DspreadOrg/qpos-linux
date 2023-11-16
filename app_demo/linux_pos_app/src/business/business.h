@@ -22,6 +22,8 @@ void wirelessTest();
 
 void wifiTest();
 
+void AboutTest();
+
 PR_INT32 CousumeTransProc();
 
 PR_INT32 EmvL2_Init();

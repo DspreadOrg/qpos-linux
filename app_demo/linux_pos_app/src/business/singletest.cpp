@@ -193,7 +193,8 @@ void PrintTest()
         TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,ret == ERR_PRN_BUSY?(char*)"Printer Busy":
                     ret == ERR_PRN_PAPEROUT?(char*)"Printer Paper Out":
                     ret == ERR_PRN_OVERHEAT?(char*)"Printer Overheat":
-                    ret == ERR_PRN_OVERVOLTAGE?(char*)"Printer Overvoltage ":(char*)"Printer Exception");
+                    ret == ERR_PRN_OVERVOLTAGE?(char*)"Printer Overvoltage ":
+					ret == ERR_BATTERY_VOLTAGE_TOO_LOW?(char*)"Printer Voltage Too Low":(char*)"Printer Exception");
         KB_nWaitKeyMS(5*1000);
         return;
     }
@@ -203,8 +204,6 @@ void PrintTest()
 	sprintf(FilePath,"%s/res/yl.bmp",AppPath);
     OsLog(LOG_WARN,"bmp path： %s",FilePath);
     OsPrnPutImage((unsigned char *)FilePath);
-    // OsPrnSetPrintParams(24,1,1,ALIGN_TYPE_CENTER);
-    // OsPrnPrintf((char *)"Pos签购单");
     OsPrnSetPrintParams(24,1,1,ALIGN_TYPE_RIGHT);
     OsPrnPrintf((char *)"MERCHANT COPY");
     OsPrnSetPrintParams(16,1,1,ALIGN_TYPE_LEFT);
@@ -269,13 +268,17 @@ void PrintTest()
     OsPrnPrintf((char *)" ");// 5line
     OsPrnPrintf((char *)" ");// 5line
     OsPrnPrintf((char *)" ");// 5line
+
+    long start = get_sys_tick();
     if(OsPrnStart() != RET_OK){
         TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,ret == ERR_PRN_BUSY?(char*)"Printer Busy":
                     ret == ERR_PRN_PAPEROUT?(char*)"Printer Paper Out":
                     ret == ERR_PRN_OVERHEAT?(char*)"Printer Overheat":
-                    ret == ERR_PRN_OVERVOLTAGE?(char*)"Printer Overvoltage ":(char*)"Printer Exception");
+                    ret == ERR_PRN_OVERVOLTAGE?(char*)"Printer Overvoltage ":
+					ret == ERR_BATTERY_VOLTAGE_TOO_LOW?(char*)"Printer Voltage Too Low":(char*)"Printer Exception");
         goto exit;
     }
+    OsLog(LOG_DEBUG,"打印时间 %ld",get_sys_tick()-start);
     OsPrnFeed(48);
     TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Print Complete");
 exit:
@@ -360,6 +363,7 @@ void wifiTest(){
         KB_nWaitKeyMS(5*1000);
         goto EXIT;
     }
+    TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Scanning");
     num = OsWifiScan (&Aps);
     if(num <= 0){
         TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"No Available Hotspots");
@@ -407,6 +411,7 @@ void wifiTest(){
         TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Get WIFI Status Failed");
         goto EXIT;
     }
+    OsLog(LOG_ERROR,"ssid 【%s】 bssid 【%s】 rssi 【%d】 \n",ssid,bssid,rssi);
     TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"WIFI Connect Success");
     ppp_connect_test();
 EXIT:
@@ -419,5 +424,25 @@ EXIT:
     // OsWifiDisconnect();
     // OsWifiClose();
     KB_nWaitKeyMS(5*1000);
+}
+
+void AboutTest(){
+    PR_INT32 ret;
+    PR_INT8 temp[64] = {0};
+    PR_INT8 imei[32] = {0};
+    PR_INT8 mcuVer[32] = {0};
+    PR_INT8 sysVer[32] = {0};
+    TransView_vClearAllScreen();
+    TransView_vShowLine(0, EM_DTYPE_REVERT, EM_ALIGN_CENTER,(char*)"About");
+    
+    OsGetTermSn(temp);
+    OsWlGetImei(imei);
+    OsGetSysVer(0x01,sysVer);
+    OsGetSysVer(0x03,mcuVer);
+    TransView_vShowLine(1,EM_DTYPE_NORMAL,EM_ALIGN_LEFT,(char*)"SN:%s",temp);
+    TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_LEFT,(char*)"IMEI:%s",imei);
+    TransView_vShowLine(3,EM_DTYPE_NORMAL,EM_ALIGN_LEFT,(char*)"MCU Ver:%s",mcuVer);
+    TransView_vShowLineEx(4,EM_ALIGN_LEFT,(char*)"SYS Ver:%s",sysVer);
+    KB_nWaitKeyMS(10*1000);
 }
 

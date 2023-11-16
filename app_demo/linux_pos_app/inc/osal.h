@@ -98,6 +98,10 @@ typedef struct {
 } ST_OPT_INFO;
 
 long get_sys_tick();
+
+int OsGetTermSn(char* Sn);
+
+int OsSetTermSn(char* Sn);
 //功能 设置系统当前的日期和时间
 int OsSetTime(const ST_TIME *Time);
 //获取终端系统日期和时间。
@@ -151,38 +155,8 @@ typedef void (*RUNAPP_CB)(char *appid, char *str, void *data);
     ERR_APP_MODE 模式错误
     ERR_INVALID_PARAM 非法参数
     ERR_NEED_ADMIN 需要系统主应用权限
-用法
-1. 只有主应用才能切换应用，否则将返回 ERR_NEED_ADMIN；
-2. OsRunApp()根据传入的参数 AppId 切换到指定子应用，但不可切换到主应用，如果 AppId 传入“MAINAPP”，将返回ERR_INVALID_PARAM；
-3. 子应用的标准输出信息会输出到 CbOut 回调函数，标准错误信息会输出到 CbErr 回调函数，如有多行标准输出或者标准错误信息，则会多次调用回调函数；其回调函数定义为：typedef void (*RUNAPP_CB)(char *appid, char *str, void *data)
 */
 int OsRunApp(char *AppId, char **Argv, void *Data, RUNAPP_CB CbOut,RUNAPP_CB CbErr);
-
-/*
-功能 获取子应用的退出码。
-参数 无
-返回 子应用的退出码
-用法 调用 OsRunApp()之后，使用该函数可获取子应用的退出码。
-*/
-int OsGetAppExitCode(void);
-
-/*
-功能 设定注册表中指定的键值。
-参数
-    Key【输入】系统配置名字，长度不大于 31 个字节，以“persist.sys.”、“rt.sys.”或“rt.app.”开头“\0” 结尾。
-    Value【输入】 系统配置参数值，长度不大于 64 个字节，以“\0”结尾，不能为 NULL。
-返回
-    RET_OK 成功
-    ERR_INVALID_PARAM 非法参数，任意输入字符串指针为空指针。
-    ERR_NEED_ADMIN 需要系统主应用权限
-    ERR_SYS_NOT_SUPPORT 系统不支持此配置名
-用法
-    1. 只能设置以“persist.sys.”、“rt.sys.”和“rt.app.”开头的系统配置名字，例如“persist.sys.app0.pic”｡更多详情，请参考附录 3注册表。
-    2. 该函数不仅支持设置附录 3 注册表中列出的关键字，应用同时也可以自定义使用。
-    3. “rt.sys.”、“rt.app.”开头的注册表在重启后会失效，如果需要重启后能保持之前的状态，需要在重启后重新设置；
-    4. 设置键值后，要延时约 200 毫秒才生效。
-*/
-int OsRegSetValue(const char *Key, const char *Value);
 
 /*
 功能 安装或更新应用软件、应用数据、OPT 包、用户公钥和外设固件(FWP包)。
@@ -204,11 +178,6 @@ FileType
     ERR_INVALID_PARAM 非法参数
     ERR_VERIFY_SIGN_FAIL 签名错误
     ERR_APP_MODE 模式错误
-用法
-    1. 只有当 FileType 为 FILE_TYPE_APP_PARAM 时，Name 为应用名字，比如“MAINAPP”等终端存在的应用名字，如果终端没有此应用名字，则安装失败；为其它类型时 Name 无效;
-    2. 当 FileType 为 FILE_TYPE_FWP 时，如果是无线模块的设备固件包，带电池的机型需要至少 2 格电量，以保证固件包的正常安装。
-    3. 只有主应用才有权限安装或更新。
-    4. 当 FileType 为 FILE_TYPE_FWP 时，返回值有 RET_OK、ERR_FILE_NOT_FOUND 、 ERR_VERIFY_SIGN_FAIL 、ERR_ACCESS_DENY、ERR_NO_SPACE 和 ERR_APP_MODE；其中返回 ERR_APP_MODE 的情况包括 mmap()失败、fork()失败、execl()失败、FWP 包中的 updater 运行返回错误码。
 */
 int OsInstallFile(const char *Name,const char *FileName,int FileType);
 
@@ -252,197 +221,18 @@ int OsFirmwareGetVersion(char *Version,int Size);
 int OsFirmwareUpgrade(const char *FwFileName);
 
 /*
-功能 验证 FileName 指定的文件的签名是否正确，文件包括签名数据。
-参数
-    FileName【输入】 待验证签名的文件路径，该文件已包含签名数据。
-    PUKType 【输入】
-    PUK_TYPE_M厂商公钥，用于厂商发布的固件的签名认证。
-    PUK_TYPE_US_PUK用户签名证书公钥，用于对公钥证书的签名认证。
-    PUK_TYPE_USER用户公钥，用于对用户应用的签名认证。
-返回
-    RET_OK 成功
-    ERR_VERIFY_SIGN_FAIL 文件签名信息非法
-    ERR_FILE_NOT_EXIST 文件不存在
-    ERR_DEV_BUSY 其它程序进行验证签名
-    ERR_INVALID_PARAM 非法参数
-*/
-int OsVerifySign(const char *FileName, int PUKType);
-
-/*
-功能 使用指定的签名数据验证文件的签名。
-参数
-    FileName【输入】 待验证签名的文件路径。该文件不包含签名数据，否则会导致验证失败。
-    SignData【输入】签名数据，Prolin 允许的签名数据长度为 284字节｡
-    PUKType 【输入】
-        PUK_TYPE_M 厂商公钥，用于厂商发布的固件的签名认证
-        PUK_TYPE_US_PUK用户签名证书公钥，用于对公钥证书的签名认证
-        PUK_TYPE_USER用户公钥，用于对用户应用的签名认证
-返回
-    RET_OK 成功
-    ERR_VERIFY_SIGN_FAIL 文件签名信息非法
-    ERR_FILE_NOT_EXIST 文件不存在
-    ERR_DEV_BUSY 其它程序进行验证签名
-    ERR_INVALID_PARAM 非法参数
-*/
-int OsVerifySignExternal(const char *FileName, const void *SignData, int PUKType);
-
-/*
 功能 获取操作系统以及模块固件版本信息。
 参数 VerType 版本类别：
-    TYPE_OS_VER 操作系统版本
-    TYPE_WIRELESS_VER 无线模块固件版本
+    0x01: 系统版本 
+    0x02: 中间件版本号
+    0x03: 安全CPU App版本号
+    0x04: 安全CPU 固件版本
 Version【输出】 版本信息缓冲区大小必须不小于 31 字节｡
 返回 无
 用法 1. 如果 Version[0]等于 0x00，表示相应模块不存在；
      2. 各版本信息的长度小于等于 31 字节，并以“\0”字符结尾。
 */
 void OsGetSysVer(int VerType, char *Version);
-/*
-功能 检测手机是否连接座机。
-参数 无
-返回
-    RET_OK 手机在座机上
-    ERR_BASE_ABSENT 手机不在座机上
-    ERR_SYS_NOT_SUPPORT 系统不支持此功能
-    ERR_TIME_OUT 超时
-    ERR_SYS_BAD 系统错误
-*/
-int OsOnBase(void);
-
-/*
-功能 保存崩溃报告。
-参数 sig 信号值
-返回 无
-*/
-void OsSaveCrashReport(int sig);
-
-/*
-功能 挂载/安装外部存储系统，如 USB 可移动磁盘。
-参数
-    Source【输入】要挂载的文件系统，通常是一个设备，该设备必须位于/dev/block/下路径长度不能超过128 字节。
-    Target【输入】 要挂载到的文件目录，该目录必须位于/mnt/下；路径长度不能超过 128 字节。
-    FileSystemType【输入】 要挂载的文件系统类型，可取值为 vfat。
-    MountFlags【输入】 挂载标识，可为以下标识或标识组合：
-    Data【输入】 用户自定义信息，可以为 NULL。
-返回
-    RET_OK 挂载成功
-    ERR_INVALID_PARAM 非法参数
-    ERR_STR_LEN 字符串长度过长
-    ERR_NEED_ADMIN 权限不够
-*/
-int OsMount(const char *Source,const char *Target,const char *FileSystemType,unsigned long MountFlags,const void *Data);
-
-/*
-功能 卸载文件系统｡
-参数
-    Target【输入】 要卸载的文件系统，必须为/mnt/目录下的路径，路径长度不能超过 128 字节。
-    Flags卸载标识，可为以下标识或标识组合：
-    MNT_DETACH：lazy umount，执行后挂载点不可访问，当挂载点不忙时才会卸载。
-    MNT_EXPIRE：标记挂载点已过期。
-    UMOUNT_NOFOLLOW：如果目标是一个符号链接，则不减少引用计数。
-返回
-    RET_OK 卸载成功
-    ERR_INVALID_PARAM 非法参数
-    ERR_STR_LEN 字符串长度过长
-    ERR_NEED_ADMIN 权限不够
-*/
-int OsUmount(const char *Target, int Flags);
-
-/*
-功能 格式化存储设备为加密文件系统。
-参数
-    Dev 【输入】 待格式化的设备，该设备必须位于/dev/block/目录下；路径长度不能超过 128 字节。
-    Pwd 【输入】 加密文件系统密码，为可见字符串，长度 6~32字节。
-    FsType 【输入】 格式化文件系统类型，可取值“vfat”。
-返回
-    0 成功
-    ERR_INVALID_PARAM 非法参数
-    ERR_DEV_NOT_EXIST 文件或路径不存在
-*/
-int OsCryptFormat(const char *Dev, const char *Pwd,const char *FsType);
-
-/*
-功能 挂载加密文件系统。
-参数
-    Dev 【输入】 要挂载的设备，该设备必须位于/dev/block/目录下；路径长度不能超过 128 字节。
-    Pwd 【输入】 加密文件系统密码，为可见字符串，长度 6~32字节。
-    Target 【输入】 要挂载到的文件目录，该目录必须位于/mnt/目录下；路径长度不能超过 128 字节。
-    FsType 【输入】 要挂载的文件系统类型，可取值为“vfat”。
-返回
-    0 成功
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_NOT_SUPPORT 系统不支持（密码错误或加密格式不支持）
-    ERR_DEV_NOT_EXIST 设备不存在
-    ERR_ACCESS_DENY 无访问权限
-*/
-int OsCryptMount(const char *Dev, const char *Pwd,const char *Target, const char *FsType);
-
-/*
-功能 卸载加密文件系统。
-参数 Target 【输入】 待关闭的加密 SD 卡的挂载目录。
-返回
-    0 成功
-    ERR_INVALID_PARAM 非法参数
-    ERR_DEV_BUSY 设备正在使用中
-    ERR_ACCESS_DENY 无访问权限
-    ERR_FILE_NOT_EXIST 目录不存在
-*/
-int OsCryptUmount(const char *Target);
-
-/*
-功能 控制 Led 灯亮灭及颜色。
-参数
-Id 【输入】 Led 灯号
-Color 【输入】发光颜色，可设置以下值：
-    LED_OFF：灭灯
-    LED_RED：红色
-    LED_GREEN：绿色
-    LED_BLUE：蓝色
-    LED_YELLOW : 黄色
-    LED_CYAN : 青色
-    LED_MAGENTA：品红
-    LED_WHITE：亮白
-dev 【输入】设备型号。当操作远程设备的 led 灯时，需要输入此参数 ( 如读卡器：“IM700”,”IM500”,”IM20”)；当操作本机 led 灯时，此参数输NULL。
-返回
-    0 成功
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_BAD 系统错误
-    ERR_SYS_NOT_SUPPORT 不支持
-*/
-int OsLed(int Id, unsigned int Color,const char *dev);
-
-/*
-功能 获取终端各模块累计使用信息。
-参数
-Key【输入】 设备信息类别。
-Value【输出】 设备使用信息。
-返回
-    RET_OK 成功
-    ERR_SYS_NOT_SUPPORT 系统不支持
-    ERR_INVALID_PARAM 非法参数
-*/
-int OsTerminalConsumeInfo(const char *Key, int *Value);
-
-/*
-功能 获取所有数字 IO 的输入状态。
-参数 value【输出】按 bit 表示每个 IO 的状态，0 表示悬空或高电平，1 表示低电平，如果某一路 IO 不可读(只写)，对应 bit 返回 0
-返回
-    >=0 vaule 中 bit 位为 1 的个数
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_NOT_SUPPORT 系统不支持
-*/
-int OsDigitalIOGetStat(int *value);
-/*
-功能 设置指定 IO 的输出状态。
-参数
-    index【输入】 指定要设置 IO 的序号，如果 IO 不支持设置(只读)，会返回 ERR_SYS_NOT_SUPPORT
-    value【输入】 0 对应 IO 输出为高电平 1 对应 IO 输出为低电平
-返回
-    RET_OK 成功
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_NOT_SUPPORT 系统不支持
-*/
-int OsDigitalIOSetStat(int index, int value);
 
 
 
@@ -533,14 +323,6 @@ ERR_GEN_FAIL 生成失败
 int OsRSAKeyGen(unsigned char *Modulus, unsigned char *PriExp, int ModulusLen, const unsigned char * PubExp);
 
 /************************************7LCD*********************************/
-
-/*
-功能 设置 LCD 对比度。
-参数 Contrast 
-对比度值，取值范围为[0~7]。0：最低。7：最高。默认值为 4，其它值无动作。
-返回 无
-*/
-void OsScrContrast(int Contrast);
 
 /*
 功能 设置屏幕亮度。
@@ -680,106 +462,8 @@ int OsPedEraseKeys (void);
 */
 void OsPedClose (void); 
 
-/*
-功能   不支持
-使用 TR31 数据封装格式写入一个密钥，包括 TMK， TWK，AES_TMK 和AES_TWK 和 AES_TIK 
-*/
-int OsPedInjectKeyBlock(unsigned char *KeyBlock, int KeyBlkLen); 
 
 /************************************6.5 PIN 输入*********************************/
-/*
-功能 设置两次计算 PIN block 之间的最小间隔时间。 
-参数 TpkIntervalMs 
-    = 0 使用默认值(30s) 
-    <1000 自动设为 1000(1s) 
-    >600000 自动设为 600000(10min) 
-    =0xffffffff 当前设置不被改变 
-返回 
-    RET_OK 成功 
-    ERR_DEV_NOT_OPEN PED 设备未打开
-*/
-int OsPedSetInterval (unsigned long TpkIntervalMs); 
-
-/*
-功能 校验脱机明文 PIN。
-参数
-    IccSlot 卡片所在的卡座号，IccSlot=0。
-    ExpPinLen【输入】可输入的合法密码长度字符串，0~12 的枚举集合。应用程序把允许的密码长度全部枚举出来，并且用“,”号隔开每个长度，如允许输入 4、6位密码并且允许无密码直接按确认，则该字符串应该设置为“0,4,6”。若枚举0长度则表示可以不输任何数字而直接按确认键返回。
-    Mode 0x00，IC 卡命令模式，现支持符合 EMV2000的 IC 卡命令。
-    TimeoutMs 输入 PIN 的超时时间，单位：毫秒，最大值为300000。0：表示没有超时时间，PED 不做超时控制。
-    IccRsp【输出】 卡片响应的状态码(2 字节：SWA+SWB)
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN PED 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedVerifyPlainPin (int IccSlot, const char * ExpPinLen, int Mode, unsigned long TimeoutMs, unsigned char * IccRsp); 
-
-/*
-功能 校验密文 PIN,步骤如下：
-    1. 获取明文 PIN；
-    2. 用应用提供的 RsaPinKey 对明文 PIN 按照 EMV 规范进行加密；
-    3. 用应用提供的卡片命令与卡片通道号，将密文 PIN 直接发送给卡片。
-参数
-    Iccslot 卡片所在的卡座
-    RsaPinKey【输入】 加密所需数据结构 ST_ RSA_PINKEY。
-    ExpPinLen【输入】
-    Mode 0x00，符合 EMV2000IC 卡的命令。
-    TimeoutMs 输入 PIN 的超时时间，单位：毫秒，最大值为 300000。0：表示没有超时时间，PED 不做超时控制。
-    IccRsp【输出】 卡片响应的状态码(2 字节：SWA+SWB)
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN PED 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedVerifyCipherPin (int IccSlot, const ST_RSA_PINKEY * RsaPinKey, const char * ExpPinLen, int Mode, unsigned long TimeoutMs, unsigned char * IccRsp);
-
-/*
-功能 设定某些功能键的功能。
-参数 KeyFlag 
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_O
-    PEN 设备未打开
-    ERR_INVALID_PA
-    RAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedSetFunctionKey (int KeyFlag);
-
-/*
-功能 用于 PIN 输入过程中，终止 PIN 输入。
-参数 无
-返回 RET_OK 成功
-*/
-int OsPedCancelPinEntry(void);
-
-/*
-功能 设置脱机明文/密文校验模式。
-参数
-    Mode 【输入】校验模式：0-使用内置密码键盘输入 PIN；1-使用外置密码键盘输入 PIN，通过
-    PinBlock 参数导入 PIN。
-    TpkIdx 【输入】
-    TPK 索引：Mode 为 0 时，无意义； Mode 为 1 时，使用该索引的 TPK 对导入的PinBlock进行解密得到PIN明文。
-    PinBlock 【输入】
-    PIN block： Mode 为 0 时，无意义； Mode 为 1 时，表示 TPK 加密的ISO9564 Format1 格式的 PIN 密文。
-    PinBlockLen 【输入】 PIN block 的长度
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN PED 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedSetOfflinePin(unsigned char Mode,unsigned char TpkIdx,unsigned char *PinBlock, unsigned short PinBlockLen);
-
-/*
-功能 用于 PIN 输入过程中，发送确认键结束 PIN 输入。
-参数 无
-返回 RET_OK 成功
-*/
-int OsPedEndPinEntry(void);
 
 /*
 功能 监听并获取当前状态下用户输入的 PIN 按键数量及当次监听与上次监听中间的历史按键序列。 
@@ -823,22 +507,7 @@ int OsPedSetAsteriskLayout(int line,int align);
     其他 请参考 PED 函数返回值列表
 */
 int OsPedWriteKey (const unsigned char * KeyBlock);
-/*
-功能 使用指定密钥类型的密钥索引所在的密钥明文与一串数据进行运算(异或等)，得到密钥写入到同一类型密钥区的另一指定索引位置。
-参数
-    KeyType 密钥类型： PED_TMK PED_TPK  PED_TAK  PED_TDK 
-    SrcKeyIdx 源密钥索引号，取值范围为[1~100]。
-    DstKeyIdx 目的密钥索引号，取值范围为[1~100]。
-    KeyVar【输入】24 字节，需要参与运算的字符串；为与密钥长度相同的字符串，用于和源索引的密钥异或；可扩展｡
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_O
-    PEN PED 设备未打开
-    ERR_INVALID_PA
-    RAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedWriteKeyVar (int KeyType, int SrcKeyIdx, int DstKeyIdx, const unsigned char *KeyVar);
+
 /*
 功能 指定的时限内,扫描键盘上输入 ExpPinLenIn 指定长度的 PIN，并输出由 Mode 指定算法加密生成的 PIN block。
 参数
@@ -858,7 +527,7 @@ int OsPedGetPinBlock (int KeyIdx,const unsigned char *DataIn, const char *ExpPin
 功能 用 KeyIdx 指定的 MAC 密钥对 DataIn 进行 Mode 指定的运算。
 参数
     KeyIdx TAK 的索引号，取值范围为[1~100]。
-    DataIn【输入】 需进行 MAC 运算的数据，长度小于等于 8192 字节。
+    DataIn【输入】 需进行 MAC 运算的数据，长度小于等于 2032 字节。
     DataInLen MAC 运算的数据长度，当长度不能被 8 字节整除，则自动补“\x00”。
     Mac【输出】 8 字节，MAC 输出。
     Mode 将 DataIn 按 8 字节为单位分块，依次为 BLOCK1，BLOCK2，BLOCK3 等。
@@ -906,23 +575,6 @@ int OsPedDes(int KeyIdx,unsigned char * InitVector, const unsigned char *DataIn,
 */
 int OsPedGetKcv(int KeyType, int KeyIdx, int KcvMode, int KcvDataLen, unsigned char *KcvData, unsigned char *Kcv);
 
-/*
-功能 用 SrcKeyIdx 指定的密钥对 DstFromKeyIdx 指定的密钥进行加密或解密，发散新密钥，并将结果保存到 DstToKeyIdx 指定的密钥。
-参数
-    SrcKeyType 源密钥类型：PED_TLK  PED_TMK  PED_TAK PED_TPK PED_TDK 
-    SrcKeyIdx 源密钥的索引号，
-    DstKeyType 目的密钥类型： 
-    DstFromKeyIdx 目的密钥源索引号
-    DstToKeyIdx 目的密钥目的索引号
-    Mode 0x00：DES/TDES 解密0x01：DES/TDES 加密
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedDeriveKey(int SrcKeyType, int SrcKeyIdx, int DstKeyType, int DstFromKeyIdx, int DstToKeyIdx, int Mode);
-
 
 /************************************6.7 DUKPT*********************************/
 /*
@@ -959,7 +611,7 @@ int OsPedGetPinDukpt (int GroupIdx, const unsigned char *DataIn, const char *Exp
 参数
     GroupIdx DUKPT 组索引号，取值范围为[1~100]。
     DataIn【输入】 指向需要计算 MAC 的数据内容。
-    DataInLen 数据的长度，小于等于 8192 字节，当不为 8字节整除时自动补“\x00”。
+    DataInLen 数据的长度，小于等于 2032 字节，当不为 8字节整除时自动补“\x00”。
     Mac【输出】 指向得到的 MAC。
     Ksn【输出】 指向当前的 KSN。
     Mode 
@@ -1012,312 +664,6 @@ int OsPedGetKsnDukpt(int GroupIdx, unsigned char *Ksn);
     其他 请参考 PED 函数返回值列表
 */
 int OsPedIncreaseKsnDukpt (int GroupIdx);
-/************************************6.8 RSA*********************************/
-/*
-功能 读取 RSA 公钥。
-参数
-    RsaKeyIdx RSA Key 的索引号，取值范围为[1~10]。
-    RsaKey【输出】 RSA 公钥结构体 ST_RSA_KEY
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedReadRsaKey(int RsaKeyIdx, ST_RSA_KEY *RsaKey);
-
-/*
-功能 注入 RSA 密钥到 PED。
-参数
-    RsaKeyIdx RSA 密钥的索引号，取值范围为[1~10]。
-    RsaKey【输入】 指向需要注入 PED 的 RSA 密钥结构体ST_RSA_KEY。
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedWriteRsaKey(int RsaKeyIdx, ST_RSA_KEY *RsaKey);
-
-/*
-功能 用存储在 PED 的 RSA 密钥进行 RSA 数据运算。
-参数
-    RsaKeyIdx RSA Key 的索引号，取值范围为[1~10]。
-    DataInLen 需要进行运算的数据长度，单位为字节，与RSA 密钥的模长相同。长度值为 64 到 512 之间 8 的倍数。
-    DataIn【输入】 指向需要进行运算的数据
-    DataOut【输出】 指向运算后的数据
-    KeyInfo【输出】 密钥信息
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_
-    OPEN 设备未打开
-    ERR_INVALID_P
-    ARAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedRsaRecover(int KeyIdx, int DataInLen, unsigned char *DataIn, unsigned char *DataOut, unsigned char *KeyInfo);
-/*
-功能 读取 RSA 密钥密文。
-参数
-    RsaKeyIdx RSA Key 的索引号，取值范围为[1~10]。
-    CipherRsaKey【输出】 指向 RSA 密钥密文
-返回
-    >0 表示 RSA 密钥密文的长度
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedReadCipherRsaKey(int RsaKeyIdx, unsigned char *CipherRsaKey);
-/*
-功能 写 RSA 密钥密文。
-参数
-    RsaKeyIdx RSA Key 的索引号，取值范围为[1~10]。
-    CipherRsaKeyLen 写入的 RSA 密钥密文数据的字节长度，小于等于 1024
-    CipherRsaKey【输入】 指向 RSA 密钥密文
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedWriteCipherRsaKey(int RsaKeyIdx, int CipherRsaKeyLen, unsigned char *CipherRsaKey);
-
-/************************************6.9 AES*********************************/
-/*
-功能 将一个 AES 密钥的密文或者明文写入到 AES 密钥区域的指定索引的位置，并可以选择使用 KCV 验证密钥正确性。
-参数 KeyBlock【输入】
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN PED 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedWriteAesKey(const unsigned char *KeyBlock);
-
-/*
-功能 使用 TAESK 或 PED_AES_TDK 密钥对 DataInLen 指定长度的数据进行 AES 加解密运算。
-参数
-    KeyIdx【输入】 AES_TDK 密钥索引号，取值范围为[1~100]。
-    InitVector【输入/输出】
-    DataIn【输入】 需要进行运算的数据
-    DataInLen【输入】需要进行运算的数据长度，以字节为单位，应小于等于 1024，且为 16 的倍数。当运算模式为 CTR 模式时，数据长度没有限制。
-    DataOut【输出】 指向运算后的数据。
-    Mode 【输入】 0x00：ECB 解密模式 0x01：ECB 加密模式 0x02：CBC 解密模式 0x03：CBC 加密模式 0x04：OFB 解密模式 0x05：OFB 加密模式 0x06：CTR 解密模式 0x07：CTR 加密模式
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 无效的参数
-    其他 参见 PED 函数返回值列表
-
-*/
-int OsPedAes(int KeyIdx,unsigned char*InitVector,const unsigned char*DataIn,int DataInLen,unsigned char *DataOut,int Mode);
-
-/*
-功能 使用 AES_TAK 对 DataIn 用 Mode 指定的算法进行 MAC 运算，
-将 16 字节的 MAC 结果输出到 Mac
-参数
-    KeyIndex 【输入】 AES_TPK 组索引号，取值范围为[1~100]
-    DataIn【输入】 指向需要计算 MAC 的数据
-    DataInLen 【输入】 数据的长度，小于等于 8192 字节，当不为16 字节整除时自动补 0x00
-    Mac【输出】 指向得到的 MAC。
-    Mode 将 DataIn 按 16 字节为单位分块，依次为BLOCK1，BLOCK2，BLOCK3 等。
-        0x00：将 BLOCK1 用 MAC 密钥做 AES 加密，加密结果与 BLOCK2 进行逐位异或后再做 AES 加密，依次进行得到 16 字节的加密结果
-        0x01：Hypercom Fast Mode，将 BLOCK1 和BLOCK2 进行逐位异或，异或结果与BLOCK3 进行逐位异或，依次进行，最后得到 16 字节的异或结果，将该结果用 AES_TAK 进行 AES 加密运算
-        0x03：CMAC 算法
-        0x05：HMAC-HASH256 算法
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    其他 请参考 PED 函数返回值列表
-*/
-int OsPedGetMacAes(unsigned char KeyIndex, unsigned char *DataIn, int DataInLen, unsigned char *Mac, unsigned char Mode);
-
-
-/************************************6.10 国密算法 API*********************************/
-/*
-功能 生成一组 SM2 密钥对。
-参数
-    PvtKey【输出】 指向 SM2 私钥，32 字节
-    PubKey【输出】 指向 SM2 公钥，64 字节
-    KeyLenBit【输入】 私钥位数，256 位
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_BAD 系统错误
-用法 支持的 SM2 私钥位数为 256 位，对应的公钥位数为 512 位。
-*/
-int OsPedGenSM2Pair(unsigned char *PvtKey, unsigned char *PubKey, int KeyLenBit);
-/*
-功能 注入 SM2 私钥或公钥到 PED。
-参数
-    KeyIdx 【输入】 SM2 密钥索引号，取值范围为[1~20]
-    KeyType【输入】密钥类型：PED_SM2_PVT_KEY 0x30 私钥PED_SM2_PUB_KEY 0x31 公钥
-    KeyValue 【输入】当 KeyType=0x30 时，KeyValue 长度为32 字节 当 KeyType=0x31 时，KeyValue 长度为64 字节
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_BAD 系统错误
-    ERR_PED_KEY_IDX_ERR 密钥索引错误
-    ERR_PED_KEY_TYPE_ERR 密钥类型错误
-    其他 参见 PED 函数返回值列表
-*/
-int OsPedWriteSM2Key(int KeyIdx, int KeyType, unsigned char *KeyValue);
-
-/*
-功能 使用 SM2 算法获得签名信息。
-参数
-    PubKeyIdx【输入】 SM2 公钥索引号，取值范围为[1~20]
-    PvtKeyIdx【输入】 SM2 私钥索引号，取值范围为[1~20]
-    Uid【输入】 签名者 ID无特殊约定的情况，用户身份的标识 ID长度为 16 字节，其默认值为 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38。
-    UidLen【输入】 签名者 ID 长度，小于等于 512 字节。
-    Input【输入】 需要签名的数据
-    InputLen【输入】 数据长度，小于等于 2048 字节
-    Signature【输入】 签名值，64 字节
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_BAD 系统错误
-    ERR_PED_KEY_IDX_ERR 密钥索引错误
-    ERR_PED_KEY_TYPE_ERR 密钥类型错误
-    ERR_PED_NO_KEY 密钥不存在
-    ERR_PED_TAMPERED PED 被锁定
-    其他 参见 PED 函数返回值列表
-*/
-int OsPedSM2Sign(int PubKeyIdx, int PvtKeyIdx,unsigned char *Uid,int UidLen,unsigned char *Input, int InputLen,unsigned char *Signature);
-/*
-功能 使用 SM2 公钥验证签名。
-参数
-    PubKeyIdx【输入】 SM2 公钥索引号，取值范围为[1~20]
-    Uid【输入】 签名者 ID。无特殊约定的情况，用户身份的标识 ID的长度为 16 字节，其默认值为 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38。
-    UidLen【输入】 签名者 ID 长度，小于等于 512 字节
-    Input【输入】 需要签名的数据
-    InputLen【输入】 数据长度，小于等于 2048 字节
-    Signature【输入】 签名值，64 字节
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_BAD 系统错误
-    ERR_VERIFY_SIGN_FAIL 验证签名失败
-    ERR_PED_KEY_IDX_ERR 密钥索引错误
-    ERR_PED_KEY_TYPE_ERR 密钥类型错误
-    ERR_PED_NO_KEY 密钥不存在
-    ERR_PED_TAMPERED PED 被锁定
-    其他 参见 PED 函数返回值列表
-*/
-int OsPedSM2Verify(int PubKeyIdx, unsigned char *Uid,int UidLen,unsigned char *Input,int InputLen,const unsigned char *Signature);
-
-/*
-功能 使用 SM2 公钥加密数据或私钥解密数据。
-参数
-    KeyIdx【输入】 SM2 密钥索引号，取值范围为[1~20]
-    Input【输入】 待加密或解密的数据
-    InputLen【输入】 数据长度，加密操作时小于等于（2048-96）字节，解密操作时小于等于2048 字节。
-    Output【输出】 加密或解密后的数据
-    OutputLen【输出】 加密或解密后的数据长度，加密后数据长度为原数据长度+96 字节，解密后数据长度为原数据长度-96 字节。
-    Mode【输入】 PED_DECRYPT0x00：使用 SM2 私钥解密数据 PED_ENCRYPT0x01：使用 SM2 公钥加密数据
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_BAD 系统错误
-    ERR_PED_KEY_IDX_ERR 密钥索引错误
-    ERR_PED_KEY_TYPE_ERR 密钥类型错误
-    ERR_PED_NO_KEY 密钥不存在
-    ERR_PED_TAMPERED PED 被锁定
-    其他 参见 PED 函数返回值列表
-*/
-int OsPedSM2Recover(int KeyIdx, unsigned char *Input,int InputLen,unsigned char *Output, int *OutputLen,int Mode);
-
-/*
-功能 使用 SM3 算法计算杂凑值。
-参数
-    Input【输入】 输入数据
-    InputLen【输入】 输入数据长度
-    Output【输出】 杂凑值，32 字节。
-    Mode【输入】 支持 0x00，其它值保留。
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_BAD 系统错误
-*/
-int OsPedSM3(unsigned char *Input, int InputLen,unsigned char *Output,int Mode);
-
-/*
-功能 使用 SM4 算法加密或解密数据。
-参数
-    KeyIdx【输入】 PED_SM4_TDK 的索引号，取值范围为[1～100]
-    InitVector【输入】 初始向量，16 字节。对于 ECB 模式该参数为 NULL。
-    Input【输入】 需要加密或解密的数据
-    InputLen【输入】 数据长度小于等于 1024，以字节为单位，且为 16 的倍数
-    Output【输出】 加密或解密后的数据，长度为输入长度
-    Mode【输入】 PED_SM4_ECB_DECRYPT 0x00:SM4 ECB 解密  PED_SM4_ECB_ENCRYPT 0x01:SM4 ECB 加密     PED_SM4_CBC_DECRYPT 0x02:SM4 CBC 解密     PED_SM4_CBC_ENCRYPT 0x03:SM4 CBC 加密
-返回 RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_BAD 系统错误
-    ERR_PED_KEY_IDX_ERR 密钥索引错误
-    ERR_PED_KEY_TYPE_ERR 密钥类型错误
-    ERR_PED_NO_KEY 密钥不存在
-    ERR_PED_TAMPERED PED 被锁定
-    ERR_PED_KEY_LEN_ERR 密钥长度错误
-    其他 参见 PED 函数返回值列表
-*/
-int OsPedSM4(int KeyIdx, unsigned char *InitVector, unsigned char *Input, int InputLen,unsigned char *Output,int Mode);
-
-/*
-功能 使用 SM4 算法计算 MAC。
-参数
-    KeyIdx【输入】 PED_SM4_TAK 的密钥索引号，取值范围为[1～100]
-    InitVector【输入】 初始向量，16 字节。
-    Input【输入】 需要进行 MAC 运算的数据
-    InputLen【输入】 数据长度小于等于 1024，以字节为单位，且为 16 的倍数
-    MacOut【输出】 MAC 值
-    Mode【输入】 0x00：使用 SM4 CBC 算法计算 MAC 值，首先将初始向量与 BLOCK1 进行异或，并用SM4算法使用TAK对异或的结果进行加密，然后获得的密文与 BLOCK2 异或，用SM4 算法使用 TAK 对结果加密，按顺序给出 16 字节的加密结果。MacOut 为 16 字节。0x01：使用 SM4-TAK 密钥对输入数据计算SM3 Hash，计算结果作为 MacOut(32 字节)。
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_BAD 系统错误
-    ERR_PED_KEY_IDX_ERR 密钥索引错误
-    ERR_PED_KEY_TYPE_ERR 密钥类型错误
-    ERR_PED_NO_KEY 密钥不存在
-    ERR_PED_TAMPERED PED 被锁定
-    ERR_PED_KEY_LEN_ERR 密钥长度错误
-    其他 参见 PED 函数返回值列表
-*/
-int OsPedGetMacSM(int KeyIdx,unsigned char *InitVector, unsigned char *Input,int InputLen, unsigned char *MacOut,int Mode);
-
-/*
-功能 指定的时限内，扫描键盘上输入的 PIN 并输出采用 SM4 算法生成的 PIN block 加密数据块。
-参数
-    KeyIdx【输入】 PED_SM4_TPK 的密钥索引号，取值范围为[1～100]
-    ExpPinLenIn【输入】 可输入的合法密码长度字符串，0~12 的枚举集合。应用程序把允许的密码长度全部枚举出来，并且用“,”号隔开每个长度，如允许输入 4、6 位密码，则该字符串应该设置为“4,6”。
-    DataIn【输入】 当 Mode=0x00 时，DataIn 指向卡号移位后生成的 16 位主帐号。
-    PinBlockOut【输出】 生成的密文 PIN block，16 字节
-    Mode【输入】 PIN block 的格式0x00 ISO9564 格式 0
-    TimeoutMs【输入】 输入 PIN 的超时时间，单位：毫秒。最大值为 300000ms。0 表示采用默认超时时间30000ms。
-返回
-    RET_OK 成功
-    ERR_DEV_NOT_OPEN 设备未打开
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_BAD 系统错误
-    ERR_PED_KEY_IDX_ERR 密钥索引错误
-    ERR_PED_KEY_TYPE_ERR 密钥类型错误
-    ERR_PED_NO_KEY 密钥不存在
-    ERR_PED_TAMPERED PED 被锁定
-    ERR_PED_KEY_LEN_ERR 密钥长度错误
-    ERR_PED_NO_PIN_INPUT 未输入任何键值
-    ERR_PED_PIN_INPUT_CANCEL 取消输入
-    ERR_PED_WAIT_INTERVAL 间隔时间太短
-    其他 参见 PED 函数返回值列表
-*/
-int OsPedGetPinBlockSM4(int KeyIdx, const char *ExpPinLenIn, unsigned char *DataIn,unsigned char *PinBlockOut, int Mode, long TimeoutMs);
 
 /************************************11打印机*********************************/
 
@@ -1370,27 +716,6 @@ void OsPrnReset(void);
 */
 void OsPrnClose(void);
 
-/*
-功能 设置虚拟打印机相关参数。
-参数
-    Width【输入】 宽度
-    Height【输入】 高度
-返回
-    RET_OK 成功
-    ERR_INVALID_PA
-    RAM 非法参数
-    用法 仅对虚拟打印机有效
-*/
-int OsPrnSetSize (unsigned int Width, unsigned int Height);
-
-/*
-功能 设置打印方向。
-参数 Mode【输入】 0：横向打印 1：纵向打印。
-返回
-    RET_OK 成功
-    ERR_INVALID_PARAM 非法参数
-*/
-int OsPrnSetDirection (unsigned char Mode);
 
 /*
 功能 设置打印灰度。
@@ -1454,23 +779,6 @@ int OsPrnSetIndent (unsigned int Left, unsigned int Right);
 */
 int OsPrnCheck(void);
 
-/*
-功能 获取当前任务已打印的点行数。
-参数 无
-返回 >=0 当前已打印点行个数
-用法 用于单据对齐(一般情况下不使用)。对实体及虚拟打印机皆有效。
-*/
-int OsPrnGetDotLine(void);
-/*
-功能 选择打印字体。
-参数 fontname【输入】 字体(文件)名称
-返回
-    RET_OK 成功
-    ERR_FONT_NOT_EXIST 字体不存在
-    ERR_INVALID_PARAM 非法参数
-用法 选择系统中不同的字体样式和字体大小进行打印，可通过调用OsEnumFont( )获取系统内置字体文件名称。
-*/
-int OsPrnSetFont(const char*fontname);
 
 /*
 功能 设置打印参数。自定义
@@ -1482,17 +790,7 @@ AlignType 居左 居中  居右
 返回 无
 */
 void  OsPrnSetPrintParams(int FontSize,int DoubleWidth, int DoubleHeight,int AlignType);
-/*
-功能 设置打印字体大小。
-参数
-SingleCodeWidth 单内码字体宽度控制(对非等宽输出字体来说，真正每个字符的宽度不一定满足此设置)选值区间为 8~64
-SingleCodeHeight 单内码字体高度控制选值区间为 8~64 
-MultiCodeWidth 多内码字体宽度控制选值区间为 12~64 
-MultiCodeHeight 多内码字体高度控制选值区间为 12~64 
-返回 无
-用法 第一次调用 OsPrnOpen()后，字体宽度和高度均为默认的宽度和高度，单内码为(12x24)，多内码为(24x24)。对实体及虚拟打印机皆有效。
-*/
-void OsPrnSelectFontSize(int SingleCodeWidth, int SingleCodeHeight, int MultiCodeWidth, int MultiCodeHeight);
+
 
 /*
 功能 在打印缓冲区内，执行走纸若干个点行。
@@ -1541,7 +839,7 @@ int OsPrnRawData (const char *data, int len);
 
 /*
 功能 输出图形到打印缓冲区内。
-参数 Logo【输入】 需打印的 logo 信息的指针，信息长度不能超过20000 个字节。
+参数 Logo【输入】 需打印的 logo 文件路径。
 返回 无
 用法 图形数据的生成步骤如下：
 1. 画 LOGO：可以使用 Windows 中的“开始/程序/附件/画图”工具画图形，图形的存盘要求为“单色、BMP 格式”；
@@ -1787,8 +1085,8 @@ ICC_SAM2_SLOT SAM 卡卡座 2
 ICC_SAM3_SLOT SAM 卡卡座 3
 ICC_SAM4_SLOT SAM 卡卡座 4
 Option(位 0~1)卡电压选择：00 - 5V， 01 - 1.8V，10 - 3V
-(位 2)表示对 PPS 协议支持：0 - 不支持，1 – 支持；
-(位 3~4)表示上电复位使用速率：00 - 标准速率 9600  10 - 四倍速率 38400
+(位 2) 0；
+(位 3~4) 0
 (位 5)表示支持的规范类型：0 - EMV 规范  1 - ISO7816 规范
 (位 6 ~31)保留：Option 缺省设置为 0(即：5V、非 PPS、标准速率和遵循 EMVx)
 Atr【输出】
@@ -1825,7 +1123,7 @@ ApduRsp【输出】 接收从 IC 卡响应的数据结构
 int OsIccExchange(int Slot,int CtrlFlag,const ST_APDU_REQ *ApduReq,ST_APDU_RSP *ApduRsp);
 
 /*
-功能 按照 ISO14443-4 中指定的半双工通信协议实现透明传输/接收功能。
+功能 透明传输/接收功能。
 参数 Slot
     IC 卡通道号：
     ICC_USER_SLOT 用户卡
@@ -1834,9 +1132,7 @@ int OsIccExchange(int Slot,int CtrlFlag,const ST_APDU_REQ *ApduReq,ST_APDU_RSP *
     ICC_SAM3_SLOT SAM 卡卡座 3
     ICC_SAM4_SLOT SAM 卡卡座 4
 
-CtrlFlag
-1. Bit0 表示 T=0 协议下是否自动发送 GET RESPONSE 指令：1-是0-否
-2. Bit1~Bit31 保留
+CtrlFlag 保留
 pucTxBuff【输入】 待传送数据缓冲区
 iTxLen 【输入】 待传送数据的长度，以字节为单位
 pucRxBuff【输出】 接收卡片响应数据的缓冲区
@@ -1887,7 +1183,6 @@ int OsIccClose(int Slot);
 #define PCD_ERR_NOT_WAKEUP_FLAG -2957 //卡片没有唤醒
 #define PCD_ERR_NOT_ACTIVE_FLAG -2958 //卡片未激活
 #define PCD_ERR_NOT_SUPPORT -2959 //芯片不支持
-#define ERR_BATTERY_VOLTAGE_TOO_LOW -1024 //电池电压过低
 
 typedef struct pcd_user_t{
     unsigned char wait_retry_limit_w; /* S(WTX)响应发送次数写入允许*/
@@ -1956,49 +1251,9 @@ int OsPiccResetCarrier(void);
 */
 int OsPiccPoll(char*pcPiccType, unsigned char*pucATQx);
 
-/*
-功能 对卡片进行防冲突和选择。
-参数
-    pcPiccType【输入】
-    寻到卡片类型：
-     “A” - A 卡
-     “B” - B 卡
-    pucUID【输出】
-    卡片的唯一标识：
-     A 卡可为 4，7 或 10 字节
-     B 卡为 4 字节
-    ucATQ0【输入】 此参数未使用
-    pucSAK【输出】 选卡时卡片应答数据，长度为 1 字节。
-    Prolin 应用编程接口编程指南
-    百富计算机技术(深圳)有限公司 150
-    SAK 为 A 卡的最后一条选择命令回应的数据，
-    B 卡忽略此参数
-返回
-    0 卡片选择成功
-    其它 卡片选择失败(参见函数返回值列表)
-*/
-int OsPiccAntiSel(const char pcPiccType,unsigned char *pucUID, const unsigned char ucATQ0, unsigned char*pucSAK);
 
 /*
-功能 对卡片进行激活处理。
-参数
-    pcPiccType【输入】
-    寻到卡片类型：
-     “A” - A 卡
-     “B” - B 卡
-    pucRATS【输出】
-    激活卡片的应答数据：
-     A 卡时，pucRATS 为响应 ATS 命令回应
-    的数据
-     B 卡时，pucRATS 为响应 ATTRIB 命令回
-    应的数据
-返回
-    0 卡片激活成功
-    其它 卡片激活失败(参见函数返回值列表)
-*/
-int OsPiccActive(const char pcPiccType, unsigned char *pucRATS);
-/*
-功能 按照 ISO14443-4 中指定的半双工通信协议实现透明传输/接收功能。
+功能 透明传输/接收功能。
 参数 pucTxBuff【输入】 待传送数据缓冲区
     iTxLen 【输入】 待传送数据的长度，以字节为单位
     pucRxBuff【输出】 接收卡片响应数据的缓冲区
@@ -2019,54 +1274,6 @@ int OsPiccTransfer(const unsigned char*pucTxBuff,int iTxLen, unsigned char*pucRx
 int OsPiccRemove (void);
 
 /*
-功能 验证 Mifare 卡。
-参数
-    uid【输入】 卡片 ID，长度为 4 个字节。
-    blk no 【输入】 块号
-    group【输入】 认证密码类型，取值为‘A’或‘B’。
-    psw 【输入】 认证密码，长度为 6 个字节。
-返回
-    0 成功
-    其它 失败
-*/
-int OsMifareAuthority(unsigned char *uid,unsigned char blk_no,unsigned char group, unsigned char *psw);
-
-/*
-功能 对 Mifare 卡指定的块进行读/写操作；或对 Mifare 卡指定数据块进行充/减值/备份操作，操作后的值将更新到另一个指定的数据块中。
-参数
-    ucOpCode【输入】
-    ‘r’/‘R’：读操作
-    ‘w’/‘W’：写操作
-    ‘+’：充值
-    ‘-’：减值
-    ‘>’：转存/备份操作
-    ucSrcBlkNo【输入】 指定访问的块号pucVal【输入/输出】
-    1. 若为读操作，pucVal 输出块内容，指向的缓冲区为 16 字节；
-    2. 若为写操作，pucVal 输入块内容，指向的缓冲区为 16 字节；
-    3. 若为充值或者减值操作，pucVal 为金额数缓冲区首址，指向的缓冲区为 4 字节；
-    4. 若为转存操作，pucVal 无实际意义，但传入的指针不能为 NULL。ucDesBlkNo【输入】 指定操作结果最终写入到的块号(读写块时，该值为 NULL)
-返回
-    0 成功
-    其它 失败
-*/
-int OsMifareOperate (unsigned charucOpCode, unsigned charucSrcBlkNo, unsigned char*pucVal, unsigned charucDesBlkNo );
-
-/*
-功能 对 FeliCa 卡进行初始化配置。
-参数
-    ucSpeed【输入】
-    设置与卡片交互的传输速率：
-    1:424Kbp
-    其它值：212Kbps
-    ucModInvert【输入】
-    设置 FeliCa 调制方式：
-    1：正向调制输出
-    其它值：反向调制输出
-返回 0 成功
-*/
-int OsPiccInitFelica(unsigned char ucSpeed,unsigned char ucModInvert);
-
-/*
 功能 在指定的通道上，向卡片发送 APDU 格式的数据，并接收响应。
 参数
     cid 【输入】 用于指定卡片逻辑通道号。
@@ -2082,29 +1289,6 @@ int OsPiccInitFelica(unsigned char ucSpeed,unsigned char ucModInvert);
 int OsPiccIsoCommand(int cid, ST_APDU_REQ*ApduReq,ST_APDU_RSP*ApduRsp);
 
 /*
-功能 设置用户配置。
-参数 pcd_user_config【输入】 用户配置结构体 PCD_USER_ST
-返回
-    0 成功
-其它 失败(参见函数返回值列表)
-*/
-int OsPiccSetUserConfig(PCD_USER_ST *pcd_user_config) ;
-
-/*
-功能 获取用户配置。
-参数 pcd_user_config【输出】 用户配置结构体 PCD_USER_ST
-返回
-    0 成功
-    其它 失败(参见函数返回值列表)
-*/
-int OsPiccGetUserConfig(PCD_USER_ST *pcd_user_config);
-
-/*
-功能 寻卡，包括“A”“B”和“V”卡三种类型的轮寻。
-*/
-int OsPiccApplePoll(char *pcPiccType,unsigned char *pucATQx,unsigned char *pucSendData);
-
-/*
 功能 关闭载波。
 参数 无
 返回
@@ -2113,19 +1297,6 @@ int OsPiccApplePoll(char *pcPiccType,unsigned char *pucATQx,unsigned char *pucSe
 用法 对非接触 IC 卡读卡器进行载波关闭操作，射频场内卡片的状态将变为下电状态。
 */
 int OsPiccOffCarrier(void);
-/*
-功能 对 ISO15693 卡进行初始化配置。
-参数 ucDataCodeMode【输入】
-    设置与卡片交互的传输速率：
-     0：26.48 kbits/s
-     其它值：暂不支持
-返回
-    0
-    其它
-    成功
-    失败(参见函数返回值列表)
-*/
-int OsPiccInitIso15693(unsigned char ucDataCodeMode);
 
 /************************************21GPRS/CDMA 无线模块*********************************/
 #define ERR_NET_IF -3307  //网络接口链路不可用(链路没有建立或没有相应的设备)
@@ -2194,57 +1365,6 @@ SIM 卡的密码字符串指针，长度小于 50字节。可以为 NULL，表�
     ERR_WL_NOREG 无法注册到 GPRS 网络
 */
 int OsWlInit(const char *SimPin);
-/*
-功能 初始化无线设备。
-参数
-    SimPin【输入】SIM 卡的密码字符串指针，长度小于 50 字节。可以为 NULL，表示不需要密码。
-    TimeOutMs【输入】超时时间，单位为毫秒；取值范围为【25000，100000】；当小于 25000 时，自动设置为25000；当大于 100000 时，自动设置为100000。
-    CmeString【输出】 保留。当前值为 NULL。
-    Size【输入】 保留。当前值为 0。
-返回
-    WL_CSD_READY CSD 拨号业务就绪
-    WL_GPRS_CSD_READY
-    GPRS 和 CSD 拨号业务就绪
-    ERR_DEV_NOT_OPEN 设备/模块没打开
-    ERR_DEV_NOT_EXIST 无线设备/模块不存在
-    ERR_NO_PORT 终端物理串口不足
-    ERR_WL_NEEDPIN SIM 卡需要 PIN 
-    ERR_WL_RSPERR 模块/设备响应错误
-    ERR_WL_NORSP 模块没有响应
-    ERR_WL_NEEDPUK SIM 卡需要 PUK 
-    ERR_WL_WRONG_PIN PIN 错误
-    ERR_WL_NOSIM 无 SIM 卡
-    ERR_WL_NOREG 无法注册网络
-    ERR_INVALID_PARAM 非法参数
-*/
-int OsWlInitEx(const char *SimPin,int TimeOutMs,char* CmeString,int Size);
-
-/*
-功能 设置无线设备上/下电状态。
-参数 OnOff【输入】
-    无线设备状态：
-    1：上电状态
-    0：下电状态
-返回
-    RET_OK 操作成功
-    ERR_DEV_NOT_EXIST 无线模块不存在
-    ERR_DEV_NOT_OPEN 设备/模块没打开
-*/
-int OsWlSwitchPower(int OnOff);
-
-/*
-功能 设置无线设备休眠状态。
-参数 OnOff 【输入】
-    1 表示休眠
-    0 表示唤醒
-    其他表示未知错误
-返回
-    RET_OK 操作成功
-    ERR_DEV_NOT_EXIST 无线模块不存在
-    ERR_DEV_NOT_OPEN 设备/模块没打开
-    ERR_WL_PPP_ONLINE PPP 在线
-*/
-int OsWlSwitchSleep(int OnOff);
 
 /*
 功能 获取无线信号强度。
@@ -2283,13 +1403,7 @@ int OsWlCheck(void);
     CDMA 为拨号号码。长度不超过 50 个字符；当为 NULL 时，应用先自己拨号后，协议栈直接进行 PPP 登录。
     Name【输入】用户名，长度不能超过 50 个字节；不允许为 NULL；没有用户名时，用空字符串“”表示。
     Password【输入】 密码，长度不能超过 50 个字节；不允许为NULL；没有密码时，用空字符串“”表示。
-    Auth 认证时采用的算法，支持的算法有：
-    PPP_ALG_PAP 0x00000001 PAP 认证算法
-    PPP_ALG_CHAP 0x00000002 CHAP 认证算法
-    PPP_ALG_MSCHAPV1 0x00000004 MSCHAPV1认证算法
-    PPP_ALG_MSCHAPV2 0x00000008 MSCHAPV2认证算法
-    PPP_ALG_ALL0xff 支持所有的认证算法
-    认证算法至少要采用一种，也可以采用多种；采用多种认证算法时，每个算法相加(+)或相或(|)即可，如 PPP_ALG_PAP| PPP_ALG_CHAP；如 果 未 知 何 种 算 法 ， 可 填 入 参 数PPP_ALG_ALL。
+    Auth 认证时采用的算法
     TimeOutMs 超时时间，单位为毫秒；取值范围为 0~3600000。小于 0 时，自动设置为 0；大于 3600000 时，自动设置为 3600000。
     KeepAlive 链路检查间隔，单位为毫秒；取值范围为0~3600000；当为 0 时，不启用 KeepAlive 功能；当为 0~10000 时，自动设置为 10000；当为 10000~3600000 时会根据设定的值进行链路检查。
     ReserParam 保留参数，供扩展使用。
@@ -2310,37 +1424,6 @@ int OsWlCheck(void);
 int OsWlLogin(const char *APN, const char *Name, const char *Password, long Auth, int TimeOutMs, int KeepAlive, int ReserParam);
 
 /*
-功能 登录无线网络，建立无线链路(可修改拨号指令)。
-参数
-    DialNum【输入】 PPP 拨号指令，如果为 NULL，将采用系统默认拨号指令；长度不超过 50 字节。
-    APN【输入】GPRS 为无线接入点名称(AccessPointName)，CDMA 为拨号号码；长度不超过 50 个字符；不允许为 NULL。
-    Name【输入】 用户名，长度不超过 50 个字节；不允许为NULL；没有用户名时，用空字符串“”表示。
-    Password【输入】 密码；长度不超过 50 个字节；不允许为 NULL；没有密码时，用空字符串“”表示。
-    Auth 认证时采用的算法，支持的算法有：
-        PPP_ALG_PAP 0x00000001 PAP 认证算法
-        PPP_ALG_CHAP 0x00000002 CHAP 认证算法
-        PPP_ALG_MSCHAPV1 0x00000004 MSCHAPV1认证算法
-        PPP_ALG_MSCHAPV2 0x00000008 MSCHAPV2认证算法
-        PPP_ALG_ALL0xff 支持所有的认证算法
-        认证算法至少要采用一种，也可以采用多种；采用多种认证算法时，每个算法相加(+)或相或(|)即可，如 PPP_ALG_PAP| PPP_ALG_CHAP；如 果 未 知 何 种 算 法 ， 可 填 入 参 数PPP_ALG_ALL。
-    TimeOutMs超时时间，单位为毫秒；取值范围为 0～3600000；当小于 0 时，自动设置为 0；当大于3600000 时，自动设置为 3600000。
-    KeepAlive 链路检查间隔，单位为毫秒；取值范围为 0~3600000；当为 0 时，不启用KeepAlive 功能；当为 0~10000 时，自动设置为 10000；当为 10000~3600000 时会根据设定的值进行链路检查。
-    ReserParam 保留参数，供扩展使用。
-返回
-    PPP_LOGINING 处理中
-    RET_OK 链路建立成功
-    ERR_DEV_NOT_O
-    PEN 模块/设备没打开
-    ERR_INVALID_PARAM 非法参数
-    ERR_WL_POWER_ONING 无线模块上电中
-    ERR_WL_POWER_OFF 无线模块没上电
-    ERR_WL_NOT_INIT没有初始化
-    ERR_NET_PASSWD密码错误
-    ERR_NET_SERVER_BUSY 服务器忙，通信失败
-*/
-int OsWlLoginEx(const char *DialNum,const char *APN,const char *Name,const char *Password,long Auth,int TimeOutMs,int KeepAlive,int ReserParam);
-
-/*
 功能 退出无线网络，断开无线链路。
 参数 无
 返回
@@ -2349,21 +1432,11 @@ int OsWlLoginEx(const char *DialNum,const char *APN,const char *Name,const char 
 */
 int OsWlLogout(void);
 
-/*
-功能 选择 SIM 卡。
-参数 simno 【输入】
-    0 表示选择卡槽 1 中的 SIM 卡
-    1 表示选择卡槽 2 中的 SIM 卡
-    其它值参数错误
-返回
-    RET_OK 选择成功
-    ERR_DEV_NOT_EXIST 不存在无线模块
-    ERR_DEV_NOT_OPEN 模块/设备没打开
-    ERR_WL_ERR_BUSY 模块繁忙
-    其它非 0 值 参考返回值列表
-*/
-int OsWlSelSim(int simno);
+int OsWlGetImei(char* Imei);
 
+int OsWlGetImsi(char* Imsi);
+
+int OsWlGetIccid(char* Iccid);
 /************************************22 WiFi*********************************/
 //函数返回值列表
 #define ERR_MODE_NOT_SUPPORT -3350 //模式设置错误
@@ -2476,18 +1549,6 @@ int OsWifiOpen(void);
 */
 void OsWifiClose(void);
 
-/*
-功能 设置 WiFi 模块上电或下电。
-参数 Type 
-    0：模块硬件进入下电状态
-    1：模块硬件进入上电状态
-返回
-    RET_OK 设置成功
-    ERR_INVALID_PARAM 参数错误
-    ERR_DEV_NOT_EXIST WiFi 模块驱动加载不正常或者模块错误
-    ERR_DEV_NOT_OPEN 未获取 WiFi 设备使用权
-*/
-int OsWifiSwitchPower (int Type);
 
 /*
 功能 扫描已存在的网络。
@@ -2563,22 +1624,6 @@ int OsWifiCheck(char *Essid,char *Bssid,int *Rssi);
 */
 int OsWifiCmd (const char *Argv[],int Argc,char *Result,int Len);
 
-/*
-功能 WPS 方式连接 AP。
-参数
-    Mode 【输入】 WPS 的连接模式：WPS_MODE。
-    WpsPin 【输入/输出】
-        1． 若 连 接 模 式 为 WPS_MODE_PBC ，WpsPin 为 NULL；
-        2． 若 连 接 模 式 为WPS_MODE_PIN_CLIENT，WpsPin 输出终端产生的 PIN 码，WpsPin 指向的缓冲区为 8 字节；
-        3． 若连接模式为 WPS_MODE_PIN_AP，WpsPin 为 AP 的 PIN 码，WpsPin 指向的缓冲区为 8 字节。
-返回
-    RET_ CONNECTING 正在连接中
-    ERR_DEV_NOT_OPEN 打开失败
-    ERR_INVALID_PARAM 非法参数
-    ERR_SYS_NOT_SUPPORT 系统不支持此 WiFi 模块
-    ERR_PIN_FAIL PIN 码错误
-*/
-int OsWifiWpsConnect (WPS_MODE Mode,char *WpsPin);
 /************************************29电源管理*********************************/
 //29电源管理
 #define BATTERY_LEVEL_0 0
@@ -2624,27 +1669,10 @@ typedef enum{
 int OsCheckBattery(void);
 //检测供电类型
 int OsCheckPowerSupply(void);
-//使终端进入休眠模式
-int OsSysSleep(void);
-//设置终端的电源管理模式
-int OsSysSleepEx(int Level);
-//进入休眠模式，并在指定时间后自动唤醒
-int OsSysSleepTime(int Time);
 //重启机器
 int OsReboot(void);
 //关闭终端
 int OsPowerOff(void);
-//获取PM模发送的消息
-int OsPmGetEvent(int TimeoutMs);
-//客户端请求机器进入指定的模式
-int OsPmRequest(PM_REQ_T ReqType);
-//获取使机器从休眠中唤醒的唤醒源
-int OsWakeupSource(void);
-//检测供电状态是否异常
-int OsCheckPowerStatus(int *PowerStatus);
-//获取电池管理系统BMS的信息
-int OsCheckBMSMode(int *CurrentMode, int *Capacity, int *FullCharge, int *Recharge);
-
 
 
 /************************************自定义数据库接口*********************************/

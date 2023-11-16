@@ -166,7 +166,7 @@ PR_INT32 TransView_nShowTableViewEx(PR_INT8* pszTitle,PR_INT8** pszListItem,PR_I
 		return PR_FAILD;
 	}
 
-	nRet = Disp_nShowTableViewEx(pszTitle, pszListItem, nItemCount, 8, *pnIndexOfSelect, nTimeoutMs, pnIndexOfSelect, DPORT_AUTO_INDEX_CONTINUITY);
+	nRet = Disp_nShowTableViewEx(pszTitle, pszListItem, nItemCount, 8, *pnIndexOfSelect, nTimeoutMs, pnIndexOfSelect, DPORT_AUTO_INDEX_SEPARATELY);
 	switch(nRet)
 	{
 		case RET_DPORT_NORMAL:

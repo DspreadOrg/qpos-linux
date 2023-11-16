@@ -20,7 +20,7 @@ extern "C"
 }while(0); 
 
 #define TERM_SN   "00004102EBA532"
-#define SOFTWARE_VERSION  "000035"
+#define SOFTWARE_VERSION  "V1.0-20230913"
 
 //按银联提供的实际参数修改
 //银联主密钥

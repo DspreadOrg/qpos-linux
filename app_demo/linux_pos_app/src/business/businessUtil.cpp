@@ -325,7 +325,8 @@ void PrintOrder()
         TransView_vShowLine(3,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,ret == ERR_PRN_BUSY?(char*)"Printer Busy":
                     ret == ERR_PRN_PAPEROUT?(char*)"Printer Paper Out":
                     ret == ERR_PRN_OVERHEAT?(char*)"Printer Overheat":
-                    ret == ERR_PRN_OVERVOLTAGE?(char*)"Printer Overvoltage ":(char*)"Printer Exception");
+                    ret == ERR_PRN_OVERVOLTAGE?(char*)"Printer Overvoltage ":
+					ret == ERR_BATTERY_VOLTAGE_TOO_LOW?(char*)"Printer Voltage Too Low":(char*)"Printer Exception");
         return;
     }
     TransView_vShowLine(3,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Printing");
@@ -402,7 +403,8 @@ void PrintOrder()
         TransView_vShowLine(3,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,ret == ERR_PRN_BUSY?(char*)"Printer Busy":
                     ret == ERR_PRN_PAPEROUT?(char*)"Printer Paper Out":
                     ret == ERR_PRN_OVERHEAT?(char*)"Printer Overheat":
-                    ret == ERR_PRN_OVERVOLTAGE?(char*)"Printer Overvoltage ":(char*)"Printer Exception");
+                    ret == ERR_PRN_OVERVOLTAGE?(char*)"Printer Overvoltage ":
+					ret == ERR_BATTERY_VOLTAGE_TOO_LOW?(char*)"Printer Voltage Too Low":(char*)"Printer Exception");
         goto exit;
     }
     OsPrnFeed(48);

@@ -38,5 +38,5 @@ add_executable( ${PROJECT_NAME} ${SRCS})
 
 
 #链接动态库
-target_link_libraries(${PROJECT_NAME} PUBLIC binder log pos_sdk wpa_cli_wrapper pthread dl iconv crypto ssl sqlite3 pos_devapi pos_emv posmui mxml rt xutilmate)
+target_link_libraries(${PROJECT_NAME} PUBLIC binder log pos_sdk pthread dl iconv crypto ssl sqlite3 pos_devapi pos_emv posmui mxml rt xutilmate)
 

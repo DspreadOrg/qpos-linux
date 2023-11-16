@@ -133,7 +133,7 @@ int App_nInitialization()
 
 int TransEntery_nDoTransInDefaultEntry()
 {
-	PR_INT8 *pListItem[] = {(char*)"Sale",(char*)"Sign in",(char*)"Magnetic",(char*)"IC Card",(char*)"Rfid Card",(char*)"Print",(char*)"Wireless",(char*)"WIFI"};
+	PR_INT8 *pListItem[] = {(char*)"Sale",(char*)"Sign in",(char*)"Magnetic",(char*)"IC Card",(char*)"Rfid Card",(char*)"Print",(char*)"Wireless",(char*)"WIFI",(char*)"About"};
 	PR_INT32 nNumOfItems = sizeof(pListItem)/sizeof(PR_INT8 *);
     PR_INT32 nRet;
     PR_INT32 nGetIndex;
@@ -167,6 +167,9 @@ int TransEntery_nDoTransInDefaultEntry()
                     break;
                 case 7:
                     wifiTest();
+                    break;
+                case 8:
+                    AboutTest();
                     break;
             }
         }else if(nRet == RET_DRPOT_CANCEL || nRet == RET_DPORT_TIMEOUT){
