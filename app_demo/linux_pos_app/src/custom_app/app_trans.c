@@ -279,11 +279,7 @@ void TransactionProcess(unsigned char *pTransCallbackBuffer)
                 //2nd Gen AC,write response code / issue script back to IC card
                 tlv_move_(g_pTransBuffer,pTransCallbackBuffer,POS_TAG_RES_EN_ONLINE_RESULT);
             }
-            else
-            {
-                TransView_vClearAllScreen();                
-                TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Trans Fail!");
-            }
+            
             break;
         case CALLBACK_TRANS_NFC_ONLINE:
              Rc = online_common(g_pTransBuffer); //card transaction test sample code
@@ -292,11 +288,6 @@ void TransactionProcess(unsigned char *pTransCallbackBuffer)
                 //callback online transaction result to card
                 //2nd Gen AC,write response code / issue script back to IC card
                 tlv_move_(g_pTransBuffer,pTransCallbackBuffer,POS_TAG_RES_EN_ONLINE_RESULT);
-            }
-            else
-            {
-                TransView_vClearAllScreen();                
-                TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Trans Fail!!");
             }
             break;
         case CALLBACK_TRANS_NFC_APPROVED:
@@ -617,19 +608,17 @@ int Req_trans(char *pTransactionPool){
     TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Parse...");
     iRet = Parse_trans(szRecvBuf);
     if(iRet < 0 ){
-        TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Communication Failed");
-        if(strlen(g_disp_msg) > 0){
-            TransView_vShowLine(3,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,g_disp_msg);
-        }
+        tlv_replace_(pTransactionPool, POS_TAG_RES_EN_ONLINE_RESULT, 4, "\x8A\x02\x30\x35");
         goto FAIL;
-    }else{
-        TransView_vClearAllScreen();
-        TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Trans Success!!!");
     }
+    //Simulate successful backend return 00
     
+    tlv_replace_(pTransactionPool, POS_TAG_RES_EN_ONLINE_RESULT, 4, "\x8A\x02\x30\x30");
+     
+    return PR_NORMAL;
     FAIL:
         KB_nWaitKeyMS(5*1000);
-        return PR_NORMAL;
+        return PR_FAILD;
 }
 
 
