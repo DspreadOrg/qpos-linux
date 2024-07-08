@@ -1,0 +1,19 @@
+#ifndef _TASK_HANDLE_H
+#define _TASK_HANDLE_H
+#include "appinc.h"
+
+typedef enum
+{
+    EVENT_START = 0,
+    EVENT_PAYMENT,
+    EVENT_WIFI_OPEN,
+    EVENT_WIFI_CLOSE,
+    EVENT_WIFI_SEARCH,
+    EVENT_WIFI_CONNECT,
+    EVENT_WIFI_DISCONNECT,
+
+	EVENT_OTA_CHECK,
+    EVENT_OTA_DOWNLOAD,
+}EVENT_T;
+
+#endif

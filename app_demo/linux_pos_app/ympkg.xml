@@ -1,9 +1,9 @@
 <?xml  version="1.0"  encoding="utf-8"?>
 	<ympkg  version="V0.1">
-	<ympkg_type>YUNMA_POS_MASTER_APP</ympkg_type>
+	<ympkg_type>YUNMA_POS_APP</ympkg_type>
 	<ympkg_param>ONLY_RUN</ympkg_param>
-	<ympkg_name>linux_pos_app/Trio Demo</ympkg_name>
-	<ympkg_version>V1.0-20230913</ympkg_version>
+	<ympkg_name>linux_pos_app/Demo_App</ympkg_name>
+	<ympkg_version>V1.0-230913</ympkg_version>
 	<ympkg_framwork_version>V0.1</ympkg_framwork_version>
 	<ympkg_icon>1.bmp</ympkg_icon>
 	<ympkg_launcher>linux_pos_app</ympkg_launcher>

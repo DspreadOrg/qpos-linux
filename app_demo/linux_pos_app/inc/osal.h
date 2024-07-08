@@ -75,9 +75,9 @@ typedef struct{
 
 //ST_TIMER 定时器结构体
 typedef struct{
-    unsigned long Start;
-    unsigned long Stop;
-    unsigned long TimeLeft;
+    long long Start;
+    long long Stop;
+    long long TimeLeft;
 } ST_TIMER;
 
 //ST_APP_INFO 应用信息结构体
@@ -97,15 +97,20 @@ typedef struct {
     char Version[32];
 } ST_OPT_INFO;
 
-long get_sys_tick();
+long long get_sys_tick();
 
-int OsGetTermSn(char* Sn);
-
-int OsSetTermSn(char* Sn);
 //功能 设置系统当前的日期和时间
 int OsSetTime(const ST_TIME *Time);
 //获取终端系统日期和时间。
 void OsGetTime(ST_TIME *Time);
+//非接模块测试接口
+int OsYmRfidTest();
+//获取安全攻击状态。 0表示正常  非0 攻击状态
+int OsGetAntiTamperState(int* AntiTamperState);
+//获取设备模式  mode 0 user版本  1 debug版本
+int OsGetDevMode(int *mode);
+//获取CID密文
+int OsGetEncCID(char *EncrptyCid);
 //创建一个指定时间的定时器。
 int OsTimerSet(ST_TIMER *Timer, unsigned long Ms);
 //检测指定定时器的剩余值。
@@ -122,6 +127,8 @@ unsigned long OsGetTickCount(void);
 int OsGetAppInfo(ST_APP_INFO AppInfo[],int InfoCnt);
 //获取已安装的可选系统组件的信息。
 int OsGetOptInfo(ST_OPT_INFO OptInfo[],int InfoCnt);
+//通过appid获取应用信息
+int OsGetAppInfoByAppid(char* appid,ST_APP_INFO *pInfo);
 /*
 功能 设置蜂鸣器鸣叫的频率和持续时间。
 参数
@@ -157,12 +164,26 @@ typedef void (*RUNAPP_CB)(char *appid, char *str, void *data);
     ERR_NEED_ADMIN 需要系统主应用权限
 */
 int OsRunApp(char *AppId, char **Argv, void *Data, RUNAPP_CB CbOut,RUNAPP_CB CbErr);
-
+/*
+功能 切换到指定的子应用。
+参数
+    AppId【输入】 需要切换的子应用 ID。
+    Argc：【输入】应用入口参数个数 参数最大12个;
+    Argv:【输入】参数最大12个，长度小于31字节       
+返回
+    RET_OK 切换成功
+    ERR_APP_NOT_EXIST 子应用不存在
+    ERR_ACCESS_DENY 访问设备被拒绝
+    ERR_APP_MODE 模式错误
+    ERR_INVALID_PARAM 非法参数
+    ERR_NEED_ADMIN 需要系统主应用权限
+*/
+int OsRunAppEx(char *AppId, int Argc,char Argv[][32]);
 /*
 功能 安装或更新应用软件、应用数据、OPT 包、用户公钥和外设固件(FWP包)。
 参数
-Name【输入】 指定的安装目的路径名。
-FileName【输入】 待安装的文件路径，不能为 NULL。
+AppId【输入】 应用ID 预留。
+FilePath【输入】 待安装的apk文件路径，不能为 NULL。
 FileType 
     FILE_TYPE_APP 应用软件安装包，即 AIP 包
     FILE_TYPE_APP_PARAM 应用数据文件
@@ -173,29 +194,27 @@ FileType
 返回
     RET_OK 成功
     ERR_PUK_NOT_EXIST 指定的用户公钥不存在
-    ERR_FILE_NOT_FOUND FileName 不存在
-    ERR_FILE_FORMAT FileName 文件格式错误
+    ERR_FILE_NOT_FOUND 文件不存在
+    ERR_FILE_FORMAT  文件格式错误
     ERR_INVALID_PARAM 非法参数
     ERR_VERIFY_SIGN_FAIL 签名错误
     ERR_APP_MODE 模式错误
 */
-int OsInstallFile(const char *Name,const char *FileName,int FileType);
+int OsInstallFile(const char *AppId,const char *FilePath,int FileType);
 
 /*
 功能 卸载指定的应用或 OPT 包。
 参数
-    AppName【输入】当 FileType 为 FILE_TYPE_APP，
-    AppName 为需要删除的应用的 ID；当 FileType 为 FILE_TYPE_SYS_LIB，
-    AppName 为 OPT 包名字。
+    AppId【输入】应用ID。
     FileType 
         FILE_TYPE_APP 应用包(包括应用已经安装的所有文件)
         FILE_TYPE_SYS_LIB OPT 包(包括 OPT包所有文件)
 返回
     RET_OK 成功
-    ERR_APP_NOT_EXIST AppName 指定应用或 OPT 包不存在
+    ERR_APP_NOT_EXIST 应用或 OPT 包不存在
     ERR_FONT_NOT_EXIST 字库不存在
 */
-int OsUninstallFile(const char *AppName, int FileType);
+int OsUninstallFile(const char *AppId, int FileType);
 
 /*
 功能 获取当前的系统固件版本。
@@ -210,15 +229,24 @@ int OsFirmwareGetVersion(char *Version,int Size);
 
 /*
 功能 升级系统固件。
-参数 FwFileName【输入】 固件文件名，ZIP 格式。
+参数 FwPath   固件路径，YMG
+     FwType 【输入】   固件类型
+        FW_TYPE_SE_APP        SE 应用程序
+        FW_TYPE_SE_FW_CFG    SE 固件配置
+        FW_TYPE_SE_FW         SE 固件
 返回
     RET_OK 更新成功
-    RR_FILE_NOT_FOUND FwFileName 文件不存在
+    RR_FILE_NOT_FOUND   文件不存在
     ERR_VERIFY_SIGN_FAIL 签名错误
     ERR_APP_MODE 模式错误
     ERR_SYS_NOT_SUPPORT OS 不兼容
 */
-int OsFirmwareUpgrade(const char *FwFileName);
+
+#define FW_TYPE_SE_APP     1 //SE App se_fota_application.YMG
+#define FW_TYPE_SE_FW_CFG  2 //SE FW  se_fota_dtb_pro.YMG
+#define FW_TYPE_SE_FW      3 //SE FW  se_fota_firmware.YMG
+
+int OsFirmwareUpgrade(const char *FwPath, int FwType);
 
 /*
 功能 获取操作系统以及模块固件版本信息。
@@ -234,11 +262,32 @@ Version【输出】 版本信息缓冲区大小必须不小于 31 字节｡
 */
 void OsGetSysVer(int VerType, char *Version);
 
+int OsGetTermSn(char* Sn);
 
+//设置SN 最大不超过31字节
+int OsSetTermSn(char* Sn);
 
+int OsLed(unsigned int red,unsigned int green,unsigned int yellow,unsigned int blue);
 
+int OsGetSysParam(char *key, char *value);
 
+int OsSetSysParam(char *key, char *value);
+/*
+功能 文件升级函数回调指针。
+参数 Result 升级结果  >=0 升级成功  其他失败
+     Reboot 是否需要重启  1需要  0不需要
+返回 1 sdk处理重启   0 应用处理重启。
+*/
+typedef  int (*pUpgradeCallback)(int Result, char Reboot);
 
+int OsUpgradeFile(char *pZipPath,pUpgradeCallback callback);
+
+int OsDownLoadAndUpgradeFile();
+
+//获取启动模式  pMode 1 工厂模式
+int OsGetSysBootMode(int *pMode);
+//获取硬件版本 hw_version[0] ='4',类型A30  ‘7’类型A50 其它未知
+void OsGetHwVersion(char *hw_version);
 /************************************5加解密*********************************/
 //5加解密
 #define ERR_DATA_TOO_BIG -2400  //RSA 被加密数据大于模
@@ -522,6 +571,23 @@ int OsPedWriteKey (const unsigned char * KeyBlock);
     其他 请参考 PED 函数返回值列表
 */
 int OsPedGetPinBlock (int KeyIdx,const unsigned char *DataIn, const char *ExpPinLen, int Mode, unsigned long TimeoutMs, unsigned char *PinBlock);
+ 
+typedef void (*PIN_STAR_DISPLAY)(int len);//密码键盘显示*号函数指针，len当前密码长度
+/*
+功能 指定的时限内,扫描键盘上输入 ExpPinLenIn 指定长度的 PIN，并输出由 Mode 指定算法加密生成的 PIN block。
+参数
+    KeyIdx TPK 的索引号，取值范围为[1-100] 。
+    DataIn【输入】
+    TimeoutMs 输入 PIN 的超时时间单位：毫秒最大值为 3000000：表示没有超时时间，PED 不做超时控制。
+    PinBlock【输出】8 或 16 字节，指向生成的 PIN block。Mode 为 0x10 时，PinBlock 长度为 16 字节。
+    pin_star_display输入  *号显示函数指针
+返回
+    RET_OK 成功
+    ERR_DEV_NOT_OPEN PED 设备未打开
+    ERR_INVALID_PARAM 非法参数
+    其他 请参考 PED 函数返回值列表
+*/
+int OsPedGetPinBlockEx (int KeyIdx,const unsigned char *DataIn, const char *ExpPinLen, int Mode, unsigned long TimeoutMs, unsigned char *PinBlock,PIN_STAR_DISPLAY pin_star_display);
 
 /*
 功能 用 KeyIdx 指定的 MAC 密钥对 DataIn 进行 Mode 指定的运算。
@@ -605,6 +671,24 @@ int OsPedWriteTIK (const unsigned char *KeyBlock);
     其他 请参考 PED 函数返回值列表
 */
 int OsPedGetPinDukpt (int GroupIdx, const unsigned char *DataIn, const char *ExpPinLen, int Mode, unsigned long TimeoutMs, unsigned char *Ksn, unsigned char *PinBlock);
+/*
+功能 指定的时限内，扫描键盘上输入的 PIN，并输出使用 DUKPT 的PIN 密钥计算生成的 PIN block。
+参数
+    GroupIdx DUKPT 组索引号，取值范围为[1~100]。
+    DataIn【输入】
+    ExpPinLen【输入】
+    Mode 选择 PIN block 的格式：
+    TimeoutMs 输入 PIN 的超时时间，单位：毫秒。最大值为 3000000：表示没有超时时间，PED 不做超时控制。
+    Ksn【输出】 10 字节，指向当前的 KSN。
+    PinBlock【输出】 8 字节，指向生成的 PIN block。
+    pin_star_display输入  *号显示函数指针
+返回
+    RET_OK 成功
+    ERR_DEV_NOT_OPEN 设备未打开
+    ERR_INVALID_PARAM 非法参数
+    其他 请参考 PED 函数返回值列表
+*/
+int OsPedGetPinDukptEx (int GroupIdx, const unsigned char *DataIn, const char *ExpPinLen, int Mode, unsigned long TimeoutMs, unsigned char *Ksn, unsigned char *PinBlock,PIN_STAR_DISPLAY pin_star_display);
 
 /*
 功能 使用 DUKPT 密钥计算 MAC 值。
@@ -790,8 +874,17 @@ AlignType 居左 居中  居右
 返回 无
 */
 void  OsPrnSetPrintParams(int FontSize,int DoubleWidth, int DoubleHeight,int AlignType);
-
-
+/*
+功能 设置打印参数。自定义
+参数
+FontSize 字体大小 12  16 24
+DoubleWidth 倍宽  1~4 
+DoubleHeight 倍高  1~4
+AlignType 居左 居中  居右
+IsPersian 1 波斯语  
+返回 无
+*/
+void OsPrnSetPrintParamsEx(int FontSize,int DoubleWidth, int DoubleHeight,int AlignType,int IsPersian);
 /*
 功能 在打印缓冲区内，执行走纸若干个点行。
 参数 Pixel 
@@ -846,7 +939,22 @@ int OsPrnRawData (const char *data, int len);
 2. 使用本公司提供的“图形转换工具”将该 BMP 图形文件转换成一个诸如 Logo.h 的头文件（可选择多个 BMP 文件，转换后的头文件中将包含与 BMP 相同数量的数组，数组名的定义与 BMP文件名相关）。
 */
 void OsPrnPutImage(const unsigned char *Logo);
+/*
+功能 输出电子签名单色bmp数据到缓存区。
+参数 SignData电子签名单色bmp数据
+     len 数据长度
+返回 无
+用法 缓存只打印最后一次设置的电子签名（只缓存一条，数据小于10K
+*/
+void OsPrnPutElecSignData(unsigned char *SignData,int len);
 
+/*
+功能 取电子签名数据到打印缓冲区。
+参数 无
+返回 无
+用法 缓存只打印最后一次设置的电子签名（只缓存一条，数据小于10K
+*/
+void OsPrnPutElecSignDataByJpg();
 /*
 功能 启动打印机，将缓冲区里的数据打印出来。
 参数 无
@@ -1298,6 +1406,36 @@ int OsPiccIsoCommand(int cid, ST_APDU_REQ*ApduReq,ST_APDU_RSP*ApduRsp);
 */
 int OsPiccOffCarrier(void);
 
+
+
+/************************************17 通讯端口*********************************/
+/*
+功能 将usb切换成串口。
+参数 无
+返回
+    0 成功
+    其它 失败
+*/
+int OsStartUsbSerial();
+
+/*
+功能 获取串口端口号。
+参数 SerialPort【输出】，不能为NULL
+返回
+    0 成功
+    其它 失败
+*/
+int OsQuerySerialPort(char* SerialPort);
+/*
+功能 将串口切换成usb。
+参数 无
+返回
+    0 成功
+    其它 失败
+*/
+int OsStopUsbSerial();
+
+
 /************************************21GPRS/CDMA 无线模块*********************************/
 #define ERR_NET_IF -3307  //网络接口链路不可用(链路没有建立或没有相应的设备)
 
@@ -1432,11 +1570,41 @@ int OsWlLogin(const char *APN, const char *Name, const char *Password, long Auth
 */
 int OsWlLogout(void);
 
+//TODO 新增接口
+//获取sim卡状态
+int OsWlGetSimStatus(int* simStatus);
+//获取运营商
+int OsWlGetSimOperator(char* simOperator);
+//获取IMEI
 int OsWlGetImei(char* Imei);
-
+//获取Imsi
 int OsWlGetImsi(char* Imsi);
-
+//获取Iccid
 int OsWlGetIccid(char* Iccid);
+//获取信号强度
+int OsWlGetSignalStrength(void);
+//获取模块REG
+int OsWlGetModuleREG(int *state, char* lac, char* cid);
+//获取IP
+int OsWlGetNetworkIp(char* ipaddr);
+
+int OsWlGetQNetworkInfo(char* networkType, char *oper);
+// //获取自动连接状态
+// int OsGetAutoConnectStatus(int *status);
+// //设置自动连接状态
+// int OsSetAutoConnectStatus(int onoff);
+//获取无线自动连接状态
+int OsWlGetAutoConnectStatus(int *status);
+//设置自动连接状态
+int OsWlSetAutoConnectStatus(int onoff);
+//设置飞行模式
+int OsSetAirplaneMode(int onoff);
+//获取飞行模式状态
+int OsGetAirplaneMode(int *onoff);
+//设置APN
+int OsSetApnParams(char* apn, char* user,char* password);
+//获取APN
+int OsGetApnParams(char* apn, char* user,char* password);
 /************************************22 WiFi*********************************/
 //函数返回值列表
 #define ERR_MODE_NOT_SUPPORT -3350 //模式设置错误
@@ -1624,6 +1792,12 @@ int OsWifiCheck(char *Essid,char *Bssid,int *Rssi);
 */
 int OsWifiCmd (const char *Argv[],int Argc,char *Result,int Len);
 
+//检测wifi状态
+int OsGetWifiStatus(char *Essid,char *Bssid,char* Ip,int *Rssi);
+
+int OsWifiGetAutoConnectStatus(int *status);
+
+int OsWifiSetAutoConnectStatus(int onoff);
 /************************************29电源管理*********************************/
 //29电源管理
 #define BATTERY_LEVEL_0 0
@@ -1665,6 +1839,13 @@ typedef enum{
     POWER_WPC,    /*无限底座供电*/
 }POWER_TYPE;
 
+typedef enum { 
+    WAKEUP_SRC_NONE = 0, /* 没有进行过休眠唤醒，无唤醒源 */ 
+    WAKEUP_SRC_AP,/* AP唤醒 */ 
+    WAKEUP_SRC_RTC,/* RTC唤醒 */ 
+    WAKEUP_SRC_KB,/* 按键唤醒 */ 
+} WAKEUP_SOURCE; 
+
 //检测电池电量
 int OsCheckBattery(void);
 //检测供电类型
@@ -1673,7 +1854,25 @@ int OsCheckPowerSupply(void);
 int OsReboot(void);
 //关闭终端
 int OsPowerOff(void);
+//新增接口
+//获取电池电量
+int OsGetBatCap(void);
+//获取电池电压
+int OsGetBatVol(void);
+//获取充电状态
+int OsGetBatChgState(void);
 
+int OsSysSleepTime(int Time);
+
+int OsGetSysSleepTime(int *Time);
+
+//1允许休眠  0 不允许休眠
+int OsSetSysSleepStatus(int status);
+
+int OsGetSysSleepStatus(int *status);
+
+//0无效 1Ap唤醒 2RTC唤醒 3按键唤醒
+int OsWakeupSource(void);
 
 /************************************自定义数据库接口*********************************/
 typedef void*		HANDLE; // 通用指针定义
@@ -1681,6 +1880,7 @@ typedef int (*IsMatch)(const void *, int, const void *, int);
 
 typedef enum DBINTERFACE_RET
 {
+    RET_INTERFACE_NOT_REC = -4,
 	RET_INTERFACE_LENGTHERR = -3,
 	RET_INTERFACE_PARAMERR = -2,
 	RET_INTERFACE_FAILD    = -1,
@@ -1722,6 +1922,26 @@ typedef enum _tagSortType
  * @调用示例:
  */
 int DB_bInit(char *szAppID);
+/*
+ * @author:
+ * @Date: 	
+ * @Record: create it;
+ *
+ * @函数名称: DB_bInitBySysService
+ * @函数功能: 数据库初始化
+ * @输入参数:
+ * 			szDbName	传入数据库名称
+ *			szDbName	传入数据库名称
+ *
+ * @输出参数:		无
+ * @返回值:
+ *			成功：0
+ *			失败：其他
+ * @备注:
+ *		使用数据库接口前，必须先进行数据库的初始化
+ * @调用示例:
+ */
+int DB_bInitBySysService(char* szDbPath,char *szDbName);
 
 /*
  * @author:

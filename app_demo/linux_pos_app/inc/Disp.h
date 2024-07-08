@@ -1,6 +1,8 @@
 #ifndef __DISP_H__
 #define __DISP_H__
 
+#include <linux/input.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -13,10 +15,7 @@ extern "C"
 #define INT8	char
 
 #define UINT64	unsigned  long
-
-#define UINT16	unsigned  short
 #define UINT8	unsigned  char
-
 
 #define FAILD   	(-1)
 #define PARAM_ERROR		(-2)
@@ -115,7 +114,7 @@ typedef enum DPORT_STYLE_e
 	DPORT_AUTO_INDEX_CONTINUITY	= (1 << 3),	// 自动添加索引数字，所有项连续索引
 	DPORT_ENABLE_BYPASS 				= (1 << 4),	// 使能BYPASS功能
 	DPORT_LIST_ALWAYS_RETURN_NUMBERKEY = (1 << 5),	//
-	DPORT_ENABLE_LANGEN = (1 << 6),	// messagebox显示英文
+	DPORT_ENABLE_LANGEN = (1 << 6),	// 显示英文
 }DPORT_STYLE_T;
 
 
@@ -198,6 +197,10 @@ typedef enum DPORT_STYLE
 	DPORT_CENTER
 }DPORT_TEXTSTYLE_T;
 
+typedef struct tagListShowInfo{
+	char pszText[32+1];
+	Uint8 uFlag;
+}ListShowInfo;
 
 /*
  * @author:
@@ -310,6 +313,8 @@ void Disp_vShowStrAt(Uint8 nAtLine, Uint8 nAtColumn, Int8* fmt, ...);
  */
 void Disp_vShowStrAtEx(Uint8 nAtLine, Uint8 nPattern, Int8* fmt, ...);
 
+void Disp_vShowPersianStr(Uint8 nAtLine, Uint8 nPattern, Int8* fmt, ...);
+
 /*
  * @author:
  * @Date: 	10-10-2022
@@ -408,50 +413,6 @@ void Disp_vDrawLineAt(POINT_T tBegin, POINT_T tEnd, DPORT_LINETYPE_T nType, DPOR
  *
  */
 void Disp_vClearPort(void);
-
-/*
- * @author:
- * @Date: 	10-10-2022
- * @Record: create it;
- *
- * @函数名称: Disp_vLightOn
- * @函数功能: 打开背光
- * @输入参数:	 无
- *
- * @输出参数: 无
- *
- * @返回值:
- * 			无
- *
- * @备注:
- *
- * @调用示例:
- *
- */
-void Disp_vLightOn(void);
-
-
-/*
- * @author:
- * @Date: 	10-10-2022
- * @Record: create it;
- *
- * @函数名称: Disp_vLightOff
- * @函数功能: 关闭背光
- * @输入参数:	 无
- *
- * @输出参数: 无
- *
- * @返回值:
- * 			无
- *
- * @备注:
- *
- * @调用示例:
- *
- */
-void Disp_vLightOff(void);
-
 
 /*
  * @author:
@@ -1157,8 +1118,51 @@ void Disp_vDrawTextA(int x, int y, int w, int h, const char * pStr, int len, DPO
 
 int Disp_ReleasKey();
 
-int Disp_GetKey(int ms);
+int Disp_GetKey(int timeoutMs);
 
+int Disp_GetTouchPadAxis(int *piX, int *piY, int timeoutMs);
+/**
+ *  struct input_event {
+ *		struct timeval time;
+ *		__u16 type;
+ *		__u16 code;
+ *		__s32 value;
+ *	};
+*/
+/**
+ * @brief 获取触屏事件，返回标准linux input结构体
+ *
+ * @param event input_event结构体，
+ * @param iTimeOut 超时事件
+ * @return INT 返回结果
+ */
+int Disp_GetTouchPadLinux(struct input_event *event, int timeoutMs);
+/**
+ * @brief 获取按键事件，返回标准linux input结构体
+ *
+ * @param event input_event结构体，
+ * @param iTimeOut 超时事件
+ * @return INT 返回结果
+ */
+int Disp_GetKeyLinux(struct input_event *event, int timeoutMs);
+
+int Disp_nShowListWithSlideButtonEx(int iX, int iY, unsigned int uWidth, unsigned int uHeight, char* pszTitle, ListShowInfo *pListShowInfo,
+ 										int nItemCount, int nItemsPerPage,int nTimeoutSec);
+int Disp_nShowProgressBar(int iX, int iY, unsigned int uWidth, unsigned int uHeight, int *pLevl,int nTimeoutSec);
+
+void Disp_vSetStatusBarStatus(int nState);
+
+void Disp_vDrawRectWithColor(int iX,int iY,unsigned int uWidth,unsigned int uHeight,unsigned int wColor);
+
+typedef  void (*pUICallback)(int runstate, void *par);
+
+void Disp_vRegisterPauseCallBack(pUICallback callback);
+
+void Disp_vRegisterResumeCallBack(pUICallback callback);
+//pBuf 单色bmp 缓存10K
+int Disp_nElecSign(unsigned char* pBuf,int* pOutLen,char*pCode,int timeout,int x,int y,int width,int height,int isShowBtn);
+
+int Disp_nElecSignEx(unsigned char* pBuf,int* pOutLen,char*pCode,float compress,int timeout,int x,int y,int width,int height,int isShowBtn);
 #ifdef __cplusplus
 }
 #endif
