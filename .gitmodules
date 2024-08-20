@@ -1,3 +1,3 @@
-[submodule "trio-linux-tools"]
-	path = trio-linux-tools
-	url = https://gitlab.com/dspread/trio-linux-tools.git
+[submodule "qpos-linux-tools"]
+	path = qpos-linux-tools
+	url = https://gitlab.com/dspread/qpos-linux-tools.git
