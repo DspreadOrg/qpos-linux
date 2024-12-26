@@ -1,50 +1,49 @@
 cmake_minimum_required(VERSION 3.10)
-#导入cmake配置文件
+#Import cmake configuration file
 include(arm-linux-setup.cmake)
-#工程创建
+#create project
 project(linux_pos_app)
 
-#配置输出目录
+#Configure output directory
 set(OUTPUT_DIR ${CMAKE_SOURCE_DIR}/release)
 
-# 递归搜索匹配源码目录和其子目录下的.cpp文件
+# Recursive search to match. cpp files in the source code directory and its subdirectories
 FILE(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c)
 
-set(EXP_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/src/third_party/mbedtls_3.0.0/library)
-file(GLOB_RECURSE   EXP_SRCS  ${EXP_DIR}/*.c)
-list(REMOVE_ITEM   SRCS    ${EXP_SRCS})
-#list(APPEND SRC ${EXP_DIR}/md5.c)
+message(EXP_SRCS = ${SRCS})
 
-message(EXP_SRCS = ${SRCS}) 
-
-
-
-# 头文件目录
+# .h
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc/dspread
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/pos_api
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/pos_api/battery
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/pos_api/encryption
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/pos_api/iso8583
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/pos_api/network
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/pos_api/pedtest
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/image
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app/http
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app/ota
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app/util
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app/setting
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app/trans
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common_api
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common_api/battery
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common_api/iso8583
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common_api/network
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common_api/pedtest
     ${CMAKE_CURRENT_SOURCE_DIR}/src/project
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/lvgl
 )
 
-# 链接库目录
+
+# lib
 link_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/lib
     ${CMAKE_CURRENT_SOURCE_DIR}/lib_pub
 )
-#将生成的lib 可执行文件放在各自目录
+#Place the generated lib executable files in their respective directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_DIR}/lib)
 
-#添加可执行目标
+#Add executable targets
 add_executable( ${PROJECT_NAME} ${SRCS})
 
-#链接动态库
-target_link_libraries(${PROJECT_NAME} PUBLIC binder log pos_sdk pthread dl iconv crypto ssl sqlite3 pos_devapi pos_emv posmui mxml rt xutilmate freetype APHLang kernel  emv entrypoint amex bancomat dpas jcb paypass paywave pure quics  mir rupay interac  kernelins)
+#Link dynamic library
+target_link_libraries(${PROJECT_NAME} PUBLIC binder log pos_sdk pthread dl iconv crypto ssl sqlite3 pos_devapi pos_emv posmui mxml rt xutilmate freetype APHLang kernel emvl2 entrypoint amex bancomat dpas jcb paypass paywave pure quics rupay mir interac kernelins)

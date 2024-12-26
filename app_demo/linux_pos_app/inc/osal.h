@@ -109,8 +109,14 @@ int OsYmRfidTest();
 int OsGetAntiTamperState(int* AntiTamperState);
 //获取设备模式  mode 0 user版本  1 debug版本
 int OsGetDevMode(int *mode);
-//获取CID密文
+//获取客户应用CID密文
 int OsGetEncCID(char *EncrptyCid);
+//获取OS固件的CID密文
+int OsGetSysFwEncCID(char *EncrptyCid);
+//获取PCBA板号
+int OsGetYMPcbaNo(char *pcbaNo);
+//设置PCBA板号
+int OsSetYMPcbaNo(char *pcbaNo);
 //创建一个指定时间的定时器。
 int OsTimerSet(ST_TIMER *Timer, unsigned long Ms);
 //检测指定定时器的剩余值。
@@ -145,6 +151,21 @@ void OsBeep(int ToneType, int DurationMs);
     DutyCycle=50 时，音量最大。
 */
 void OsSetKeyTone(int OnOff,int DutyCycle);
+
+/*
+功能 设置低电量LED闪烁频率。
+参数
+    Freq【输入】 1~20HZ。
+返回 0成功 其他失败
+*/
+int OsSetLPLEDFreq(int Freq);
+/*
+功能 获取低电量LED闪烁频率。
+参数
+    Freq【输出】 1~20HZ。
+返回 0成功 其他失败
+*/
+int OsGetLPLEDFreq(int *Freq);
 
 typedef void (*RUNAPP_CB)(char *appid, char *str, void *data);
 /*
@@ -262,6 +283,11 @@ Version【输出】 版本信息缓冲区大小必须不小于 31 字节｡
 */
 void OsGetSysVer(int VerType, char *Version);
 
+void OsGetSysVersion(int VerType, char *Version);
+
+//获取无线模块版本号 缓存32字节
+int OsGetWirelessModuleVer(char *ver);
+
 int OsGetTermSn(char* Sn);
 
 //设置SN 最大不超过31字节
@@ -288,6 +314,25 @@ int OsDownLoadAndUpgradeFile();
 int OsGetSysBootMode(int *pMode);
 //获取硬件版本 hw_version[0] ='4',类型A30  ‘7’类型A50 其它未知
 void OsGetHwVersion(char *hw_version);
+int OsGetFactoryTestStep();
+int OsSetFactoryTestStep(int flag);
+
+//获取当前系统生效的DNS 
+int OsGetCurDNSAddr(char* dnsaddr,int dnsaddrLen);
+// 设置无线或WIFI的DNS， type类型 0 wifi，1 无线
+int OsGetDNSAddr(int type,char* dnsaddr,int dnsaddrLen);
+//获取设置无线或WIFI的DNS, type类型 0 wifi，1 无线
+int OsSetDNSAddr(int type,char* dnsaddr);
+//设置首选网络类型，type取值 0:Auto GSM/LTE，1:GSM only，3:LTE only
+int OsSetPreferredNetworkType(int type);
+//获取首选网络类型  type取值 0:Auto GSM/LTE，1:GSM only，3:LTE only
+int OsGetPreferredNetworkType(int *type);
+
+//设置深度休眠后多久无操作关机（单位0.5h） Time取值 （0<Time<=48）
+int OsSetSleepShutdownTime(int Time);
+//获取深度休眠后多久无操作关机（单位0.5h）
+int OsGetSleepShutdownTime(int *Time);
+
 /************************************5加解密*********************************/
 //5加解密
 #define ERR_DATA_TOO_BIG -2400  //RSA 被加密数据大于模
@@ -357,6 +402,8 @@ ERR_DATA_TOO_BIG ExpLen 大于 ModulusLen
 */
 int OsRSA(const unsigned char *Modulus, int ModulusLen,const unsigned char *Exp, int ExpLen, const unsigned char *DataIn, unsigned char *DataOut,int Mode);
 
+//RSA RSA_NO_PADDING 公钥解密，输入数据长度和NLen相等
+int OsEmvRSAPublicDecrypt(unsigned char *N, int NLen,unsigned char *E, int ELen, unsigned char *DataIn,unsigned char *DataOut);
 /*
 生成指定指数和模长的 RSA 公私密钥对。
 参数 Modulus 【输出】 密钥的模(按高位在前，低位在后的顺序存储)
@@ -1406,8 +1453,6 @@ int OsPiccIsoCommand(int cid, ST_APDU_REQ*ApduReq,ST_APDU_RSP*ApduRsp);
 */
 int OsPiccOffCarrier(void);
 
-
-
 /************************************17 通讯端口*********************************/
 /*
 功能 将usb切换成串口。
@@ -1435,6 +1480,9 @@ int OsQuerySerialPort(char* SerialPort);
 */
 int OsStopUsbSerial();
 
+int OsStartCommModuleUsbSerial();
+int OsStopCommModuleUsbSerial();
+int OsStartUsbSerialWithUsbcharge();
 
 /************************************21GPRS/CDMA 无线模块*********************************/
 #define ERR_NET_IF -3307  //网络接口链路不可用(链路没有建立或没有相应的设备)
@@ -1605,6 +1653,18 @@ int OsGetAirplaneMode(int *onoff);
 int OsSetApnParams(char* apn, char* user,char* password);
 //获取APN
 int OsGetApnParams(char* apn, char* user,char* password);
+//获取当前网络类型  type 0：NOSERVICE无网络, 1:GSM 2G, 2:LTE 4G
+int OsWLGetNetworkType(int* type);
+//打开发送AT
+int OsCustATCmdOpen();
+//发送AT
+int OsSendCustATCmd(char* atCmd, char* resp);
+//关闭发送AT
+void OsCustATCmdClose();
+//模块下电
+int OsWLModulePowerDown(void);
+//模块上电
+int OsWLModulePowerOn(void);
 /************************************22 WiFi*********************************/
 //函数返回值列表
 #define ERR_MODE_NOT_SUPPORT -3350 //模式设置错误
@@ -1794,10 +1854,18 @@ int OsWifiCmd (const char *Argv[],int Argc,char *Result,int Len);
 
 //检测wifi状态
 int OsGetWifiStatus(char *Essid,char *Bssid,char* Ip,int *Rssi);
+//检测wifi信号轻度  0未连接  1~4格
+int OsGetWifiSignalStrength();
 
 int OsWifiGetAutoConnectStatus(int *status);
 
 int OsWifiSetAutoConnectStatus(int onoff);
+
+int OsWifiReconnect();
+
+int OsWifiModuleWakeUp();
+
+int OsWifiModuleSleep();
 /************************************29电源管理*********************************/
 //29电源管理
 #define BATTERY_LEVEL_0 0
@@ -1862,10 +1930,15 @@ int OsGetBatVol(void);
 //获取充电状态
 int OsGetBatChgState(void);
 
+//设置一级休眠时间
 int OsSysSleepTime(int Time);
 
 int OsGetSysSleepTime(int *Time);
 
+//设置二级休眠时间
+int OsSetSysDeepSleepTime(int Time);
+
+int OsGetSysDeepSleepTime(int *Time);
 //1允许休眠  0 不允许休眠
 int OsSetSysSleepStatus(int status);
 
@@ -1922,6 +1995,18 @@ typedef enum _tagSortType
  * @调用示例:
  */
 int DB_bInit(char *szAppID);
+/*
+ * @author:
+ * @Date: 	
+ * @Record: create it;
+ *
+ * @函数名称: DB_vUnInit
+ * @函数功能: 数据库注销
+ * @备注:
+ *		退出应用时调用
+ * @调用示例:
+ */
+void DB_vUnInit(void);
 /*
  * @author:
  * @Date: 	

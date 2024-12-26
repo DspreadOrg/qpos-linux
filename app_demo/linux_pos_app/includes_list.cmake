@@ -1,8 +1,0 @@
-set(kernelins_BUSINESS_INCLUDES ${KERNELINS_INC_DIR}/business)
-set(kernelins_PROJECT_INCLUDES ${KERNELINS_INC_DIR}/inc)
-set(kernelins_THIRD_PARTY_JSON_INCLUDES ${KERNELINS_INC_DIR}/third_party/cJSON_1.7.15)
-set(kernelins_THIRD_PARTY_TMS_INCLUDES ${KERNELINS_INC_DIR}/third_party/internal_libarys/tms_dspread)
-set(kernelins_SRC_INCLUDES ./inc)
-set(kernelins_SRC_OPENSSL_INCLUDES ./inc/openssl)
-set(kernelins_EMV_KERNEL_INCLUDES ./src/emv_kernel_include)
-set(kernelins_EMV_KERNELINS_INCLUDES ./src/emv_kernel_ins)
