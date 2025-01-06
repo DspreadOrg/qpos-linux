@@ -44,25 +44,6 @@ void lvgl_disp_resume(int runstate, void *par)
     disp_enable_update();
 }
 
-void file_test()
-{
-        int ret = 0;
-    int fd = 0;
-    unsigned char m = 0;
-
-       m = O_CREAT|O_RDWR;
-
-    ret = open((char*)"/tmp/firmware.apk", m, S_IREAD|S_IWRITE);
-    OsLog(LOG_DEBUG,"-------%s,%d-----open file ret = %s\r\n", __FUNCTION__, __LINE__,strerror(errno));
-    if (ret < 0)
-    {
-        return;
-    }
-
-    fd = ret;
-    lseek(fd, 0, SEEK_SET);
-}
-#define CHAR2LONG(c0, c1, c2, c3)		(unsigned long)((c0)<<24|(c1)<<16|(c2)<<8|(c3))
 int main(int argc, char *argv[])
 {
     PR_INT32 ret;
