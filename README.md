@@ -9,7 +9,7 @@
 
 ## How to compile, package, and install applications.
 
-Please refer to [DevelopEnvironmentGuide] (https://github.com/DspreadOrg/qpos-linux-tools/blob/e71932079c738a85cd89bbcffd716318075275ef/EnvironmentBuilding/DevelopEnvironmentGuide.md) file.
+Please refer to [DevelopEnvironmentGuide](https://github.com/DspreadOrg/qpos-linux-tools/blob/e71932079c738a85cd89bbcffd716318075275ef/EnvironmentBuilding/DevelopEnvironmentGuide.md) file.
 
 
 
