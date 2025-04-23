@@ -338,14 +338,6 @@ PR_INT32 nBcd2Asc(PR_INT8* bcd, PR_INT32 asclen, PR_INT8* asc, PR_INT32 align);
 PR_INT32 nAsc2Bcd(PR_INT8* ascstr, PR_INT32 asclen, PR_UINT8* bcdstr, PR_INT32 align);
 
 PR_INT8 *debug_hex2string (void *hex, PR_INT32 hexlen);
-
-void Business_getAppPath(PR_INT8* pPath,PR_INT32 nBufLen);
-
-KB_KEYMAP_T KB_nWaitKeyMS(Int32 MS);
-
-PR_INT32 Is_Valid_Network();
-
-void app_trace_value(unsigned char* pbuf, unsigned int cnt);
 #ifdef __cplusplus
 }
 #endif

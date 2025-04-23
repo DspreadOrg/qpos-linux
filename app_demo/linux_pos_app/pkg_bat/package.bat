@@ -23,6 +23,5 @@ for /F "tokens=1-2 delims=: " %%a in ('time /T') do (
     set "minute=%%b"  
 )  
 set "timestamp=%year%%month%%day%%hour%%minute%"
-copy .\pkgtest.zip  .\%folder_name%.asc 
 move .\pkgtest.zip  .\%folder_name%.apk 
 rmdir /S /Q "pkg" 

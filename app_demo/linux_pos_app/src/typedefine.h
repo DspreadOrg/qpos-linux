@@ -1,6 +1,6 @@
 #pragma once
 
-//app data type define
+// app data type define
 #define PR_BOOL		long
 #define PR_INT64    long long
 #define PR_INT32	int
@@ -51,4 +51,3 @@
 #define PR_BYPASS  -4
 #define PR_NOT_REC -5  //Not Rec
 #define PR_ICC_ERR -6
-

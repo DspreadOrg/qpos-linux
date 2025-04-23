@@ -1,17 +1,12 @@
 /*
-********************************************************************************
-*
-*   File Name:
-*       lib_fun.h
-*   Author:
-*       jiaxin
-*   Version:
-*       V1.0
-*   Description:
-*
-*
-********************************************************************************
-*/
+ * File Name:
+ * lib_fun.h
+ * Author:
+ * jiaxin
+ * Version:
+ * V1.0
+ * Description:
+ */
 
 #ifndef _LIB_FUN_H
 #define _LIB_FUN_H
@@ -21,9 +16,11 @@ extern "C"
 {
 #endif//__cplusplus
 
-/*-----------------------------------------------------------------------------
-|   Includes
-+----------------------------------------------------------------------------*/
+/*
+ * -----------------------------------------------------------------------------
+ * |   Includes
+ * +----------------------------------------------------------------------------
+ */
 #include "app_emv.h"
 #include "appinc.h"
 
@@ -34,9 +31,11 @@ extern "C"
 #if 0
 #define CFG_CARD_SIMULATION
 #endif
-/*-----------------------------------------------------------------------------
-|   Typedefs
-+----------------------------------------------------------------------------*/
+/*
+ * -----------------------------------------------------------------------------
+ * |   Typedefs
+ * +----------------------------------------------------------------------------
+ */
 
 typedef struct _applications
 {
@@ -47,7 +46,9 @@ typedef struct _applications
 }s_AppInfo_t, *ps_AppInfo_t;
 
 
-/**********EMVApplication Strcut************/
+/*
+ * EMVApplication Strcut
+ */
 typedef struct emv_application{
     unsigned int appnum;
     ps_AppInfo_t pAppinfo;
@@ -57,7 +58,7 @@ typedef enum
 {
 	EMV_PIN_TYPE_START = 0,
 
-	EMV_PIN_TYPE_ONLINE = EMV_PIN_TYPE_START,
+	EMV_PIN_TYPE_ONLINE,
 	EMV_PIN_TYPE_OFFLINE,
 	EMV_PIN_TYPE_LAST_OFFLINE,
 	EMV_PIN_TYPE_MANAGE,
@@ -78,17 +79,22 @@ typedef enum{
     PIN_BYPASS,
 }e_InPutPin_t;
 
-/**********EMV_Transaction Callback************/
+/*
+ * EMV_Transaction Callback
+ */
 typedef struct EMV_CallbackFunc
 {
-    /* data */
+/*
+ * data
+ */
     void (*dispmsg_cb)(pmessage_body_t pmsg); 
     void (*emv_selectapp_cb)(unsigned char* appList);
     unsigned int (*getcardinfo_cb)(pu8 pTlvInBuf, pu8 pTlvOutBuf);
     void (*maskPinDisp_cb)(unsigned char *maskPin);
-    //u32 (emv_onlineprocess_cb)(ps_EMV_onlineReqProcess_t online_req, ps_EMV_OnlineResult_t online_rsp);
+// u32 (emv_onlineprocess_cb)(ps_EMV_onlineReqProcess_t online_req, ps_EMV_OnlineResult_t online_rsp);
     void (*onlineprocess_cb)(pu8 pTlvOnlineReqData);
     void (*traderesult_cb)(App_Rc_Code_t reCode);
+    int  (*pinEnter_cb)(Emv_Pin_Type_t pinType,unsigned char *pan,unsigned char *ksn,unsigned char *pinBlock);
 }s_Trans_CallbackFunc_t, *ps_Trans_CallbackFunc_t;
 
 
