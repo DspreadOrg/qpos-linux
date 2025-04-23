@@ -98,6 +98,35 @@
         "app_iso8583.h": "c",
         "businessutil.h": "c",
         "function.h": "c",
-        "business.h": "c"
+        "business.h": "c",
+        "chttp.h": "c",
+        "dymem.h": "c",
+        "tms_dspread.h": "c",
+        "tms_dspread_cfg.h": "c",
+        "ped_test.h": "c",
+        "lvgl_porting.h": "c",
+        "app_http.h": "c",
+        "tlv_pro.h": "c",
+        "app_includes.h": "c",
+        "app_global.h": "c",
+        "ui_setting.h": "c",
+        "ui_styles.h": "c",
+        "app_setting.h": "c",
+        "lib_fun.h": "c",
+        "errno.h": "c",
+        "app_battery_icon.h": "c",
+        "ui_pinentry.h": "c",
+        "app_emv.h": "c",
+        "error_code_list.h": "c",
+        "tms_cfg.h": "c",
+        "app_trans.h": "c",
+        "ui_emvselectmultiapp.h": "c",
+        "hosturl.h": "c"
+    },
+    "workbench.editor.wrapTabs": true,
+
+    "workbench.colorCustomizations": {
+        "editor.selectionBackground": "#aaac4d",
+        "editor.selectionHighlightBackground": "#a4a5a4"
     }
 }

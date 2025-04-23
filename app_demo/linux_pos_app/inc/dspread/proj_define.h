@@ -1,17 +1,12 @@
 /*
-********************************************************************************
-*
-*   File Name:
-*       appcode.h
-*   Author:
-*       SW R&D Department
-*   Version:
-*       V1.0
-*   Description:
-*
-*
-********************************************************************************
-*/
+ * File Name:
+ * appcode.h
+ * Author:
+ * SW R&D Department
+ * Version:
+ * V1.0
+ * Description:
+ */
 
 #ifndef _APPCODE_H
 #define _APPCODE_H
@@ -21,27 +16,25 @@ extern "C"
 {
 #endif//__cplusplus
 
-/*-----------------------------------------------------------------------------
-|   Includes
-+----------------------------------------------------------------------------*/
-#include "proj_cfg.h"
+/*
+ * -----------------------------------------------------------------------------
+ * |   Includes
+ * +----------------------------------------------------------------------------
+ */
 #include "lib_common.h"
 
-/*-----------------------------------------------------------------------------
-|   Macros
-+----------------------------------------------------------------------------*/
-
-#ifdef CFG_DBG
-	#define DspDebug(fmt, args...) {OsLog(LOG_DEBUG,"Dspread:%s:%d "fmt"\r\n", __FUNCTION__, __LINE__, ##args); }
-
-	#define TRACE         OsLog	//(...)
-	#define TRACE_VALUE(lvl, pbuf, cnt)		((void)0)
-	#define TRACE_ASCII(lvl, pbuf, cnt)		((void)0)
-#else
-
-#endif  /* #ifdef DBG_TRACE */
+/*
+ * -----------------------------------------------------------------------------
+ * |   Macros
+ * +----------------------------------------------------------------------------
+ */
+#define APP_VERSION "V1.0.0"
 
 #if 1
+#define CFG_DBG 
+#endif
+
+#ifdef CFG_DBG
 
 static inline void getInfo( const char* module, int line, const char* func ){
     OsLog(LOG_DEBUG, "\rDspread: %s | %s | %d | ", module, func,line);
@@ -55,20 +48,26 @@ static inline void getInfo( const char* module, int line, const char* func ){
 	#define DSP_Info(fmt, ...)  ((void)0)
 #endif
 
-/*-----------------------------------------------------------------------------
-|   RKD feature start -- by Feng Jian, 2022-01-24
-+----------------------------------------------------------------------------*/
+/*
+ * -----------------------------------------------------------------------------
+ * |   RKD feature start -- by Feng Jian, 2022-01-24
+ * +----------------------------------------------------------------------------
+ */
 
 
 
 
-/*-----------------------------------------------------------------------------
-|   RKD feature end -- by Feng Jian, 2022-01-24
-+----------------------------------------------------------------------------*/
+/*
+ * -----------------------------------------------------------------------------
+ * |   RKD feature end -- by Feng Jian, 2022-01-24
+ * +----------------------------------------------------------------------------
+ */
 
-/*-----------------------------------------------------------------------------
-|   Enumerations
-+----------------------------------------------------------------------------*/
+/*
+ * -----------------------------------------------------------------------------
+ * |   Enumerations
+ * +----------------------------------------------------------------------------
+ */
 typedef enum
 {
 	APP_EVENT_USER_CANCEL = BIT(12),
@@ -88,7 +87,9 @@ typedef enum _pos_tag_t
     POS_TAG_RES_KN_ONLINE_DATA,
     POS_TAG_RES_KN_APP_DATA,
 
-    /*custom tag*/
+/*
+ * custom tag
+ */
     POS_TAG_PSAM_ID = 0x9F8101,
     POS_TAG_PSAM_NO,
     POS_TAG_POS_ID,
@@ -228,7 +229,9 @@ typedef enum _pos_tag_t
     KERNEL_TAG_AID_LIST_DISPLAYNAME               = 0x9F8114,
     KERNEL_TAG_AID_SELECT_TRYAGAIN                = 0x9F8115,
 
-	/*standard tag*/
+/*
+ * standard tag
+ */
 	TAG_EMV_ISSUER_IDENTIFICATION_NB              =  0x42,			/*!< EMV - Issuer Identification Number (IIN).<br>The number that identifies the major industry and the card issuer and that forms the first part of the Primary Account Number (PAN).<br>	- Format : n 6.<br>	- Length : 3 bytes.<br>	- Source : Card. */
 	TAG_EMV_AID_CARD                              =  0x4F,			/*!< EMV - Application Identifier (AID) - card.<br>Identifies the application as described in <i>ISO/IEC 7816-5</i>.<br>	- Format : b.<br>	- Length : 5-16 bytes.<br>	- Source : Card. */
 	TAG_EMV_APPLICATION_LABEL                     =  0x50,			/*!< EMV - Application label.<br>Mnemonic associated with the AID according to <i>ISO/IEC 7816-5</i>.<br>	- Format : ans with the special character limited to space.<br>	- Length : 1-16 bytes.<br>	- Source : Card. */
@@ -363,9 +366,11 @@ typedef enum _pos_tag_t
 	POS_TAG_END,
 }Pos_Tag_t;
 
-/*-----------------------------------------------------------------------------
-|   Typedefs
-+----------------------------------------------------------------------------*/
+/*
+ * -----------------------------------------------------------------------------
+ * |   Typedefs
+ * +----------------------------------------------------------------------------
+ */
 typedef enum
 {
     EMV_PROCESS_MAG_OK=0x00,
@@ -403,7 +408,9 @@ typedef enum
 	APP_MSG_ID_NUMS,
 }App_Msg_Id_t;
 
-/* Big-Endian Pointer to Long */
+/*
+ * Big-Endian Pointer to Long
+ */
 #define BE_PtrToLongLong(ptr)           \
 	( \
 		(((unsigned long long)(*((u8 *)(ptr) + 0))) << 56) | \
@@ -416,7 +423,9 @@ typedef enum
 		(((unsigned long long)(*((u8 *)(ptr) + 7))) << 0) \
 	)
 
-/* Big-Endian Pointer to Long */
+/*
+ * Big-Endian Pointer to Long
+ */
 #define BE_PtrToLong(ptr)           \
 	( \
 		(((u32)(*((u8 *)(ptr) + 0))) << 24) | \
@@ -425,14 +434,18 @@ typedef enum
 		(((u32)(*((u8 *)(ptr) + 3))) << 0) \
 	)
 
-/* Big-Endian Pointer to Short */
+/*
+ * Big-Endian Pointer to Short
+ */
 #define BE_PtrToShort(ptr)          \
 	( \
 		(((u16)(*((u8 *)(ptr) + 0))) << 8) | \
 		(((u16)(*((u8 *)(ptr) + 1))) << 0) \
 	)
 
-/* Little-Endian Pointer to Long */
+/*
+ * Little-Endian Pointer to Long
+ */
 #define LE_PtrToLong(ptr)           \
 	( \
 		(((u32)(*((u8 *)(ptr) + 0))) << 0) | \
@@ -441,14 +454,18 @@ typedef enum
 		(((u32)(*((u8 *)(ptr) + 3))) << 24) \
 	)
 
-/* Little-Endian Pointer to Short */
+/*
+ * Little-Endian Pointer to Short
+ */
 #define LE_PtrToShort(ptr)          \
 	( \
 		(((u16)(*((u8 *)(ptr) + 0))) << 0) | \
 		(((u16)(*((u8 *)(ptr) + 1))) << 8) \
 	)
 
-/* Long Split */
+/*
+ * Long Split
+ */
 #define LONG_HH(val)        ((((u32)(val)) >> 24) & 0xff)
 #define LONG_HL(val)        ((((u32)(val)) >> 16) & 0xff)
 #define LONG_LH(val)        ((((u32)(val)) >> 8) & 0xff)
@@ -456,7 +473,9 @@ typedef enum
 #define LONG_H(val)         ((((u32)(val)) >> 16) & 0xffff)
 #define LONG_L(val)         (((u32)(val)) & 0xffff)
 
-/* Short Split */
+/*
+ * Short Split
+ */
 #define SHORT_H(val)        ((((u16)(val)) >> 8) & 0xff)
 #define SHORT_L(val)        (((u16)(val)) & 0xff)
 
@@ -465,7 +484,9 @@ typedef enum
 #define BIT_SET(var, idx)   ((var) |= BIT(idx))
 #define BIT_CLR(var, idx)   ((var) &= ~(BIT(idx)))
 
-/* Seconds to Milliseconds */
+/*
+ * Seconds to Milliseconds
+ */
 #define SEC_TO_MS(secs)     ((u32)(secs) * 1000ul)
 #define SEC_TO_US(secs)     ((u32)(secs) * 1000ul * 1000ul)
 #define MIN_TO_SEC(minutes) ((u32)(minutes) * 60ul)
@@ -479,15 +500,19 @@ typedef enum
 #define U32_MAX     ((u32)(0xffffffff))
 
 
-/*-----------------------------------------------------------------------------
-|   Enumerations
-+----------------------------------------------------------------------------*/
+/*
+ * -----------------------------------------------------------------------------
+ * |   Enumerations
+ * +----------------------------------------------------------------------------
+ */
 
 
 
-/*-----------------------------------------------------------------------------
-|   Typedefs
-+----------------------------------------------------------------------------*/
+/*
+ * -----------------------------------------------------------------------------
+ * |   Typedefs
+ * +----------------------------------------------------------------------------
+ */
 typedef uint    msgid_t;
 
 typedef struct _message_body_t
@@ -539,31 +564,37 @@ typedef enum _card_type_t
 typedef struct{u8 *head; u32 len;} T_U8_VIEW;
 #define UV_OK(uv)	((uv).head && (uv).len)
 
-/*-----------------------------------------------------------------------------
-|   Variables
-+----------------------------------------------------------------------------*/
-
-
-/*-----------------------------------------------------------------------------
-|   Constants
-+----------------------------------------------------------------------------*/
-
-/*-----------------------------------------------------------------------------
-|   prototypes
-+----------------------------------------------------------------------------*/
 /*
-*******************************************************************************
-*   End of File
-*******************************************************************************
-*/
+ * -----------------------------------------------------------------------------
+ * |   Variables
+ * +----------------------------------------------------------------------------
+ */
+
+
+/*
+ * -----------------------------------------------------------------------------
+ * |   Constants
+ * +----------------------------------------------------------------------------
+ */
+
+/*
+ * -----------------------------------------------------------------------------
+ * |   prototypes
+ * +----------------------------------------------------------------------------
+ */
+/*
+ * End of File
+ */
 
 #ifdef __cplusplus
 }
 #endif//__cplusplus
 
-/*-----------------------------------------------------------------------------
-|   Includes
-+----------------------------------------------------------------------------*/
+/*
+ * -----------------------------------------------------------------------------
+ * |   Includes
+ * +----------------------------------------------------------------------------
+ */
 
 #endif  /* #ifndef _APPCODE_H */
 
