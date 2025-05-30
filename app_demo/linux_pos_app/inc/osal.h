@@ -1500,6 +1500,18 @@ int OsStartUsbSerial();
  * Others Failed
  */
 int OsQuerySerialPort(char* SerialPort);
+
+/*
+Function: Check if the port exists.  
+Parameters:  
+    SerialPort - Port name  
+    TimeOut_ms - Timeout in milliseconds  
+Returns:  
+    0 Success  
+    Others Failure  
+*/
+int OsCheckSerialPortExist(char* SerialPort, int TimeOut_ms);
+
 /*
  * Function Switch the serial port to usb.
  * Parameters None
