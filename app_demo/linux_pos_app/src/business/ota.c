@@ -203,9 +203,7 @@ PR_INT32 Func_OTA_Test(void)
                     Ota_Wifi();
                     break;
                 case 1:
-                    TransView_vClearAllScreen();
-                    TransView_vShowLine(2, EM_DTYPE_NORMAL, EM_ALIGN_CENTER, (char *)"Developing...");
-                    OsSleep(2000);
+                    Ota_Process(COM_CELLULAR);
                     break;
             }
         }else if(nRet == RET_DRPOT_CANCEL || nRet == RET_DPORT_TIMEOUT){

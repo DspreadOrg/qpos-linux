@@ -54,6 +54,42 @@ const PR_INT8 s_RidList[][RID_LENGTH] = {
     {0xA0, 0x00, 0x00, 0x00, 0x25},
 };
 
+typedef enum
+{
+	DUKPT_DEC_ECB = 0x00,
+	DUKPT_ENC_ECB = 0x01,
+    DUKPT_DEC_CBC = 0x02,
+	DUKPT_ENC_CBC = 0x03,
+} DUKPT_DES_MODE;
+
+int DataEncrypt(int keyIndex,unsigned char *inData,int inDataLen,unsigned char *outData,unsigned char *ksn)
+{
+	/*update ksn*/
+    OsPedIncreaseKsnDukpt(keyIndex);
+
+	    int ret = -1;
+    int reLen =  (inDataLen+7)/8*8;
+
+    unsigned char *tempBuf = NULL;
+    tempBuf = malloc(reLen+1);
+    memset(tempBuf,0,reLen+1);
+    memcpy(tempBuf,inData,inDataLen);
+
+    ret = OsPedOpen();
+    if(ret != RET_OK){
+        return 0;
+    }
+
+    ret = OsPedDesDukpt(keyIndex,0x01,NULL, reLen, tempBuf, outData, ksn,DUKPT_ENC_CBC);
+    if(ret != RET_OK){
+        OsPedClose();
+        return 0;
+    } 
+
+    OsPedClose();   
+    return reLen;
+}
+
 PR_Bool GetIccCardCompany(PR_INT8* theCompany)
 {
 	PR_UINT8* rid = 0;

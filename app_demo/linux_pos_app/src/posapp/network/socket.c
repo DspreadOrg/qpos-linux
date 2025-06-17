@@ -1503,8 +1503,65 @@ socket_parameters_t g_socket_info;
     SSL_CTX *g_ctx = NULL;
     SSL     *g_ssl = NULL;
 
-	
-s32 ssl_server_connect(char * pHost,ssize_t port,int timeout)
+
+int set_ssl_cert(SSL_CTX *ctx)
+{
+	int ret = 0;
+	unsigned char *pCaCertPath = NULL;
+	unsigned char *pClientPubCertPath = NULL;
+	unsigned char *pClientPrivatetPath = NULL;
+	unsigned char AppPath[128] = {0};
+	// Set up encryption suite
+	const char *cipher_list = "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256";
+	if (SSL_CTX_set_cipher_list(ctx, cipher_list) != 1) {
+		ERR_print_errors_fp(stderr);
+		OsLog(LOG_DEBUG,"SSL_CTX_set_cipher_list Failed ");
+		return -1;
+	}
+	do
+	{
+		Business_getAppPath(AppPath,128);
+		pCaCertPath = malloc(128);
+		memset(pCaCertPath,0,128);
+		sprintf(pCaCertPath,"%s/res/CA.pem",AppPath);
+		pClientPubCertPath = malloc(128);
+		memset(pClientPubCertPath,0,128);
+		sprintf(pClientPubCertPath,"%s/res/client.pem",AppPath);
+		pClientPrivatetPath = malloc(128);
+		memset(pClientPrivatetPath,0,128);
+		sprintf(pClientPrivatetPath,"%s/res/client.key",AppPath);
+		
+		if (!SSL_CTX_load_verify_locations(ctx, pCaCertPath, NULL)) {
+			OsLog(LOG_DEBUG,"SSL_CTX_load_verify_locations Failed from %s",pCaCertPath);
+			//SSL_CTX_free(ctx);
+			ret = -6;
+			break;
+		}
+		/*Load client certificate*/
+		if (SSL_CTX_use_certificate_file(ctx, pClientPubCertPath, SSL_FILETYPE_PEM) != 1) {
+			OsLog(LOG_DEBUG,"Failed to load client certificate from %s", pClientPubCertPath);
+			//SSL_CTX_free(ctx);
+			ret = -6;
+			break;
+		}
+		/*Load client private key*/
+		if (SSL_CTX_use_PrivateKey_file(ctx, pClientPrivatetPath, SSL_FILETYPE_PEM) != 1) {
+			OsLog(LOG_DEBUG,"Failed to load client private key from %s", pClientPrivatetPath);
+			//SSL_CTX_free(ctx);
+			ret = -6;
+			break;
+		}
+		SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER|SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
+		/* code */
+	} while (0);
+
+	free(pCaCertPath);
+	free(pClientPrivatetPath);
+	free(pClientPubCertPath);
+	return ret;
+}	
+
+s32 ssl_server_connect(char * pHost,ssize_t port,int timeout,int mode)
 {
     Rc_t rc = RC_FAIL;
     int ret ;
@@ -1592,7 +1649,7 @@ s32 ssl_server_connect(char * pHost,ssize_t port,int timeout)
         goto FAIL;
     }
 
-// Set the minimum protocol version, if you need to limit the minimum version, it is also TLSv1.2
+    // Set the minimum protocol version, and if necessary, limit the minimum version to TLSv1.2
     if (!SSL_CTX_set_min_proto_version(g_ctx, TLS1_2_VERSION)) {
         ERR_print_errors_fp(stderr);
         SSL_CTX_free(g_ctx);
@@ -1604,7 +1661,25 @@ s32 ssl_server_connect(char * pHost,ssize_t port,int timeout)
         rc = RC_FAIL;
         goto FAIL;
     }
-	SSL_CTX_set_verify(g_ctx, SSL_VERIFY_NONE, NULL);
+	if(mode == SSL_VERIFY_NONE)
+	{
+		SSL_CTX_set_verify(g_ctx, SSL_VERIFY_NONE, NULL);
+	}
+	else
+	{
+		if(set_ssl_cert(g_ctx) != 0)
+		{
+			SSL_CTX_free(g_ctx);
+			closesocket(g_socket_fd);
+
+			g_ssl = NULL;
+			g_ctx = NULL;
+			g_socket_fd = 0;
+			rc = RC_FAIL;
+			goto FAIL;
+		}
+	}
+	
     g_ssl = SSL_new(g_ctx);
     if (g_ssl == NULL) {
         SSL_CTX_free(g_ctx);
@@ -1650,8 +1725,34 @@ s32 ssl_server_connect(char * pHost,ssize_t port,int timeout)
         rc = RC_FAIL;
         goto FAIL;
     }
+	
     rc = RC_SUCCESS;
+
+	// Verify the validity of the certificate
+	if(mode != SSL_VERIFY_NONE)
+	{
+		if ((ret = SSL_get_verify_result(g_ssl)) != X509_V_OK) {
+			// verify fail
+			OsLog(LOG_DEBUG,"SSL_get_verify_result Failed [%d]",ret);
+			SSL_shutdown(g_ssl);
+			SSL_free(g_ssl);
+			SSL_CTX_free(g_ctx);
+			closesocket(g_socket_fd);
+
+			g_ssl = NULL;
+			g_ctx = NULL;
+			g_socket_fd = 0;
+			rc = RC_FAIL;
+			goto FAIL;
+		}
+		else
+		{
+			OsLog(LOG_DEBUG,"SSL_get_verify_result success [%d]",ret);
+		}
+	}
+
 FAIL:
+	
     return rc;
 }
 

@@ -24,7 +24,7 @@ int socket_gethostbyname (int nCustNo, char * indata, char * outdata);
 int socket_tcp_alive (socket_parameters_t *parameters, int recvlen,char *outbuf);
 int socket_tcp_dialoff (socket_parameters_t *parameters);
 
-extern long ssl_server_connect(char * pHost,ssize_t port,int timeout);
+extern long ssl_server_connect(char * pHost,ssize_t port,int timeout,int mode);
 extern void ssl_server_disconnect();
 extern long ssl_send_msg(char * pData, ssize_t DataLength, int timeout);
 extern long ssl_recv_msg(char * outbuf, ssize_t recvlen, int timeout);

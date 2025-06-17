@@ -821,7 +821,7 @@ int OsPedIncreaseKsnDukpt (int GroupIdx);
 
 
 #define ERR_PRN_BUSY -3701 //printer busy
-#define ERR_PRN_PAPEROUT -3702 //打印机缺纸
+#define ERR_PRN_PAPEROUT -3702 //printer is out of paper
 #define ERR_PRN_WRONG_PACKAGE -3703 //printer is out of paper
 #define ERR_PRN_OVERHEAT -3704 //Printer overheating
 #define ERR_PRN_OUTOFMEMORY -3705 //Printing data is too large and exceeds the buffer length
