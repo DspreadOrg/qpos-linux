@@ -197,26 +197,27 @@ typedef struct _EmvTransParams_t
 typedef enum
 {
 	APP_RC_START = -1,
-	APP_RC_COMPLETED = 0,
-	APP_RC_TERMINAL,
-	APP_RC_CANCEL,
-	APP_RC_EMV_DENAIL,
-	APP_RC_EMV_GAC2_DENAIL,
-	APP_RC_NFC_NOT_ALLOW,
-	APP_RC_EMV_APP_BLOCK,
-	APP_RC_EMV_APP_SEE_PHONE,
-	APP_RC_EMV_TRANS_TRY_ANOTHER_INTERFACE,
-	APP_RC_EMV_TRANS_GPO_NOT_SUPPORT,
-	APP_RC_FALL_BACK,
-	APP_RC_EMV_CARD_BLOCK,
-	APP_RC_CARD_NOT_SUPPORT,
+	APP_RC_COMPLETED = 0,            // Transaction success
+	APP_RC_TERMINAL,			     //Transaction Termination
+	APP_RC_CANCEL,                   // Transaction cancel
+	APP_RC_EMV_DENAIL,               // Transaction denail (fail)
+	APP_RC_EMV_GAC2_DENAIL,         // Transaction gac2 denail (fail)
+	APP_RC_NFC_NOT_ALLOW,           //NFC transactions are not allowed
+	APP_RC_EMV_APP_BLOCK,           //Card application locked
+	APP_RC_EMV_APP_SEE_PHONE,       //Please check your phone and authorize
+	APP_RC_EMV_TRANS_TRY_ANOTHER_INTERFACE,  //Please use contact to initiate the transaction again
+	APP_RC_EMV_TRANS_GPO_NOT_SUPPORT,    // gpo not support
+	APP_RC_FALL_BACK,					// Chip card reading failed, please swipe the card
+	APP_RC_EMV_CARD_BLOCK,           // card block
+	APP_RC_CARD_NOT_SUPPORT,        //Unsupported card
 
-	APP_RC_NFC_RETAP_TIMEOUT,
-	APP_RC_NFC_RETAP_CANCEL,
-	APP_RC_NFC_TERMINAL,
-	APP_RC_NFC_DOUBLETAP_DENAIL,
-	APP_RC_NFC_MULTI_CARD,
-	APP_RC_NFC_TRY_AGAIN,
+	APP_RC_NFC_RETAP_TIMEOUT,      //Card re pasting timeout
+	APP_RC_NFC_RETAP_CANCEL,	//When prompted to reattach the card, timeout occurred
+	APP_RC_NFC_TERMINAL,        //NFC transaction termination
+	APP_RC_NFC_DOUBLETAP_DENAIL, //Second tap card denail
+	APP_RC_NFC_MULTI_CARD,      //Multiple cards detected
+	APP_RC_NFC_TRY_AGAIN,       //NFC card tap, please try again
+	APP_RC_TRANS_REVERSEL,      //The server approved, but the second GAC of the card failed and a reorganization needs to be initiated
 
 	APP_RC_NUMS,
 }EMV_L2_Return;

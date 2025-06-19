@@ -774,7 +774,7 @@ int OsPedGetMacDukpt(int GroupIdx, const unsigned char *DataIn, int DataInLen, u
  * Function Use the DUKPT key to encrypt and decrypt the input data.
  * parameter
  * GroupIdx DUKPT Group index number, with value range [1~100].
- * KeyVarType【Input】
+ * KeyVarType【Input】 0x00 mac key 0x01 des key 0x02 pin key
  * InitVector [Input] Encrypts and decrypts the initial vector of the operation, 8 bytes can be NULL.
  * DataInLen The data length that needs to be encrypted and decrypted is less than or equal to 8192
  * DataIn [Input] Points to data that needs to be calculated
