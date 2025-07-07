@@ -5,6 +5,22 @@
 extern "C"
 {
 #endif
+// kernel type definition
+typedef enum
+{
+	EMV_L2= 0,
+	KERNEL_PAYPASS ,
+	KERNEL_PAYWAVE,
+	KERNEL_DPAS,
+	KERNEL_AMEX,
+	KERNEL_JCB,
+	KERNEL_PURE,
+	KERNEL_MIR,
+	KERNEL_RUPAY,
+	KERNEL_BANCOMAT,
+	KERNEL_INTERAC
+
+}EmvKernelType;
 
 // EMV parameter tag definition
 #define EMVTAG_APP_PAN      0x5A
@@ -246,6 +262,8 @@ int	Emv_GetAidTotalNum();
 int	Emv_GetCapkTotalNum();
 
 unsigned long EMV_L2_GetLastError();
+
+int Emv_GetKernelVersion(EmvKernelType kernelType,unsigned char *ver);
 
 #ifdef __cplusplus
 }

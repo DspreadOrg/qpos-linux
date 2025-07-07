@@ -15,6 +15,7 @@ extern "C"
 #define INT8	char
 
 #define UINT64	unsigned  long
+#define UINT16  unsigned  int
 #define UINT8	unsigned  char
 
 #define FAILD   	(-1)
