@@ -159,6 +159,17 @@ int confirmCardInfo(char *pan,int len){
     memcpy(emvTransData.Pan,pan,len);
     return 0;
 }
+//You can call Emv_SetCoreData in this callback function to update tagvalue after select aid
+void updateTagAfterSelectApp()
+{
+	
+}
+//You can call Emv_SetCoreData in this callback function to update tagvalue after read record
+void updateTagAfterReadRecord()
+{
+	
+}
+
 // Request pin cType: 1 offline password 2 last offline password 3 online password Return value - 1 input failed - 2 BYPASS not entered - 3 aborted transaction and Timeout > 0 input password length
 int inputPasswd(int cType, char *pszPin){
     PR_INT32 nRet;
@@ -609,6 +620,8 @@ static void Initialize_EMV_CallBackFun(EmvCallBack_t *pcallbackfun)
 	pcallbackfun->EMV_CertConfirm = certConfirm;
 	pcallbackfun->EMV_ProcessDisp = emv_process_disp;
 	pcallbackfun->EMV_OnlineProcess = onlineProcess;
+	pcallbackfun->EMV_AfterSelectApp = updateTagAfterSelectApp;
+	pcallbackfun->EMV_AfterReadRecord = updateTagAfterReadRecord;
 }
 
 PR_INT32 EmvL2_Init(){

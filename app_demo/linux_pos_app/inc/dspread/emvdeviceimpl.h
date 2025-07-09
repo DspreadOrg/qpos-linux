@@ -162,6 +162,10 @@ typedef struct _EmvCallBack_t
 	int (*EMV_OnlineProcess)(EmvOnlineData_t* pOnlineData);
 // Information required by the kernel
 	int (*EMV_ProcessDisp)(EmvKernelDisp cType);
+	//affter select app callback
+	void (*EMV_AfterSelectApp)();
+	//affter read record callback
+	void (*EMV_AfterReadRecord)();
 }EmvCallBack_t;
 
 
@@ -244,6 +248,7 @@ EMV_L2_Return Emv_Process(EmvTransParams_t emvTransParams);
 
 unsigned char* Emv_GetCoreData(unsigned int tagname, int *pvallen);
 
+// return value: 0 success -1 fail
 int Emv_SetCoreData(unsigned int tagname, unsigned char *pvalue, int valuelen);
 
 // Get a series of TLV data in tagname[], and the returned data format is TLV
