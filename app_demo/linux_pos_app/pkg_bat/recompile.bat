@@ -5,7 +5,6 @@ del *.apk
 cd build
 make clean
 make
-
 cd ..
 cd release\bin
 

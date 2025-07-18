@@ -35,14 +35,6 @@ static void SettingOptions_cb(lv_event_t * event)
             DispAbout();
             break;
 
-        case LV_KEY_4:
-                //ui_download_update();
-            break;
-
-        case LV_KEY_5:
-            //DispConnectDisconnectSim();
-            break;
-
         case LV_KEY_DOWN:
             DispMenuOptions();
             break;		   
@@ -122,7 +114,7 @@ static void Help_cb(lv_event_t * event)
     if(indev_type==LV_INDEV_TYPE_KEYPAD && code==LV_EVENT_KEY)
     {
         uint32_t key=lv_indev_get_key(indev);
-        if( key == LV_KEY_BACKSPACE )
+        if( key == LV_KEY_ESC )
         {
             DispSettingOptions();
         }

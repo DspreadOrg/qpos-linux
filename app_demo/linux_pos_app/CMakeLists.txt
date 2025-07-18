@@ -18,13 +18,15 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/inc/dspread
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/image
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app/battery
     ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app/http
     ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app/ota
     ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app/util
     ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app/setting
     ${CMAKE_CURRENT_SOURCE_DIR}/src/custom_app/trans
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common_api
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common_api/battery
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common_api/base64
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common_api/iso8583
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common_api/network
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common_api/pedtest
@@ -46,4 +48,4 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_DIR}/lib)
 add_executable( ${PROJECT_NAME} ${SRCS})
 
 #Link dynamic library
-target_link_libraries(${PROJECT_NAME} PUBLIC binder log pos_sdk pthread dl iconv crypto ssl sqlite3 pos_devapi pos_emv posmui mxml rt xutilmate freetype APHLang kernel emvl2 entrypoint amex bancomat dpas jcb paypass paywave pure quics rupay mir interac kernelins)
+target_link_libraries(${PROJECT_NAME} PUBLIC binder log pos_sdk pthread dl iconv crypto ssl sqlite3 pos_devapi posmui mxml rt xutilmate freetype APHLang kernel emvl2 entrypoint amex bancomat dpas jcb paypass paywave pure quics rupay mir interac kernelins)

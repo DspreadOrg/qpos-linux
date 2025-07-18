@@ -10,11 +10,9 @@ extern "C"
 #include "app_global.h"
 
 //PROJECT
-#include "proj_sdk.h"
 #include "lvgl_porting.h"
 #include "app_thread.h"
 #include "task_handle.h"
-#include "hostUrl.h"
 #include "app_trans.h"
 #include "app_setting.h"
 #include "tms_cfg.h"

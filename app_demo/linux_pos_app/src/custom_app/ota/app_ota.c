@@ -1,5 +1,11 @@
 #include "app_ota.h"
+#include "socket.h"
+#include "tms_cfg.h"
 
+u32 g_offset = 0;
+static lv_obj_t *percentage_lable = NULL;
+static lv_obj_t * Upgrade_bar = NULL;
+static int process = 0;
 
 void DispOtaCheck()
 {
@@ -7,15 +13,88 @@ void DispOtaCheck()
 	lv_obj_clean(Main_Panel);
 	lv_text_create(Main_Panel, "Ota Checking", &mediumMsg_style, LV_ALIGN_CENTER, 0, 0);
 	lv_timer_enable(true);
+}
 
-    EventRegister(EVENT_OTA_CHECK);
+void DispOtaUpgrade()
+{
+	lv_timer_enable(false);
+	lv_obj_clean(Main_Panel);
+	lv_text_create(Main_Panel, "Ota Upgrading", &mediumMsg_style, LV_ALIGN_CENTER, 0, 0);
+	lv_timer_enable(true);
+}
+
+void UpdateOTAProcess()
+{
+    DSP_Debug();
+    unsigned char dispBuff[16] = {0};
+    sprintf(dispBuff,"%d%%",process);
+    if(percentage_lable)
+        lv_label_set_text(percentage_lable, dispBuff);
+    if(Upgrade_bar)
+    {
+        lv_bar_set_range(Upgrade_bar,0,100);
+        lv_bar_set_value(Upgrade_bar, process, LV_ANIM_OFF);
+    }
+
+}
+static void event_cb(lv_event_t * e)
+{
+    lv_obj_draw_part_dsc_t * dsc = lv_event_get_param(e);
+    if(dsc->part != LV_PART_INDICATOR) return;
+
+    lv_obj_t * obj= lv_event_get_target(e);
+
+    lv_draw_label_dsc_t label_dsc;
+    lv_draw_label_dsc_init(&label_dsc);
+    label_dsc.font = LV_FONT_DEFAULT;
+
+    lv_point_t txt_size;
+    //lv_txt_get_size(&txt_size, buf, label_dsc.font, label_dsc.letter_space, label_dsc.line_space, LV_COORD_MAX, label_dsc.flag);
+
+    lv_area_t txt_area;
+    /*If the indicator is long enough put the text inside on the right*/
+    if(lv_area_get_width(dsc->draw_area) > txt_size.x + 20) {
+        txt_area.x2 = dsc->draw_area->x2 - 5;
+        txt_area.x1 = txt_area.x2 - txt_size.x + 1;
+        label_dsc.color = lv_color_white();
+    }
+    /*If the indicator is still short put the text out of it on the right*/
+    else {
+        txt_area.x1 = dsc->draw_area->x2 + 5;
+        txt_area.x2 = txt_area.x1 + txt_size.x - 1;
+        label_dsc.color = lv_color_black();
+    }
+
+    txt_area.y1 = dsc->draw_area->y1 + (lv_area_get_height(dsc->draw_area) - txt_size.y) / 2;
+    txt_area.y2 = txt_area.y1 + txt_size.y - 1;
 }
 
 void DispDownloading()
 {
     lv_timer_enable(false);
 	lv_obj_clean(Main_Panel);
-	lv_text_create(Main_Panel, "Ota Downloading", &mediumMsg_style, LV_ALIGN_CENTER, 0, 0);
+	lv_text_create(Main_Panel, "Ota Downloading", &mediumMsg_style, LV_ALIGN_CENTER, 0, -20);
+
+    percentage_lable = lv_label_create(Main_Panel);
+    lv_label_set_text(percentage_lable, " ");
+    lv_obj_align(percentage_lable, LV_ALIGN_CENTER, 0, 40);
+    lv_obj_set_style_text_color(percentage_lable, lv_color_hex(0x1B1B1B ), 0);
+
+    static lv_style_t style_indic;
+
+    lv_style_init(&style_indic);
+    lv_style_set_bg_opa(&style_indic, LV_OPA_COVER);
+    lv_style_set_bg_color(&style_indic, lv_palette_main(LV_PALETTE_GREEN));
+    lv_style_set_bg_grad_color(&style_indic, lv_palette_main(LV_PALETTE_BLUE));
+
+    Upgrade_bar = lv_bar_create(Main_Panel);
+    lv_obj_add_event_cb(Upgrade_bar, event_cb, LV_EVENT_DRAW_PART_END, NULL);
+    lv_obj_set_size(Upgrade_bar, LV_PCT(80), 20);
+    lv_obj_align(Upgrade_bar,LV_ALIGN_CENTER, 0,20);
+    lv_obj_add_style(Upgrade_bar, &style_indic, LV_PART_INDICATOR);
+
+    DSP_Debug();
+
 	lv_timer_enable(true);
 }
 
@@ -36,7 +115,7 @@ void download_cb(lv_event_t * event)
 		uint32_t key=lv_indev_get_key(indev);
 		switch(key) 
 		{
-            case LV_KEY_BACKSPACE:
+            case LV_KEY_ESC:
                 DispMenuOptions();
                 break;
                 
@@ -129,7 +208,7 @@ void ui_tms_fail_cb(lv_event_t * event)
 		switch(key) 
 		{
 		
-           case LV_KEY_BACKSPACE:
+           case LV_KEY_ESC:
                 	DispMenuOptions();
                 break;
 		}
@@ -163,10 +242,10 @@ void Firmware_OTA()
 {
     Rc_t result = RC_FAIL;
 
-    GuiEventRegister(LCD_DISP_OTA_FIRMWARE_DOWNLODING);
+    GuiEventRegister(LCD_DISP_OTA_DOWNLODING);
     //result = tms_client(TMS_FW_HEART_CUSTOM_URL, true);
     result = larktms_client(TMS_FW_HEART_CUSTOM_URL,APP_VERSION);
-    if(result == RC_FAIL)
+    if(result  != TMS_ERR_OK)
     {
         GuiEventRegister(LCD_DISP_OTA_UPDATE_FAIL);
     }
@@ -175,59 +254,61 @@ void Firmware_OTA()
 
 void Firmware_OTA_Check()
 {
-    set_user_appver(APP_VERSION);
- 
     Rc_t result = RC_FAIL;
+    process = 0;
 
-    //result = tms_client_check(TMS_FW_HEART_CUSTOM_URL);
+    static LarkTmsCallBack_t larktmsCbk;
+    larktmsCbk.ssl_connect = ssl_server_connect;
+    larktmsCbk.ssl_disconnect= ssl_server_disconnect;
+    larktmsCbk.ssl_send = ssl_send_msg;
+    larktmsCbk.ssl_recv = ssl_recv_msg;
+
+    larktms_ssl_Init(&larktmsCbk);
+    LarkTms_Disp_Callback_Register(TmsDispCallback);
+
     result = larktms_client_check(TMS_FW_HEART_CUSTOM_URL,APP_VERSION);
 
-    if(result == RC_DOWN)
-        GuiEventRegister(LCD_DISP_OTA_FIRMWARE_NEED_DOWNLOAD);
-    else if(result == RC_SUCCESS)
-        GuiEventRegister(LCD_DISP_OTA_VERSION_NOT_FOUND);
-    else if(result == RC_NET_ERR)
-        GuiEventRegister(LCD_DISP_OTA_UPDATE_FAIL);
-    else if(result == RC_QUIT)
-        GuiEventRegister(LCD_DISP_SN_NOT_REGIESTER);    
-    else 
-        GuiEventRegister(LCD_DISP_OTA_UPDATE_FAIL);
+    switch(result)
+    {
+        case TMS_ERR_OK:
+            GuiEventRegister(LCD_DISP_OTA_FIRMWARE_NEED_DOWNLOAD);
+            break;
+        case TMS_ERR_CONNECT:
+            GuiEventRegister(LCD_DISP_OTA_UPDATE_FAIL);
+            break;
+        case TMS_ERR_NO_AVAIALABLE:
+            GuiEventRegister(LCD_DISP_OTA_VERSION_NOT_FOUND);
+            break;
+        case TMS_ERR_SN_NOT_REGISTER:
+            GuiEventRegister(LCD_DISP_SN_NOT_REGIESTER);
+            break;
+        default:
+            GuiEventRegister(LCD_DISP_OTA_UPDATE_FAIL);
+            break;    
+    }
 }
 
-void TmsDispCallback(u32 id,u32 offset,u32 Length,void *pMsg)
+void TmsDispCallback(u32 id, char *pMsg)
 {
     u32 i ;
+    char dispBuff[8] = {0};
+    int curValue = 0;
     OsLog(LOG_DEBUG,"Dspread: %s:id=%d",__FUNCTION__,id);
     switch(id)
     {
-        case OTA_SYNC_SERVER:
-            GuiEventRegister(LCD_DISP_OTA_SYNC_TMS);
+        case TMS_DISP_START_CHECK:
+            GuiEventRegister(LCD_DISP_OTA_CHECK);
             break;
-        case OTA_PROCESSING:
-            //i = offset*100/Length;
-            GuiEventRegister(LCD_DISP_START_DOWNLOADING);
+        case TMS_DISP_START_DOWNLOAD:
+            GuiEventRegister(LCD_DISP_OTA_DOWNLOAD_DISP);
             break;
-        case OTA_START_DOWNLOAD:
-            GuiEventRegister(LCD_DISP_START_DOWNLOADING);
+        case TMS_DISP_DOWNLOADING_PROGRESS:
+            process = atoi(pMsg);
+            GuiEventRegister(LCD_DISP_OTA_DOWNLODING);
             break;
-        case OTA_UPDATE_FINISH:
-            break;
-        case OTA_FIRMWARE_VERIFY:
-            GuiEventRegister(LCD_DISP_FIRMWARE_VERIFY); 
-            break;
-        case OTA_FIRMWARE_VERIFY_FAIL:
-            GuiEventRegister(LCD_DISP_FIRMWARE_VERDIFY_FAIL);
-            break;
-        case OTA_OTHER:
-            GuiEventRegister(LCD_DISP_WELCOME);
-            break;
-        case OTA_SYNC_ERROR_MSG:
-            break;
-        case OTA_SYNC_PARAM_DATA:
-            break;
-        case OTA_NO_AVAILABLE_FIRMWARE:
-                GuiEventRegister(LCD_DISP_NO_AVAILABLE_FIRMWARE);
-            break;
+        case TMS_DISP_UPGRADING:
+            GuiEventRegister(LCD_DISP_OTA_UPGRADING);
+        break;
         default:
             break;
     }

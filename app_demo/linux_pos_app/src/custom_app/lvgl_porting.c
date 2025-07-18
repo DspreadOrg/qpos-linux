@@ -455,7 +455,7 @@ bool gui_thread_mutex_status()
 static int Lvgl_Queue_Id = 0;
 void GuiEventRegister(u32 msg_id)
 {
-    DSP_Debug();
+    DSP_Info("msg_id = %d",msg_id);
     queue_message_body_t queMsg;
     queMsg.msgType = 1;
     queMsg.msg.msg_id = msg_id;

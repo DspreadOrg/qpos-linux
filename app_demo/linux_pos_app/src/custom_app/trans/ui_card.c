@@ -1,16 +1,11 @@
 #include "ui_card.h"
 
-static int lCardsSupported;
-void DispCards( u32 cardsSupported );
+int lCardsSupported;
 
-void setTransInitData( pvoid param ) {
-	const pStartTransaction_t pStartTransactionData = ( pStartTransaction_t )param;
-
-	lCardsSupported = (u32)pStartTransactionData->type;
-}
+void DispCards(u32 cardsSupported);
 
 void DispCardsSupported( void ) {
-	DispCards( lCardsSupported );
+	DispCards(lCardsSupported);
 }
 
 static void CancelTransactionCallback( lv_event_t * event ) {
@@ -19,37 +14,55 @@ static void CancelTransactionCallback( lv_event_t * event ) {
 	lv_indev_type_t indev_type = lv_indev_get_type( indev );
 
     if( indev_type == LV_INDEV_TYPE_KEYPAD && code == LV_EVENT_KEY && lv_indev_get_key( indev ) == LV_KEY_ESC ) {
-		TransCancle( );
+		stop_readcards();
 	}
 }
 
-void DispCards( u32 cardsSupported ) {
+
+void DispCards(u32 cardsSupported) {
     lv_timer_enable( false );
 	lv_obj_clean( Main_Panel );
 
-    lv_text_create( Main_Panel, "Chip NFC MAG", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
+    if(cardsSupported == (CARD_NFC|CARD_IC|CARD_MAG))
+    {
+        lv_text_create( Main_Panel, "Pls Chip NFC MAG", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
+        lv_icon_create( Main_Panel, &lv_Contactless_Icon, LV_ALIGN_CENTER, 50, 10 );
+        lv_icon_create( Main_Panel, &lv_Chip_Icon, LV_ALIGN_CENTER, -10, 10 );
+        lv_icon_create( Main_Panel, &lv_Strip_Icon, LV_ALIGN_CENTER, -80, 10 );
+    }
+    else if(cardsSupported == (CARD_NFC|CARD_IC))
+    {
+        lv_text_create( Main_Panel, "Pls insert/tap card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
+        lv_icon_create( Main_Panel, &lv_Contactless_Icon, LV_ALIGN_CENTER, 50, 10 );
+        lv_icon_create( Main_Panel, &lv_Chip_Icon, LV_ALIGN_CENTER, -30, 10 );
+    }
+    else if(cardsSupported == CARD_IC)
+    {
+        lv_text_create( Main_Panel, "Pls insert card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
+        lv_icon_create( Main_Panel, &lv_Chip_Icon, LV_ALIGN_CENTER, -10, 10 );
+    }
+    else if(cardsSupported == CARD_MAG)
+    {
+        lv_text_create( Main_Panel, "Pls swipe card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
+        lv_icon_create( Main_Panel, &lv_Strip_Icon, LV_ALIGN_CENTER, -10, 10 );
+    }
+    else if(cardsSupported == CARD_NFC)
+    {
+        lv_text_create( Main_Panel, "Pls tap card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
+        lv_icon_create( Main_Panel, &lv_Contactless_Icon, LV_ALIGN_CENTER, -10, 10 );
+    }
+    else
+    {
+        lv_text_create( Main_Panel, "Pls insert/tap/swipe card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
+        lv_icon_create( Main_Panel, &lv_Contactless_Icon, LV_ALIGN_CENTER, 50, 10 );
+        lv_icon_create( Main_Panel, &lv_Chip_Icon, LV_ALIGN_CENTER, -10, 10 );
+        lv_icon_create( Main_Panel, &lv_Strip_Icon, LV_ALIGN_CENTER, -80, 10 );
+    }
 
-	lv_obj_t * Icon_btn = lv_imgbtn_create( Main_Panel );
+    lv_obj_t * Icon_btn = lv_imgbtn_create( Main_Panel );
 	lv_group_remove_all_objs( s_group_keypad_indev );
     lv_obj_add_event_cb( Icon_btn, CancelTransactionCallback, LV_EVENT_ALL, NULL );
     lv_group_add_obj( s_group_keypad_indev, Icon_btn );
-
-    u8 index = 0;
-    
-    if( cardsSupported & CARD_NFC ) {
-        lv_icon_create( Main_Panel, &lv_Contactless_Icon, LV_ALIGN_CENTER, 50, 10 );
-        index ++;
-    }
-
-    if( cardsSupported & CARD_IC ) {
-        lv_icon_create( Main_Panel, &lv_Chip_Icon, LV_ALIGN_CENTER, -10, 10 );
-        index ++;
-    }
-
-    if( cardsSupported & CARD_MAG ){
-        lv_icon_create( Main_Panel, &lv_Strip_Icon, LV_ALIGN_CENTER, -80, 10 );
-        index ++;
-    }
 
 	lv_timer_enable( true );
 }
@@ -111,39 +124,12 @@ void DispCardNotSupported( void ) {
     DispErrorMessage( "Card Not Support", "", errorEventCallback );
 }
 
-static void seePhoneCallback( lv_event_t* event ) {
-	lv_event_code_t code = lv_event_get_code( event );
-	const lv_indev_t * indev = lv_indev_get_act( );
-	lv_indev_type_t indev_type = lv_indev_get_type( indev );
-
-    if( indev_type == LV_INDEV_TYPE_KEYPAD && code == LV_EVENT_KEY ) {
-        switch( lv_indev_get_key( indev ) ) {
-			case LV_KEY_ESC:
-				TransKbdEvent( EVENT_KEY_CANCEL );
-				break;
-            
-            case LV_KEY_ENTER:
-                TransKbdEvent(EVENT_KEY_CONFIRM );
-                break;
-
-            default:
-                break;
-        }
-	}
-}
-
-
 void DispSeePhone( void ) {
     lv_timer_enable( false );
 	lv_obj_clean( Main_Panel );    
-	
-	lv_obj_t * Icon_btn = lv_imgbtn_create( Main_Panel);    
-    lv_group_remove_all_objs( s_group_keypad_indev );
-    lv_obj_add_event_cb(Icon_btn, seePhoneCallback, LV_EVENT_ALL,NULL );
-    lv_group_add_obj( s_group_keypad_indev,Icon_btn );
     
     lv_text_create( Main_Panel, "Payment", &title_style, LV_ALIGN_TOP_MID, 0, 5 );
     lv_text_create( Main_Panel, "Please see phone", &message_style, LV_ALIGN_CENTER, 0, 0 ); 
- 
+
     lv_timer_enable( true );
 }

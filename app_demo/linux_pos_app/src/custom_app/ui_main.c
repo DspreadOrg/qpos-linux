@@ -10,8 +10,6 @@
 #include "app_trans.h"
 #include "tms_cfg.h"
 #include "ui_emvSelectMultiApp.h"
-#include "app_pkt.h"
-
 
 extern ONLINE_STATUS onlineStatus;
 
@@ -56,7 +54,6 @@ static void MenuOptions_cb(lv_event_t * event)
     {	        
 		case LV_KEY_1:
             Trans_Payment();
-			//emvSelectMultiApp("\x7F\x06\x1E\x9F\x81\x14\x0A\x4D\x61\x73\x74\x65\x72\x43\x61\x72\x64\x9F\x81\x14\x07\x4D\x61\x65\x73\x74\x72\x6F\x9F\x81\x12\x01\x02");
             break;
         
         case LV_KEY_2:
@@ -64,7 +61,7 @@ static void MenuOptions_cb(lv_event_t * event)
             break;
         
         case LV_KEY_3:
-            DispOtaCheck();
+            EventRegister(EVENT_OTA_CHECK);
             break;
         
         case LV_KEY_4:
@@ -101,9 +98,8 @@ void DispMenuOptions()
     lv_add_btn(btn_list, MenuOptions_cb, 86, 56, "3", "OTA", LV_ALIGN_CENTER  , 0, 0, true);
     lv_add_btn(btn_list, MenuOptions_cb, 86, 56, "4", "Sign Test", LV_ALIGN_CENTER, 0, 0, true);
 
-	char sVer[32] = {0};
-    OsGetSysVersion(0x01,sVer);
-    sprintf(versionLine, "App %s Sys %s", APP_VERSION,sVer);
+
+    sprintf(versionLine, "%s", APP_VERSION);
     lv_text_create(Main_Panel, versionLine, &lightLabel_style, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 	    
     lv_timer_enable(true);	
@@ -156,16 +152,27 @@ static void DispInitialConnection()
 
 /*----------------------------------------------------------------------------
  |   Function Name:
- |       set_empty_validateMsg
+ |       Disp_Amt_CallBack
  |   Description:
  |   Parameters:
  |   Returns:
  +---------------------------------------------------------------------------*/
-static void set_empty_validateMsg()
+
+
+void Disp_Amt_CallBack(lv_obj_t *label,lv_obj_t *ta,pu8 txt,u32 len)
 {
-	lv_style_set_border_color(&input_style, lv_palette_lighten(LV_PALETTE_GREY, 5));
-	lv_obj_report_style_change(&input_style);
-	lv_label_set_text(validateMsg, "");
+    u8 disp[20] = {0},temp[20] = {0};
+    if(txt != NULL && atol(txt) > 0)
+    {
+        disp[0] = '$';
+        sprintf(&disp[1], "%ld.%02d", atol(txt)/100, atol(txt)%100);
+        lv_textarea_set_text(label, disp);
+
+    }
+    else
+    {
+        lv_textarea_set_text(label, "$0.00");
+    }
 }
 
 /*----------------------------------------------------------------------------
@@ -180,29 +187,29 @@ static void Payment_cb(lv_event_t * event)
 	lv_event_code_t code = lv_event_get_code(event);
 	lv_indev_t * indev = lv_indev_get_act();
 	lv_indev_type_t indev_type = lv_indev_get_type(indev);
+	lv_obj_t *label = lv_event_get_user_data(event);
 
     if(indev_type==LV_INDEV_TYPE_KEYPAD && code==LV_EVENT_KEY)
     {
         uint32_t key=lv_indev_get_key(indev);
 		lv_obj_t * ta = lv_event_get_target(event);
         const char * txt = lv_textarea_get_text(ta);
+		OsLog(LOG_DEBUG,"txt = %s",txt);
+		Disp_Amt_CallBack(label,ta,txt,strlen(txt));
 		u8 unformattedBuffer[MAX_LEN_AMOUNT+1]={0};
 		u8 formattedBuffer[MAX_LEN_AMOUNT+1]={0};
 
         switch(key)
-        {
+        {              
 			case LV_KEY_DOWN:
-                set_empty_validateMsg();
 				DispMenuOptions();
 				break;
-
+				
 			case LV_KEY_ENTER:
-
-				if(strlen((char*)txt)&& atol((char*)txt) > 0)
+				if(strlen((char*)txt))
 				{
-                    T_U8_VIEW uvAmt={(char*)txt,strlen(txt)};
-                    FormatAmount(uvAmt);
-                    EventRegister(EVENT_PAYMENT);
+					sprintf(get_transaction_data()->sAmount,"%012ld",atol(txt));
+					EventRegister(EVENT_PAYMENT);
 				}
 				break;
 
@@ -226,21 +233,31 @@ void Enter_Amount(void)
 	lv_obj_clean(Main_Panel);
 
 	lv_text_create(Main_Panel, "Input Amount", &title_style, LV_ALIGN_TOP_MID, 0, 5);
-    lv_obj_t*input = lv_textarea_create(Main_Panel);
-	validateMsg = lv_text_create(Main_Panel, "", &alertMessage_style, LV_ALIGN_BOTTOM_MID, 0, -35);
 
-    lv_obj_add_event_cb(input, Payment_cb, LV_EVENT_KEY,NULL);
+	lv_obj_t *dispInput = lv_textarea_create(Main_Panel);
+    lv_textarea_set_align(dispInput,LV_TEXT_ALIGN_CENTER);
+    lv_textarea_set_text(dispInput, "$0.00");
+	lv_style_set_text_font(&input_style, &lv_font_montserrat_30);
+	lv_obj_add_style(dispInput, &input_style, LV_STATE_DEFAULT);
+    lv_obj_set_size(dispInput,290,30);
+    lv_textarea_set_one_line(dispInput, true);
+    lv_obj_center(dispInput);
+
+
+   lv_obj_t*input = lv_textarea_create(Main_Panel);
+    lv_obj_add_event_cb(input, Payment_cb, LV_EVENT_KEY,(pvoid )dispInput);
 
 	lv_textarea_set_max_length(input, 11);
 	lv_style_set_text_font(&input_style, &lv_font_montserrat_30);
 	lv_obj_add_style(input, &input_style, LV_STATE_DEFAULT);
 	lv_textarea_set_align(input, LV_TEXT_ALIGN_CENTER);
 	lv_textarea_set_one_line(input, true);
-	lv_textarea_set_placeholder_text(input,"$0       ");
+	// lv_textarea_set_placeholder_text(input,"$0.00");
 	lv_textarea_set_accepted_chars(input, "$.0123456789");
 	lv_group_remove_all_objs(s_group_keypad_indev);
     lv_group_add_obj(s_group_keypad_indev,input);
 	lv_obj_center(input);
+	lv_obj_set_style_opa(input,LV_OPA_TRANSP,0);
 
 	lv_icon_create(Main_Panel, &lv_Menu_Icon, LV_ALIGN_BOTTOM_LEFT, 0, 0);
 	imgDelete = lv_icon_create(Main_Panel, "", LV_ALIGN_BOTTOM_MID, 0, 0);
@@ -258,7 +275,7 @@ static void timeout_cb()
 void DispResult(const char * prompt) 
 {
 	//to do: Enable to show cancel process message 
-	u32 timeout=1000;
+	u32 timeout=3000;
 	lv_timer_enable(false);
 	lv_obj_clean(Main_Panel);
 
@@ -322,10 +339,9 @@ void DispLoading(const char* str_Title)
  |   Returns:
  +---------------------------------------------------------------------------*/
 void GuiDisplay(u32 id){
-	DspDebug("Dspread: GuiDisplay dispId = %d",id);
+	DSP_Info("dispId = %d",id);
     switch(id){
 		case LCD_DISP_DEVICE_INIT:
-			Tms_Disp_Callback_Register(TmsDispCallback);
 			DispInit();
 			break;
 
@@ -353,25 +369,36 @@ void GuiDisplay(u32 id){
 		case LCD_DISP_TRADE_SUCCESS:
 			DispResult(PROMPT_TRANS_SUCCESS);
 			break;
-
-		case LCD_DISP_TRANSACTION_TERMINATED:
+		case LCD_DISP_TRADE_FAIL:
 			DispResult(PROMPT_TRANS_FAIL);
+			break;
+		case LCD_DISP_TRANSACTION_TERMINATED:
+			DispResult(PROMPT_TRANS_TERMINATED);
 			break;
 
 		case LCD_DISP_CANCEL:
 			DispResult(PROMPT_USER_CANCEL);
 			break;
 
-		case LCD_DISP_OTA_FIRMWARE_DOWNLODING:
+		case LCD_DISP_OTA_CHECK:
+			DispOtaCheck();
+			break;	
+
+		case LCD_DISP_OTA_DOWNLOAD_DISP:
 			DispDownloading();
             break;
+
+		case LCD_DISP_OTA_DOWNLODING:
+			UpdateOTAProcess();
+			break;	
+
+		case LCD_DISP_OTA_UPGRADING:
+			DispOtaUpgrade();
+			break;
+
 		case LCD_DISP_OTA_FIRMWARE_NEED_DOWNLOAD:
             dispOtaCheckResult();
             break;
-
-        case LCD_DISP_NO_AVAILABLE_FIRMWARE:
-           	ui_version_not_found();
-			break;
 
 		case LCD_DISP_OTA_VERSION_NOT_FOUND:
 			ui_version_not_found();
@@ -381,7 +408,7 @@ void GuiDisplay(u32 id){
 			break;
 
 		case LCD_DISP_EMV_APP_BLOCK:
-			//DispAppBlock();
+			DispAppBlock();
 			break;
 
 		case LCD_DISP_DECLINED_DISP:
@@ -389,11 +416,11 @@ void GuiDisplay(u32 id){
 			break;
 
 		case LCD_DISP_FALL_BACK:
-		   	//startFallback();
+		   	DispResult(PROMPT_USE_SWIPE_CARD);
 			break;
 
 	    case LCD_DISP_CARD_NOT_SUPPORT:
-	    	//DispCardNotSupported();
+	    	DispCardNotSupported();
 	    	break;
 
 		case LCD_DISP_TRY_ANOTHER_INTERFACE:
@@ -405,17 +432,17 @@ void GuiDisplay(u32 id){
 	    	break;
 
         case LCD_DISP_INPUT_ONLINE_PIN:
+			DispPinEntry();
+			break;
         case LCD_DISP_INPUT_OFFLINE_PIN:
         case LCD_DISP_INPUT_LAST_OFFLINE_PIN:
-			DispPinEntry( );
+			DispPinEntry();
             break;
-
-        case LCD_DISP_PIN_MASK:
-			DispPinMask( );
-            break;
-
+		case LCD_DISP_PIN_MASK:	
+			DispPinMask();
+			break;
 		case LCD_DISP_CHIP_CARD:
-			DispCards(CARD_IC + CARD_NFC);
+			DispCards(CARD_IC|CARD_NFC);
 			break;
 
 		case LCD_DISP_SEE_PHONE_PLS:
@@ -440,6 +467,10 @@ void GuiDisplay(u32 id){
 
 		case LCD_DISP_OTA_UPDATE_FAIL:
 			ui_Downloading_Fail();
+			break;	
+
+		case LCD_DISP_NFC_TAP_TRY_AGAIN:
+			DispResult(PROMPT_NFC_TAP_TRY_AGAIN);
 			break;	
 
 		default:

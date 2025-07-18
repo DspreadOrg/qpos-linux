@@ -1498,23 +1498,31 @@ int init_socket_para(socket_parameters_t *socket_info,char *pHost,int port,char 
 	uchar ipAddr[32] = {0};
 	struct hostent *host;
 	int nRet;
+    int ipIndex = 0;
+    int i;
 	if (socket_info == NULL){
 		return -1;
 	}
 	socket_info->custno = 0;
 	//SSL flag
-	socket_info->ssl_flag = 1;	
+	socket_info->ssl_flag = 1;
+    #ifdef CFG_DBG	
     OsLog(LOG_DEBUG,"Dspread: pHost = %s",pHost);
+    #endif
 	memcpy(socket_info->host,pHost,strlen(pHost));
     host = gethostbyname(pHost);
 	if(host == NULL) {
 		return -1;
 	}
 	//IP地址
-	for(int i=0; host->h_addr_list[i]; i++){
+    #ifdef CFG_DBG
+	for(i=0; host->h_addr_list[i]; i++){
 		OsLog(LOG_INFO,"IP addr %d: %s\n", i+1, inet_ntoa(*(struct in_addr*)host->h_addr_list[i]));
 	}
-	memcpy(ipAddr,inet_ntoa(*(struct in_addr*)host->h_addr_list[0]),strlen(inet_ntoa(*(struct in_addr*)host->h_addr_list[0])));
+    OsLog(LOG_INFO,"Connect IP addr %d: %s\n", ipIndex, inet_ntoa(*(struct in_addr*)host->h_addr_list[ipIndex]));
+    #endif    
+
+	memcpy(ipAddr,inet_ntoa(*(struct in_addr*)host->h_addr_list[ipIndex]),strlen(inet_ntoa(*(struct in_addr*)host->h_addr_list[ipIndex])));
 	memcpy(socket_info->ip,ipAddr,strlen(ipAddr));
 	socket_info->port = port;
 	//send timeout
@@ -1541,13 +1549,71 @@ socket_parameters_t g_socket_info;
     SSL_CTX *g_ctx = NULL;
     SSL     *g_ssl = NULL;
 
-Rc_t HttpServerConnect(char * pHost,u32 port,u32 timeout)
+int set_ssl_cert(SSL_CTX *ctx)
+{
+	int ret = 0;
+	unsigned char *pCaCertPath = NULL;
+	unsigned char *pClientPubCertPath = NULL;
+	unsigned char *pClientPrivatetPath = NULL;
+	unsigned char AppPath[128] = {0};
+	// Set up encryption suite
+	const char *cipher_list = "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256";
+	if (SSL_CTX_set_cipher_list(ctx, cipher_list) != 1) {
+		ERR_print_errors_fp(stderr);
+		OsLog(LOG_DEBUG,"SSL_CTX_set_cipher_list Failed ");
+		return -1;
+	}
+	do
+	{
+		Business_getAppPath(AppPath,128);
+		pCaCertPath = malloc(128);
+		memset(pCaCertPath,0,128);
+		sprintf(pCaCertPath,"%s/res/CA.pem",AppPath);
+		pClientPubCertPath = malloc(128);
+		memset(pClientPubCertPath,0,128);
+		sprintf(pClientPubCertPath,"%s/res/client.pem",AppPath);
+		pClientPrivatetPath = malloc(128);
+		memset(pClientPrivatetPath,0,128);
+		sprintf(pClientPrivatetPath,"%s/res/client.key",AppPath);
+		
+		if (!SSL_CTX_load_verify_locations(ctx, pCaCertPath, NULL)) {
+			OsLog(LOG_DEBUG,"SSL_CTX_load_verify_locations Failed from %s",pCaCertPath);
+			//SSL_CTX_free(ctx);
+			ret = -6;
+			break;
+		}
+		/*Load client certificate*/
+		if (SSL_CTX_use_certificate_file(ctx, pClientPubCertPath, SSL_FILETYPE_PEM) != 1) {
+			OsLog(LOG_DEBUG,"Failed to load client certificate from %s", pClientPubCertPath);
+			//SSL_CTX_free(ctx);
+			ret = -6;
+			break;
+		}
+		/*Load client private key*/
+		if (SSL_CTX_use_PrivateKey_file(ctx, pClientPrivatetPath, SSL_FILETYPE_PEM) != 1) {
+			OsLog(LOG_DEBUG,"Failed to load client private key from %s", pClientPrivatetPath);
+			//SSL_CTX_free(ctx);
+			ret = -6;
+			break;
+		}
+		SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER|SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
+		/* code */
+	} while (0);
+
+	free(pCaCertPath);
+	free(pClientPrivatetPath);
+	free(pClientPubCertPath);
+	return ret;
+}	
+
+s32 ssl_server_connect(char * pHost,ssize_t port,int timeout,int mode)
 {
     Rc_t rc = RC_FAIL;
     int ret ;
     s32 nLen,nRet;
 	char szBuffer[256];
-	//初始化通讯参数
+	
+	//Initialize communication parameters
 	ZERO_STRUCT(g_socket_info);
 	nRet = init_socket_para(&g_socket_info,pHost,port, NULL, 0,timeout);
 	if (nRet)
@@ -1560,36 +1626,47 @@ Rc_t HttpServerConnect(char * pHost,u32 port,u32 timeout)
     bzero(&addr,sizeof(addr));
 
     if((ret = socket_conversion_parameters(&g_socket_info,(struct sockaddr_in *)&addr))!=NORMAL){
+        #ifdef CFG_DBG
         OsLog(LOG_DEBUG,"socket parameters err!");
+        #endif
         return rc;
     }
     if((g_socket_fd = socket(AF_INET,SOCK_STREAM,0)) == -1){
+        #ifdef CFG_DBG
         OsLog(LOG_DEBUG,"create_socket err!");
+        #endif
         rc = RC_NET_ERR;
         return rc;
     }
-    tv.tv_sec = (g_socket_info.recv_time<=0)?SOCKET_RECV_TIMEOUT:g_socket_info.recv_time;
+    tv.tv_sec = 15;//(g_socket_info.recv_time<=0)?SOCKET_RECV_TIMEOUT:g_socket_info.recv_time;
     tv.tv_usec = 0; 
     setsockopt(g_socket_fd,SOL_SOCKET,SO_RCVTIMEO,&tv,sizeof(struct timeval));
-
-    socket_set_noblock(g_socket_fd,1);
-    tv.tv_sec = (g_socket_info.connect_time<=0)?SOCKET_CONNECT_TIMEOUT:g_socket_info.connect_time;
+    //socket_set_noblock(g_socket_fd,1);
+    tv.tv_sec = 15;//(g_socket_info.connect_time<=0)?SOCKET_CONNECT_TIMEOUT:g_socket_info.connect_time;
     tv.tv_usec = 0; 
     if ( g_socket_info.is_show_title == 1 || g_socket_info.is_show_title == 0) {
-        OsLog(LOG_DEBUG,"connecting...");
+        #ifdef CFG_DBG
+        OsLog(LOG_DEBUG,"ssl connecting...");
+        #endif
     }
     ret = socket_connect(g_socket_fd,addr,tv);
     if ( ret ) {
         closesocket(g_socket_fd);
+        g_ssl = NULL;
+        g_ctx = NULL;
+        g_socket_fd = 0;
+        #ifdef CFG_DBG
         OsLog(LOG_DEBUG,"connect :%s:%d err[%s]",g_socket_info.ip,g_socket_info.port,strerror(errno));
-        rc = RC_NET_ERR;
+        #endif
+        rc = RC_NET_ERR; 
         goto FAIL;
     }
+    #ifdef CFG_DBG
     OsLog(LOG_DEBUG,"connect :%s:%d success!",g_socket_info.ip,g_socket_info.port);
-    socket_set_noblock(g_socket_fd,0);
-
+    #endif
+    //socket_set_noblock(g_socket_fd,0);
     //SSL_rand_poll();
-    /// SSL初始化
+    /// SSL initialization
     SSL_library_init();
 #ifdef CFG_SSL_V3
 	if ((g_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL)
@@ -1597,51 +1674,145 @@ Rc_t HttpServerConnect(char * pHost,u32 port,u32 timeout)
 	if ((g_ctx = SSL_CTX_new(SSLv23_client_method())) == NULL)
 #endif
     {
-        OsLog(LOG_DEBUG,"SSL: ssl_ctx_new NULL");
         closesocket(g_socket_fd);
+        g_ssl = NULL;
+        g_ctx = NULL;
+        g_socket_fd = 0;
         rc = RC_FAIL;
         goto FAIL;
     }
-	SSL_CTX_set_verify(g_ctx, SSL_VERIFY_NONE, NULL);
-    g_ssl = SSL_new(g_ctx);
-    if (g_ssl == NULL) {
-        OsLog(LOG_DEBUG,"SSL: ssl_new NULL");
+    //Set the maximum protocol version to TLSv1.2
+    if (!SSL_CTX_set_max_proto_version(g_ctx, TLS1_2_VERSION)) {
+        ERR_print_errors_fp(stderr);
         SSL_CTX_free(g_ctx);
         closesocket(g_socket_fd);
+
+        g_ssl = NULL;
+        g_ctx = NULL;
+        g_socket_fd = 0;
         rc = RC_FAIL;
         goto FAIL;
     }
 
-	OsLog(LOG_DEBUG,"SSL: ssl set host name[%s]",g_socket_info.host);
-	SSL_set_tlsext_host_name(g_ssl, g_socket_info.host);
+    // Set the minimum protocol version, and if necessary, limit the minimum version to TLSv1.2
+    if (!SSL_CTX_set_min_proto_version(g_ctx, TLS1_2_VERSION)) {
+        ERR_print_errors_fp(stderr);
+        SSL_CTX_free(g_ctx);
+        closesocket(g_socket_fd);
 
+        g_ssl = NULL;
+        g_ctx = NULL;
+        g_socket_fd = 0;
+        rc = RC_FAIL;
+        goto FAIL;
+    }
+	if(mode == SSL_VERIFY_NONE)
+	{
+		SSL_CTX_set_verify(g_ctx, SSL_VERIFY_NONE, NULL);
+	}
+	else
+	{
+		if(set_ssl_cert(g_ctx) != 0)
+		{
+			SSL_CTX_free(g_ctx);
+			closesocket(g_socket_fd);
+
+			g_ssl = NULL;
+			g_ctx = NULL;
+			g_socket_fd = 0;
+			rc = RC_FAIL;
+			goto FAIL;
+		}
+	}
+	
+    g_ssl = SSL_new(g_ctx);
+    if (g_ssl == NULL) {
+        SSL_CTX_free(g_ctx);
+        closesocket(g_socket_fd);
+
+        g_ssl = NULL;
+        g_ctx = NULL;
+        g_socket_fd = 0;
+        rc = RC_FAIL;
+        goto FAIL;
+    }
+#ifdef CFG_DBG
+	OsLog(LOG_DEBUG,"SSL: ssl set host name[%s]",g_socket_info.host);
+#endif    
+	SSL_set_tlsext_host_name(g_ssl, g_socket_info.host);
     if ( (ret = SSL_set_fd(g_ssl,g_socket_fd)) < 0) {
+        #ifdef CFG_DBG
         OsLog(LOG_DEBUG,"SSL: ssl set fd err[%d][%s]",ret,SSL_state_string_long(g_ssl));
+        #endif
         SSL_free(g_ssl);
         SSL_CTX_free(g_ctx);
         closesocket(g_socket_fd);
+
+        g_ssl = NULL;
+        g_ctx = NULL;
+        g_socket_fd = 0;
         rc = RC_FAIL;
         goto FAIL;
     }
+     
     if ( (ret = SSL_connect(g_ssl)) != 1 ) {
+        #ifdef CFG_DBG
         OsLog(LOG_DEBUG,"SSL: ssl connect err[%d][%s]",ret,SSL_state_string_long(g_ssl));
+        #endif
         SSL_shutdown(g_ssl);
         SSL_free(g_ssl);
         SSL_CTX_free(g_ctx);
         closesocket(g_socket_fd);
+
+        g_ssl = NULL;
+        g_ctx = NULL;
+        g_socket_fd = 0;
         rc = RC_FAIL;
         goto FAIL;
     }
+	
     rc = RC_SUCCESS;
+
+	// Verify the validity of the certificate
+	if(mode != SSL_VERIFY_NONE)
+	{
+		if ((ret = SSL_get_verify_result(g_ssl)) != X509_V_OK) {
+			// verify fail
+			OsLog(LOG_DEBUG,"SSL_get_verify_result Failed [%d]",ret);
+			SSL_shutdown(g_ssl);
+			SSL_free(g_ssl);
+			SSL_CTX_free(g_ctx);
+			closesocket(g_socket_fd);
+
+			g_ssl = NULL;
+			g_ctx = NULL;
+			g_socket_fd = 0;
+			rc = RC_FAIL;
+			goto FAIL;
+		}
+		else
+		{
+			OsLog(LOG_DEBUG,"SSL_get_verify_result success [%d]",ret);
+		}
+	}
+
 FAIL:
+	
     return rc;
 }
 
-void HttpServerDisConnect()
+
+void ssl_server_disconnect()
 {
-    SSL_shutdown(g_ssl);
-    SSL_free(g_ssl);
-    SSL_CTX_free(g_ctx);
+    if(g_ssl)
+    {
+        SSL_shutdown(g_ssl);
+        SSL_free(g_ssl);
+    }
+    if(g_ctx)
+    {
+        SSL_CTX_free(g_ctx);
+    }
     closesocket(g_socket_fd);
 
     g_ssl = NULL;
@@ -1649,31 +1820,52 @@ void HttpServerDisConnect()
     g_socket_fd = 0;
 }
 
-s32 SslTransmit(pu8 pHost, u32 Port, pu8 pData, u32 DataLength, pu8 pReceivedData, u32 ReceivedDataLengthMax, u32 Timeout )
+s32 ssl_send_msg(char * pData, ssize_t DataLength, int timeout)
 {
-    int ret;
+	int ret;
     if (pData != NULL)
 	{
 		g_socket_info.sendlen = DataLength;
 		g_socket_info.sendbuf = pData;
 	}
-
+	if(g_ssl == NULL)
+		DSP_Debug();
     if ( (ret = SSL_write(g_ssl,g_socket_info.sendbuf,g_socket_info.sendlen)) < 0 ) {
+        #ifdef CFG_DBG
         OsLog(LOG_DEBUG,"SSL: ssl send err[%d][%s]",ret,SSL_state_string_long(g_ssl));
-        // SSL_shutdown(g_ssl);
-        // SSL_free(g_ssl);
-        // SSL_CTX_free(g_ctx);
-        // closesocket(g_socket_fd);
-        return -88;
+        #endif
     }
 
-    ret = Ssl_recv_msg(g_ssl,pReceivedData,ReceivedDataLengthMax,Timeout);
-
+	OsLog(LOG_DEBUG,"SSL: ssl_send_msg ret =%d",ret);
     return ret;
 }
 
-s32 SocketTransmit(pu8 pHost, u32 Port, pu8 pData, u32 DataLength, pu8 pReceivedData, u32 ReceivedDataLengthMax, u32 Timeout )
+s32 ssl_recv_msg(char * outbuf, ssize_t recvlen, int timeout)
 {
-	#warning ("This api doesn't support! ");
-}
+	ssize_t len = 0;
+	int offset = 0;
+	int pending_status;
+	if((g_ssl == NULL) || (outbuf == NULL) || (recvlen == 0)){
+		return -1;
+	}
+	//setSslReadTimeout(g_ssl,timeout);
+	//Receive information from the server
+	offset = 0;
+	len = setSslReadTimeout(g_ssl,timeout);
+	if(len > 0){
+		while ((len = SSL_read(g_ssl, outbuf + offset, recvlen -1 - offset)) > 0) {
+			OsLog(LOG_DEBUG,"SSL: SSL_read ret[%d]",len);
+			offset += len;
+			len = setSslReadTimeout(g_ssl,500);
+			if(len <= 0){
+				break;
+			}
+    	}
+		OsLog(LOG_DEBUG,"SSL: SSL_read: %s",outbuf);
+	}else{
+		OsLog(LOG_DEBUG,"SSL: SSL_read Timeout [%d]",len);
+       	offset = len;
+	}
 
+	return offset;
+}

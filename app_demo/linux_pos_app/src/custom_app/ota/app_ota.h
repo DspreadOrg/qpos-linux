@@ -3,18 +3,14 @@
 
 #include "app_includes.h"
 
-
-//#define TMS_FW_HEART_CUSTOM_URL                "http://cs.dspread.net:9090/api/v1/heartbeat"
-//#define TMS_FW_HEART_CUSTOM_URL 	    "http://www.dspreadserv.net:9997/api/v1/heartbeat"
-#define TMS_FW_HEART_CUSTOM_URL                "http://211.157.135.52:10039/terminal/getFirmwareUpgradeInfo"
-
+#define TMS_FW_HEART_CUSTOM_URL               "https://www.dspreadser.net:9011/terminal"   
 
 void DispOtaCheck();
 void DispOtaUpdate();
 void Firmware_OTA_Check();
 void Firmware_OTA();
 void DispDownloading();
-void TmsDispCallback(u32 id,u32 offset,u32 Length,void *pMsg);
+void TmsDispCallback(u32 id, char *pMsg);
 void dispOtaCheckResult();
 void ui_version_not_found();
 void ui_Downloading_Fail();

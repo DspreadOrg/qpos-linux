@@ -10,7 +10,6 @@ typedef struct
 }StartTransaction_t,*pStartTransaction_t;
 
 extern void DispCardsSupported( void );
-extern void setTransInitData( pvoid param );
 extern void DispSeePhone();
-extern void DispCards( u32 cardsSupported );
+extern void DispCards(u32 cardsSupported );
 #endif

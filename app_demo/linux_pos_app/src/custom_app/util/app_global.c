@@ -109,17 +109,3 @@ u32 c4_2_uint(pu8  c4)
 	return (((u32)(*c4) << 24) + ((u32)(*(c4 + 1)) << 16) +
 	        ((u32)(*(c4 + 2)) << 8) + (*(c4 + 3)));
 }
-
-void FormatAmount(T_U8_VIEW uvAmt)
-{
-    pu8 pBuffer = NULL;
-    char Tem[32]={0};
-
-    memcpy(Tem,uvAmt.head,uvAmt.len);
-    pBuffer = malloc(64);
-    memset(pBuffer, 0x00, 64);
-    format_amt_ascn_to_bcd6(Tem, strlen((char * )Tem), pBuffer);
-    T_U8_VIEW Trans_amt={pBuffer,6};
-    TransPoolSet(TAG_EMV_AMOUNT_AUTH_NUM,Trans_amt);
-    free(pBuffer);
-}

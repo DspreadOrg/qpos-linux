@@ -14,22 +14,17 @@ static void signatureCallback() {
 	elceSignBuf = malloc(4*1024);
 	memset(elceSignBuf,0,4*1024);
 	disp_disable_update();
-    //nElecSignRet = Disp_nElecSign(elceSignBuf,&elceSignLen,NULL,elceSignTimeOut,10,75,300,125,0);
 	nElecSignRet = Disp_nElecSignEx(elceSignBuf,&elceSignLen,NULL,0.8,elceSignTimeOut,10,75,300,125,0);
 	disp_enable_update();
 	if(nElecSignRet != RET_OK)
 	{
 		OsLog(LOG_DEBUG,"Dspread: nElecSignRet = %d",nElecSignRet);
-
 		free(elceSignBuf);
-		TransKbdEvent( EVENT_KEY_CANCEL );
 		GuiEventRegister(LCD_DISP_CANCEL);
 	}
 	else
 	{
 		OsLog(LOG_DEBUG,"Dspread: elceSignLen = %d",elceSignLen);
-		OsLog(LOG_DEBUG,"Dspread: %s",elceSignBuf);
-		app_trace_value(elceSignBuf,elceSignLen);
 		free(elceSignBuf);
 		DispMenuOptions();
 	}

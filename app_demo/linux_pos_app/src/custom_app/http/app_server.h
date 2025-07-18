@@ -32,6 +32,10 @@
 #define SERVER_REQUEST_LENGTH       (1024)
 #define SERVER_RECV_LENGTH          (4096)
 
+typedef struct {
+    char* data;
+    size_t length;
+} Buffer;
 
 /*-----------------------------------------------------------------------------
 |   Enumerations

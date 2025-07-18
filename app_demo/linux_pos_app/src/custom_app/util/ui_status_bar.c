@@ -1,5 +1,4 @@
 #include "app_global.h"
-#include "proj_sdk.h"
 
 #define LIMIT_BATT_PERCENT_INERVAL      60
 
@@ -86,11 +85,7 @@ void UpdateIcon()
         lv_label_set_text(Icon_usb,"");
 
     updateTime();
-    DispBattery();
-    // To do: Use this code if you want see the battery percentage
-    
-    lv_label_set_text_fmt(Icon_batt_percent, "%ld%%", Get_dev_battery_lvl());
-    
+    DispBattery();   
 }
 
 /*----------------------------------------------------------------------------

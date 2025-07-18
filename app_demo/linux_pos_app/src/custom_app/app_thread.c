@@ -119,8 +119,6 @@ void Gprs_Init(){
 	#ifdef CFG_DBG
     OsLog(LOG_ERROR,"Dspread: -------------------Gprs_Init-------------------");
 	#endif
-	ApnParam_t apn;
-	memset(&apn,0,sizeof(ApnParam_t));
     OsWlLock();
 
 	ret = OsWlInit("");
@@ -139,22 +137,6 @@ void Gprs_Init(){
 		#ifdef CFG_DBG
 		OsLog(LOG_ERROR,"Dspread: -------------------Sim instert-------------------");
 		#endif
-		pApnParam_t pApn=NULL;
-		char apn_mcc[4];
-		char apn_mnc[4];
-		char nameOP1[21];
-		char nameOP[8];
-		g_sim_status = true;
-		memset(nameOP1,0X00,sizeof(nameOP1));
-		memset(nameOP,0X00,sizeof(nameOP));
-		ret = OsWlGetIccid(nameOP1);//fun_gprs_get_iccid((pu8)nameOP1,(pu32)sizeof(nameOP1));
-		if(ret != RET_OK)
-		{
-		#ifdef CFG_DBG
-		OsLog(LOG_ERROR,"Dspread: -------------------OsWlGetIccid ret = %d iccid = %s",ret,nameOP1);
-		#endif
-		}
-		memcpy(nameOP,nameOP1,6);
 	}
 
 	if (status != 1)

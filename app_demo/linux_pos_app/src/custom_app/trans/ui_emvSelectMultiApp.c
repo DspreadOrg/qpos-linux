@@ -1,7 +1,8 @@
 #include "ui_emvSelectMultiApp.h"
 
 struct App {
-    u8 counter;
+    int counter;
+    char listIndex[ 5 ][ 3 ];
     char listName[ 5 ][ 20 ];
 };
 static struct App LocalMultiApp;
@@ -27,12 +28,10 @@ static void UpdateKernelSelected( u8 selected ) {
 static void selectProcess( int indexSelected ) {
 
     if( indexSelected < 0 ) {
-        TransKbdEvent( EVENT_KEY_CANCEL );
+        get_transaction_data()->emv_multi_app_select_result = -1;
     }
     else {
-        UpdateKernelSelected( (u8)indexSelected );
-
-        TransKbdEvent( EVENT_KEY_CONFIRM );
+        get_transaction_data()->emv_multi_app_select_result = indexSelected;
     }
 } 
 
@@ -147,65 +146,18 @@ void DispMultiAppList( void ) {
     lv_timer_enable( true );
 }
 
-static u8 unpackCounter( pu8 tlvAppData ) {
-    pu8 counterNode = tlv_find_( tlvAppData, KERNEL_TAG_AID_LIST_CANDIDATE_COUNTER );
-    DspDebug();
-    if( !counterNode || !tlv_get_l_( counterNode ) ) {
-		return 0;       
-    }
-    pu8 value = NULL;
-    value = tlv_get_v_( counterNode );
-    u8 counter = value[ 0 ];
-    OsLog(LOG_DEBUG,"============= counter = %d",counter);
-    return counter;
-}
-
-static int unpackAppsName( u8 counter, pu8 tlvAppData ) {
+void unpackAppsName( int counter, AidCandidate_t *pList ) 
+{
+    int i;
     memset(&LocalMultiApp, 0x00, sizeof( LocalMultiApp ) );
     LocalMultiApp.counter = counter;
-
-    pu8 pNode = tlv_find_( tlvAppData, POS_TAG_RES_KN_APP_DATA );
-    pNode = tlv_get_first_child_( pNode );
-    for( int index = 0; index < counter; index++ ) {
-        if( pNode ) {
-
-            if( tlv_get_t_( pNode ) == KERNEL_TAG_AID_LIST_DISPLAYNAME ) {
-                memcpy( LocalMultiApp.listName[ index ], tlv_get_v_( pNode ), tlv_get_l_( pNode ) );
-            }
-            else{
-                return ERROR_CODE;
-            }
-        }
-        pNode = tlv_get_next_child_( pNode );
-    }
-
-    return 1;
-}
-
-bool unpackAppData( pu8 tlvData ) {
-    T_U8_VIEW tlvAppData = get_tlv_view( tlvData, POS_TAG_RES_KN_APP_DATA );
-	
-    if( !UV_OK( tlvAppData ) )	{
-		return false;
-	}
-
-    return unpackAppsName( unpackCounter( tlvData ), tlvData ) > 0;
-}
-
-
-void emvSelectMultiApp( pu8 tlvData ) {
-    LocalInputTlv = tlvData;
-
-	if( !unpackAppData( tlvData ) ) {
-        tlv_replace_( LocalInputTlv, POS_TAG_RES_KN_APP_DATA, 0, NULL );
-    }
-    else{
-        
-        GuiEventRegister(LCD_DISP_SELECT_APP);
-        u32 res = WaitEvents( APP_EVENT_TIMEOUT | APP_EVENT_USER_CONFIRM | APP_EVENT_USER_CANCEL, 60000, NULL );
-
-        if(res == APP_EVENT_USER_CONFIRM ) {
-            GuiEventRegister(LCD_DISP_READING_CARD);
-        }
+    for(i =0;i<counter;i++)
+    {
+        if(i == 5)
+            break;
+        memcpy(LocalMultiApp.listName[i],pList[i]._lable,pList[i]._lable_len);
+        sprintf(LocalMultiApp.listIndex[i],"%d",i+1);
     }
 }
+
+

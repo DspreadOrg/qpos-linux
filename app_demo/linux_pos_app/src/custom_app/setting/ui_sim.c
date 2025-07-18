@@ -126,7 +126,7 @@ void DispSimSetting()
  
 	lv_obj_t * btn_list = lv_btn_list_create(330, 155, LV_ALIGN_CENTER, 30, 30);
     lv_group_remove_all_objs(s_group_keypad_indev);
-	if(Get_dev_gprs_signal_lvl()){        
+	if(GetSimContnectStatus()){        
 		lv_add_btn(btn_list, SimSetting_cb, 118, 62, "1", "Open\nAirplane", LV_ALIGN_CENTER, 0, 4, true);
     	lv_add_btn(btn_list, SimSetting_cb, 118, 62, "2", "Close\nAirplane", LV_ALIGN_CENTER, 0, 4, false);
     }else{        
@@ -158,7 +158,7 @@ static void SimSetting_cb(lv_event_t * event)
 
 	switch(key)
 	{
-		case LV_KEY_BACKSPACE:
+		case LV_KEY_ESC:
 			DispSettingOptions();
 			break;
 		

@@ -106,7 +106,7 @@ static void wifi_Select_cb(lv_event_t * event)
                 lv_group_focus_next(s_group_keypad_indev);
                 break;
             
-			case LV_KEY_BACKSPACE:
+			case LV_KEY_ESC:
                 DispSettingOptions();
                 break;
             
@@ -187,7 +187,7 @@ static void ConnectDisconnectWifi_cb(lv_event_t * event)
     
     switch(key)
     {
-        case LV_KEY_BACKSPACE:
+        case LV_KEY_ESC:
             DispSettingOptions();
             break;
 
@@ -325,7 +325,7 @@ static void WifiWarning_cb(lv_event_t * event)
         uint32_t key=lv_indev_get_key(indev);
         switch(key)
         {	        
-			case LV_KEY_BACKSPACE:
+			case LV_KEY_ESC:
 				DispSettingOptions();
 				break;		   		
             
@@ -375,7 +375,7 @@ static void WifiConnectionFail_cb(lv_event_t * event)
         uint32_t key=lv_indev_get_key(indev);
         switch(key)
         {	        
-		   case LV_KEY_BACKSPACE:
+		   case LV_KEY_ESC:
     				//DispSettingByScreen();			
 				break;						   		
             

@@ -15,6 +15,8 @@ extern "C"
 #define INT8	char
 
 #define UINT64	unsigned  long
+#define UINT32	unsigned  int
+#define UINT16	unsigned  short
 #define UINT8	unsigned  char
 
 #define FAILD   	(-1)
@@ -115,6 +117,7 @@ typedef enum DPORT_STYLE_e
 	DPORT_ENABLE_BYPASS 				= (1 << 4),	// 使能BYPASS功能
 	DPORT_LIST_ALWAYS_RETURN_NUMBERKEY = (1 << 5),	//
 	DPORT_ENABLE_LANGEN = (1 << 6),	// 显示英文
+	DPORT_PWD_INPUT = (1 << 7),	// 密码框
 }DPORT_STYLE_T;
 
 
@@ -141,14 +144,14 @@ typedef enum DPORT_IME_TYPE
 	DPORT_IME_SYMBOL = (1<<3)
 }DPORT_IME_T;
 
-//提示框界面类型
+// Prompt box interface type
 typedef enum DPORT_TIPPAGE_KEY_TYPE_e
 {
-	EM_STYLE_OK = (1 <<0),	//确认键
-	EM_STYLE_CANCEL= (1 <<1)//取消键
+	EM_STYLE_OK = (1 <<0),	//confirm key
+	EM_STYLE_CANCEL= (1 <<1)//cancel key
 }DPORT_TIPPAGE_KEY_TYPE_T;
 
-///返回值 定义
+// /Return Value Definition
 typedef enum DPORT_RET
 {
 	RET_DPORT_TIMEOUT = -3,
@@ -204,112 +207,107 @@ typedef struct tagListShowInfo{
 
 /*
  * @author:
- * @Date: 	06-10-2022
+ * @Date: 06-10-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nSetMsgBoxLanguage
- * @函数功能: 设置messgeBox显示语言
- *
- * @输入参数:language 设置语言(DPORT_CHINESE或DPORT_ENGLISH)
- *
- * @输出参数: 无
- *
- * @返回值:无
- * 			
- * @备注:
- *			
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nSetMsgBoxLanguage
+ * @Function function: Set messageBox display language
+ * 
+ * @Input parameters: language setting language (DPORT_CHINESE or DPORT_ENGLISH)
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value: None
+ * 
+ * @Remark:
+ * 
+ * @Call Example:
  */
 void Disp_nSetMsgBoxLanguage(Uint8 language);
 
 /*
  * @author:
- * @Date: 	10-10-2022
+ * @Date: 10-10-2022
  * @Record: create it;
- *
- * @函数名称: Disp_bInit
- * @函数功能: Disp模块初始化
- *
- * @输入参数:无
- *
- * @输出参数: 无
- *
- * @返回值:无
- * 			
- * @备注:
- *			系统初始化时必须调用一次
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_bInit
+ * @Function Function: Disp module initialization
+ * 
+ * @Input parameters: None
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value: None
+ * 
+ * @Remark:
+ * Must be called once during system initialization
+ * @Call Example:
  */
 void Disp_vInit(void);
 
 /*
  * @author:
- * @Date: 	10-10-2022
+ * @Date: 10-10-2022
  * @Record: create it;
- *
- * @函数名称: Disp_vClearLine
- * @函数功能: 清空指定行的显示内容
- *
- * @输入参数:nAtLine  指定行号 			 
- *
- * @输出参数: 无
- *
- * @返回值:无
- *
- * @备注:
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_vClearLine
+ * @Function function: Clear the display content of the specified line
+ * 
+ * @Input parameter:nAtLine Specify the line number
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value: None
+ * 
+ * @Remark:
+ * 
+ * @Call Example:
  */
 void Disp_vClearLine(Uint8 nAtLine);
 
 
 /*
  * @author:
- * @Date: 	10-10-2022
+ * @Date: 10-10-2022
  * @Record: create it;
- *
- * @函数名称: Disp_vShowStrAt
- * @函数功能: 在指定的行列中显示字符串的内容
- * @输入参数:
- * 			 nAtLine  	指定行的行号
- * 			 nAtColumn	指定列位置(目前未实现， 默认都填写 0)
- * 			 fmt		显示的数据，使用可变参数方式进行输入
- *
- * @输出参数: 无
- *
- * @返回值:
- * 			无
- * @备注:
- * 	行号范围：针对933，大字体下标为:0-5,一共6行,小字体下标为:0-6,一共7行
- * @调用示例:
- * 			DPort_vShowStrAt(1, 0, "%s", "在这里显示");
- *
+ * 
+ * @Function Name: Disp_vShowStrAt
+ * @Function function: Display the content of a string in the specified row and column
+ * @Input parameters:
+ * nAtLine Specifies the line number of the line
+ * nAtColumn Specifies the column location (not implemented at present, all are filled in 0 by default)
+ * The data displayed by fmt is input using variable parameters
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value:
+ * none
+ * @Remark:
+ * Line number range: For 933, the large font subscript is: 0-5, a total of 6 lines, and the small font subscript is: 0-6, a total of 7 lines
+ * @Call Example:
+ * DPort_vShowStrAt(1, 0, "%s", "Show here");
  */
 void Disp_vShowStrAt(Uint8 nAtLine, Uint8 nAtColumn, Int8* fmt, ...);
 
 /*
  * @author:
- * @Date: 	10-10-2022
+ * @Date: 10-10-2022
  * @Record: create it;
- *
- * @函数名称: Disp_vShowStrAtEx
- * @函数功能: 在指定的行列中显示字符串的内容,能够自动换行
- * @输入参数:
- * 			 nAtLine  	指定行的行号
- * 			 nPattern	对齐方式  参见ALIGN_DEF_T定义
- * 			 fmt		显示的数据，使用可变参数方式进行输入
- *
- * @输出参数: 无
- *
- * @返回值:
- * 			无
- * @备注:
- * 	行号范围：针对933，大字体下标为:0-5,一共6行,小字体下标为:0-6,一共7行
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_vShowStrAtEx
+ * @Function function: Display the content of a string in the specified row and column, and can automatically wrap the line
+ * @Input parameters:
+ * nAtLine Specifies the line number of the line
+ * nPattern alignment See ALIGN_DEF_T definition
+ * The data displayed by fmt is input using variable parameters
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value:
+ * none
+ * @Remark:
+ * Line number range: For 933, the large font subscript is: 0-5, a total of 6 lines, and the small font subscript is: 0-6, a total of 7 lines
+ * @Call Example:
  */
 void Disp_vShowStrAtEx(Uint8 nAtLine, Uint8 nPattern, Int8* fmt, ...);
 
@@ -317,132 +315,126 @@ void Disp_vShowPersianStr(Uint8 nAtLine, Uint8 nPattern, Int8* fmt, ...);
 
 /*
  * @author:
- * @Date: 	10-10-2022
+ * @Date: 10-10-2022
  * @Record: create it;
- *
- * @函数名称: Disp_vShowStr
- * @函数功能: 在指定的行列中显示字符串内容
- * @输入参数:
- * 			 nAtLine  	指定行的位置
- * 			 nType		显示类型  参见DPORT_DTYPE_T定义
- * 			 nPattern	对齐方式  参见ALIGN_DEF_T定义
- * 			 fmt		显示的数据，使用可变参数方式进行输入
- *
- * @输出参数: 无
- *
- * @返回值:无
- * 			
- * @备注:
- * 	行号范围：针对933，大字体下标为:0-5,一共6行,小字体下标为:0-6,一共7行
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_vShowStr
+ * @Function function: Display string content in specified row and column
+ * @Input parameters:
+ * nAtLine Specifies the position of the row
+ * nType display type See DPORT_DTYPE_T definition
+ * nPattern alignment See ALIGN_DEF_T definition
+ * The data displayed by fmt is input using variable parameters
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value: None
+ * 
+ * @Remark:
+ * Line number range: For 933, the large font subscript is: 0-5, a total of 6 lines, and the small font subscript is: 0-6, a total of 7 lines
+ * @Call Example:
  */
 void Disp_vShowStr(Uint8 nAtLine, Uint8 nType, Uint8 nPattern, Int8* fmt, ...);
 
 /*
  * @author:
- * @Date: 	10-10-2022
+ * @Date: 10-10-2022
  * @Record: create it;
- *
- * @函数名称: Disp_vShowImage
- * @函数功能: 在指定像素点位置显示图片
- * @输入参数:
- * 			 pcBmpData			图片数据缓冲
- * 			 LenofBufferSize	pBmpData所指向buffer长度
- * 			 tStartPoint  		指定屏幕显示起始X、Y点位置,起始位置可使用Disp_vGetUserDisplayRange获取
- * 			 uBmpWidth			图片宽
- * 			 uBmpHeight			图片高
- *
- * @输出参数: 无
- *
- * @返回值:
- * 			无
- *
- * @备注:
- *
- * @调用示例:
- * 		
- *
+ * 
+ * @Function Name: Disp_vShowImage
+ * @Function function: Display pictures at specified pixel locations
+ * @Input parameters:
+ * pcBmpData picture data buffering
+ * LenofBufferSize pBmpData points to buffer length
+ * tStartPoint specifies the starting X and Y points of the screen display. The starting position can be obtained using Disp_vGetUserDisplayRange
+ * uBmpWidth picture width
+ * uBmpHeight Picture High
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value:
+ * none
+ * 
+ * @Remark:
+ * 
+ * @Call Example:
  */
 void Disp_vShowImage(Uint8* pcBmpData, Uint32 LenofBufferSize, POINT_T tStartPoint, Uint32 uBmpWidth, Uint32 uBmpHeight);
 
 /*
  * @author:
- * @Date: 	10-10-2022
+ * @Date: 10-10-2022
  * @Record: create it;
- *
- * @函数名称: Disp_bDrawLineAt
- * @函数功能: 在指定点(nBeginX, nBeginY)到(nEndX, nEndY)画一条直线
- * @输入参数:
- * 			 tBegin  	指定直线的起始点X,Y坐标
- * 			 tEnd		指定直线的终点X,Y坐标
- * 			 nType		指定画线类型，实线、虚线(仅支持直线)
- * 			 nColor		指定描绘的颜色
- *
- * @输出参数: 无
- *
- * @返回值:
- * 			无
- *
- * @备注:
- *  参考 POINT_RANGE_T 定义范围
- * 	933 分辨率为 320X240
- *起始、终止位置可通过Disp_vGetUserDisplayRange获取
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_bDrawLineAt
+ * @Function function: Draw a straight line at the specified point (nBeginX, nBeginY) to (nEndX, nEndY)
+ * @Input parameters:
+ * tBegin Specifies the starting point X and Y coordinates of the straight line
+ * tEnd Specifies the end point X and Y coordinates of the line
+ * nType Specifies the line drawing type, solid line and dotted line (only straight lines are supported)
+ * nColor Specifies the color to be drawn
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value:
+ * none
+ * 
+ * @Remark:
+ * Reference POINT_RANGE_T to define the scope
+ * 933 resolution is 320X240
+ * The start and end positions can be obtained through Disp_vGetUserDisplayRange
+ * @Call Example:
  */
 void Disp_vDrawLineAt(POINT_T tBegin, POINT_T tEnd, DPORT_LINETYPE_T nType, DPORT_COLOR_T nColor);
 
 /*
  * @author:
- * @Date: 	10-10-2022
+ * @Date: 10-10-2022
  * @Record: create it;
- *
- * @函数名称: Disp_vClearPort
- * @函数功能: 将应用程序所显示的所有内容清空
- * @输入参数:	 无
- *
- * @输出参数: 无
- *
- * @返回值:
- * 			无
- *
- * @备注:
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_vClearPort
+ * @Function function: Clear all content displayed by the application
+ * @Input parameters: None
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value:
+ * none
+ * 
+ * @Remark:
+ * 
+ * @Call Example:
  */
 void Disp_vClearPort(void);
 
 /*
  * @author:
- * @Date: 	10-25-2022
+ * @Date: 10-25-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nUserInputView
- * @函数功能: 用户输入框控件
- * @输入参数:
- * 				 X  Y --控件显示的起始位置
- * 				 nWidth  nHeight--控件显示宽高
- * 				 nLimtMin	-----输入最小长度限制
- *				 nLimtMax	-----输入最大长度限制
- *				 nInputMethod --- 输入法类型
- * 				 nOutBufferLen--- 输出缓存长度
- *				 nTimeOut-----超时时间(单位秒)
- *				 nStyle	-----数字键响应以及自动索引功能(预留，填0)
- *
- * @输出参数: pOutBuffer --- 输出缓存
- *
- * @返回值:
- *			成功		--控件输入长度 
- * 			失败	 	-- RET_DPORT_FAILD
- *			超时		 --RET_DPORT_TIMEOUT
- *			用户取消--RET_DRPOT_CANCEL
- *
- * @备注:
- *			单行显示最多字符根据字体大小不同而不同
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nUserInputView
+ * @Function Function: User input box control
+ * @Input parameters:
+ * X Y --The starting position of the control display
+ * nWidth nHeight--Control displays width and height
+ * nLimtMin -----Input minimum length limit
+ * nLimtMax -----Input maximum length limit
+ * nInputMethod --- Input method type
+ * nOutBufferLen--- Output cache length
+ * nTimeOut----Timeout time (unit seconds)
+ * nStyle -----Number key response and automatic indexing function (reserve, fill in 0)
+ * 
+ * @Output parameters: pOutBuffer --- Output cache
+ * 
+ * @Return value:
+ * Success --Control input length
+ * Failed -- RET_DPORT_FAILD
+ * Timeout --RET_DPORT_TIMEOUT
+ * User Cancel-RET_DRPOT_CANCEL
+ * 
+ * @Remark:
+ * The maximum characters displayed in a single line vary according to the font size
+ * @Call Example:
  */
 Int32 Disp_nUserInputView(int X, int Y, int nWidth, int nHeight, 
 							Uint32 nLimtMin,
@@ -455,41 +447,40 @@ Int32 Disp_nUserInputView(int X, int Y, int nWidth, int nHeight,
 
 /*
  * @author:
- * @Date: 	10-25-2022
+ * @Date: 10-25-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nUserInputViewEx
- * @函数功能: 用户输入框控件(可设置输入法类型的设置先后顺序)
- * @输入参数:
- * 				 X  Y --控件显示的起始位置
- * 				 nWidth  nHeight--控件显示宽高
- * 				 nLimtMin	-----输入最小长度限制
- *				 nLimtMax	-----输入最大长度限制
- *				 pInputMethod --- 输入法类型
- *				 nLenOfInputMethod	--输入法数量
- * 				 nOutBufferLen--- 输出缓存长度
- *				 nTimeOut-----超时时间(单位秒)
- *				 nStyle	-----数字键响应以及自动索引功能(预留，填0)
- *
- * @输出参数: pOutBuffer --- 输出缓存
- *
- * @返回值:
- *			成功		--控件输入长度 
- * 			失败	 	-- RET_DPORT_FAILD
- *			超时		 --RET_DPORT_TIMEOUT
- *			用户取消--RET_DRPOT_CANCEL
- *
- * @备注:
- *			单行显示最多15个汉字，30个字符；
- *			可通过nShowLineHeight，参数定义控件占用的行数，扩展控件输入的字符个数
- *			例如：最大支持显示45个汉字输入则可以调整参数为
- *			Disp_nUserInputView(1,3,1,45,DPORT_IME_PY,sizeof(auOutBuffer),auOutBuffer);
- * @调用示例:
- *			PR_INT8 auOutBuffer[10+1]={0};
- *			Uint32 InputMethod[] = {DPORT_IME_PY, DPORT_IME_EN};
- *
- *			Disp_nUserInputView(1,2,1,10,InputMethod,sizeof(aucOutBuffer),aucOutBuffer);
- *
+ * 
+ * @Function Name: Disp_nUserInputViewEx
+ * @Function function: User input box control (can set the order of input method type settings)
+ * @Input parameters:
+ * X Y --The starting position of the control display
+ * nWidth nHeight--Control displays width and height
+ * nLimtMin -----Input minimum length limit
+ * nLimtMax -----Input maximum length limit
+ * pInputMethod --- Input method type
+ * nLenOfInputMethod --number of input methods
+ * nOutBufferLen--- Output cache length
+ * nTimeOut----Timeout time (unit seconds)
+ * nStyle -----Number key response and automatic indexing function (reserve, fill in 0)
+ * 
+ * @Output parameters: pOutBuffer --- Output cache
+ * 
+ * @Return value:
+ * Success --Control input length
+ * Failed -- RET_DPORT_FAILD
+ * Timeout --RET_DPORT_TIMEOUT
+ * User Cancel-RET_DRPOT_CANCEL
+ * 
+ * @Remark:
+ * A single line displays up to 15 Chinese characters and 30 characters;
+ * You can use nShowLineHeight to define the number of lines occupied by the control and expand the number of characters entered by the control.
+ * For example: the maximum support for displaying 45 Chinese characters input can be adjusted to
+ * Disp_nUserInputView(1,3,1,45,DPORT_IME_PY,sizeof(auOutBuffer),auOutBuffer);
+ * @Call Example:
+ * PR_INT8 auOutBuffer[10+1]={0};
+ * Uint32 InputMethod[] = {DPORT_IME_PY, DPORT_IME_EN};
+ * 
+ * Disp_nUserInputView(1,2,1,10,InputMethod,sizeof(aucOutBuffer),aucOutBuffer);
  */
 Int32 Disp_nUserInputViewEx(int X, int Y, int nWidth, int nHeight, 
 							Uint32 nLimtMin,
@@ -503,41 +494,40 @@ Int32 Disp_nUserInputViewEx(int X, int Y, int nWidth, int nHeight,
 
 /*
  * @author:
- * @Date: 	10-25-2022
+ * @Date: 10-25-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nUserInputViewEx
- * @函数功能: 用户输入框控件(可设置输入法类型的设置先后顺序)
- * @输入参数:
- * 				 X  Y --控件显示的起始位置
- * 				 nWidth  nHeight--控件显示宽高
- * 				 nLimtMin	-----输入最小长度限制
- *				 nLimtMax	-----输入最大长度限制
- *				 pInputMethod --- 输入法类型
- *				 nLenOfInputMethod	--输入法数量
- * 				 nOutBufferLen--- 输出缓存长度
- *				 nTimeOut-----超时时间(单位秒)
- *				 nStyle	-----数字键响应以及自动索引功能(预留，填0)
- *
- * @输出参数: pOutBuffer --- 输出缓存
- *
- * @返回值:
- *			成功		--控件输入长度 
- * 			失败	 	-- RET_DPORT_FAILD
- *			超时		 --RET_DPORT_TIMEOUT
- *			用户取消--RET_DRPOT_CANCEL
- *
- * @备注:
- *			单行显示最多15个汉字，30个字符；
- *			可通过nShowLineHeight，参数定义控件占用的行数，扩展控件输入的字符个数
- *			例如：最大支持显示45个汉字输入则可以调整参数为
- *			Disp_nUserInputView(1,3,1,45,DPORT_IME_PY,sizeof(auOutBuffer),auOutBuffer);
- * @调用示例:
- *			PR_INT8 auOutBuffer[10+1]={0};
- *			Uint32 InputMethod[] = {DPORT_IME_PY, DPORT_IME_EN};
- *
- *			Disp_nUserInputView(1,2,1,10,InputMethod,sizeof(aucOutBuffer),aucOutBuffer);
- *
+ * 
+ * @Function Name: Disp_nUserInputViewEx
+ * @Function function: User input box control (can set the order of input method type settings)
+ * @Input parameters:
+ * X Y --The starting position of the control display
+ * nWidth nHeight--Control displays width and height
+ * nLimtMin -----Input minimum length limit
+ * nLimtMax -----Input maximum length limit
+ * pInputMethod --- Input method type
+ * nLenOfInputMethod --number of input methods
+ * nOutBufferLen--- Output cache length
+ * nTimeOut----Timeout time (unit seconds)
+ * nStyle -----Number key response and automatic indexing function (reserve, fill in 0)
+ * 
+ * @Output parameters: pOutBuffer --- Output cache
+ * 
+ * @Return value:
+ * Success --Control input length
+ * Failed -- RET_DPORT_FAILD
+ * Timeout --RET_DPORT_TIMEOUT
+ * User Cancel-RET_DRPOT_CANCEL
+ * 
+ * @Remark:
+ * A single line displays up to 15 Chinese characters and 30 characters;
+ * You can use nShowLineHeight to define the number of lines occupied by the control and expand the number of characters entered by the control.
+ * For example: the maximum support for displaying 45 Chinese characters input can be adjusted to
+ * Disp_nUserInputView(1,3,1,45,DPORT_IME_PY,sizeof(auOutBuffer),auOutBuffer);
+ * @Call Example:
+ * PR_INT8 auOutBuffer[10+1]={0};
+ * Uint32 InputMethod[] = {DPORT_IME_PY, DPORT_IME_EN};
+ * 
+ * Disp_nUserInputView(1,2,1,10,InputMethod,sizeof(aucOutBuffer),aucOutBuffer);
  */
 Int32 Disp_nUserInputViewExEx(int X, int Y, int nWidth, int nHeight, 
 							Uint32 nLimtMin,
@@ -552,176 +542,171 @@ Int32 Disp_nUserInputViewExEx(int X, int Y, int nWidth, int nHeight,
 
 /*
  * @author:
- * @Date: 	10-27-2022
+ * @Date: 10-27-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nMessageBox
- * @函数功能: 提示框控件
- * @输入参数:	 
- 			 szTitle 		--标题信息
- 			 theStype		--界面风格参考DPORT_TIPPAGE_KEY_TYPE_T
- 			 nTimeoutSec  --超时时间(单位秒)
- *			nStyle	-----数字键响应以及自动索引功能(预留，填0)
- 			 args		--格式字符串
- *
- * @输出参数: 无
- *
- * @返回值: 
- *			RET_DPORT_OK 	 --- 确认键返回值
- *			RET_DRPOT_CANCEL --- 取消键返回值
- *			RET_DPORT_TIMEOUT --超时
- * @备注:
- *			最大支持 100个汉字，200个字符显示
- * @调用示例:
- *	 	 界面类型:目前只有单确认键和确认取消键
- * 	 	 Disp_nMessageBox("标题信息",EM_STYLE_OK, 5,"%s","交易成功");
- * 	 	 Disp_nMessageBox("标题信息",EM_STYLE_OK|EM_STYLE_CANCEL, 5, "%s","交易成功");
- *
+ * 
+ * @Function Name: Disp_nMessageBox
+ * @Function Function: Prompt Box Control
+ * @Input parameters:
+ * szTitle --Title information
+ * theStype --Interface style reference DPORT_TIPPAGE_KEY_TYPE_T
+ * nTimeoutSec --Timeout time (unit seconds)
+ * nStyle -----Number key response and automatic indexing function (reserve, fill in 0)
+ * args --format string
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value:
+ * RET_DPORT_OK --- Confirm key returns value
+ * RET_DRPOT_CANCEL --- Cancel key returns value
+ * RET_DPORT_TIMEOUT --Timeout
+ * @Remark:
+ * Maximum support: 100 Chinese characters, 200 characters display
+ * @Call Example:
+ * Interface type: Currently there is only single confirmation key and confirmation cancel key
+ * Disp_nMessageBox("Title Information",EM_STYLE_OK, 5,"%s","Transaction successful");
+ * Disp_nMessageBox("Title Information",EM_STYLE_OK|EM_STYLE_CANCEL, 5, "%s","Transaction successful");
  */
 Int32 Disp_nMessageBox(Int8 *szTitle, Int32 theStype, Int32 nTimeoutSec, Uint32 nStyle, Int8 *args,...);
 
 /*
  * @author:
- * @Date: 	10-27-2022
+ * @Date: 10-27-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nMessageBoxEx
- * @函数功能: 提示框控件(内容可翻页)
- * @输入参数:	 
- *			X 	Y  	   --提示框坐标 
- *			nWidth  nHeight    --提示框大小
- * 			szTitle --标题信息
- * 			theStype	   --界面风格参考DPORT_TIPPAGE_KEY_TYPE_T
- *			nTimeoutSec	   --超时时间(单位秒)
- *			nStyle	-----数字键响应以及自动索引功能(预留，填0)
- * 			args		   --格式字符串
- *
- * @输出参数: 无
- *
- * @返回值: 按键值
- *			RET_DPORT_OK 	 	--确认键返回值
- *			RET_DRPOT_CANCEL	--取消键返回值
- *			RET_DPORT_TIMEOUT 	--超时
- *
- * @备注:
- *			最大支持 100个汉字，200个字符显示
- * @调用示例:
- *	 	 界面类型:目前只有单确认键和确认取消键
- *		Disp_nMessageBoxEx(5, 27, 310, 200, NULL,MB_OK | MB_CANCEL, 0, 0,  "%s", "内容测试");
- *		Disp_nMessageBoxEx(5, 27, 310, 200, "标题测试",MB_OK, 0,  0,"%s", "内容测试");
- *
+ * 
+ * @Function Name: Disp_nMessageBoxEx
+ * @Function function: Prompt box control (content can be turned on pages)
+ * @Input parameters:
+ * X Y -- Prompt box coordinates
+ * nWidth nHeight -- Prompt box size
+ * szTitle --Title information
+ * theStype --Interface style reference DPORT_TIPPAGE_KEY_TYPE_T
+ * nTimeoutSec --Timeout time (unit seconds)
+ * nStyle -----Number key response and automatic indexing function (reserve, fill in 0)
+ * args --format string
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value: key value
+ * RET_DPORT_OK --Confirm key returns value
+ * RET_DRPOT_CANCEL --Cancel key returns value
+ * RET_DPORT_TIMEOUT --Timeout
+ * 
+ * @Remark:
+ * Maximum support: 100 Chinese characters, 200 characters display
+ * @Call Example:
+ * Interface type: Currently there is only single confirmation key and confirmation cancel key
+ * Disp_nMessageBoxEx(5, 27, 310, 200, NULL,MB_OK | MB_CANCEL, 0, 0, "%s", "Content Test");
+ * Disp_nMessageBoxEx(5, 27, 310, 200, "Title Test", MB_OK, 0, 0,"%s", "Content Test");
  */
 int Disp_nMessageBoxEx(int X, int Y, int nWidth, int nHeight, char* szTitle, int theStype, int nTimeoutSec, Uint32 nStyle, char *args,...);
 
 /*
  * @author:
- * @Date: 	10-27-2022
+ * @Date: 10-27-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowEditBox
- * @函数功能: 显示字符串控件(内容可翻页)
- * @输入参数:	 
- *			X 	Y  		--提示框坐标 
- *			nWidth  nHeight   	--提示框大小
- * 			nTimeoutSec		--超时时间(单位秒)
- *			nStyle	-----数字键响应以及自动索引功能(预留，填0)
- * 			fmt			--格式字符串
- *
- * @输出参数: 无
- *
- * @返回值: 按键值
- *			RET_DPORT_OK 	 	--- 确认键返回值
- *			RET_DPORT_TIMEOUT 	--- 超时
- *			RET_DRPOT_CANCEL	--用户取消
- *			RET_DPORT_FAILD		--参数错误
- * @备注:
- *			最大支持 100个汉字，200个字符显示
- * @调用示例:
- *
- *	Disp_nShowEditBox(10, 30, 300, 60, 10, 0,"%s", "交易成功");
- *
+ * 
+ * @Function Name: Disp_nShowEditBox
+ * @Function function: Display string control (content can be turned on pages)
+ * @Input parameters:
+ * X Y -- Prompt box coordinates
+ * nWidth nHeight -- Prompt box size
+ * nTimeoutSec --Timeout time (unit seconds)
+ * nStyle -----Number key response and automatic indexing function (reserve, fill in 0)
+ * fmt --format string
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value: key value
+ * RET_DPORT_OK --- Confirm key returns value
+ * RET_DPORT_TIMEOUT --- Timeout
+ * RET_DRPOT_CANCEL --User Cancel
+ * RET_DPORT_FAILD --parameter error
+ * @Remark:
+ * Maximum support: 100 Chinese characters, 200 characters display
+ * @Call Example:
+ * 
+ * Disp_nShowEditBox(10, 30, 300, 60, 10, 0,"%s", "Transaction successful");
  */
 int Disp_nShowEditBox(int X, int Y, int nWidth, int nHeight, int nTimeoutSec, unsigned int nStyle, char* fmt, ...);
 
 /*
  * @author:
- * @Date: 	10-27-2022
+ * @Date: 10-27-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowEditBoxEx
- * @函数功能: 显示字符串控件(内容可翻页)
- * @输入参数:	 
- *			X 	Y  			--提示框坐标 
- *			nWidth  nHeight   	--提示框大小
- * 			nTimeoutSec		--超时时间(单位秒)
- *			nStyle			--数字键响应以及自动索引功能(预留，填0)
- * 			string			--显示字符串
- *
- * @输出参数: 无
- *
- * @返回值: 按键值
- 			RET_DPORT_OK 	 --- 确认键返回值
- 			RET_DPORT_TIMEOUT 	--- 超时
- 			RET_DRPOT_CANCEL	--用户取消
- *
- * @备注:
- *			
- * @调用示例:
- *
- *	Disp_nShowEditBox(10, 30, 300, 60, 10, 0, "交易成功");
- *
+ * 
+ * @Function Name: Disp_nShowEditBoxEx
+ * @Function function: Display string control (content can be turned on pages)
+ * @Input parameters:
+ * X Y -- Prompt box coordinates
+ * nWidth nHeight -- Prompt box size
+ * nTimeoutSec --Timeout time (unit seconds)
+ * nStyle --numeric key response and automatic indexing function (reserve, fill in 0)
+ * string --Show string
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value: key value
+ * RET_DPORT_OK --- Confirm key returns value
+ * RET_DPORT_TIMEOUT --- Timeout
+ * RET_DRPOT_CANCEL --User Cancel
+ * 
+ * @Remark:
+ * 
+ * @Call Example:
+ * 
+ * Disp_nShowEditBox(10, 30, 300, 60, 10, 0, "Transaction successful");
  */
 int Disp_nShowEditBoxEx(int X, int Y, int nWidth, int nHeight, int nTimeoutSec, unsigned int nStyle, char* string);
 
 /*
  * @author:
- * @Date: 	10-27-2022
+ * @Date: 10-27-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowLogoView
- * @函数功能: 显示待机画面
- * @输入参数:	 
- *			 szLogoPath  -- 待机画面图片路径，格式需要为565格式
- * 			 szScreenTip -- 待机画面提示信息内容
- *
- * @输出参数: 无
- *
- * @返回值: 无
- *
- * @备注:
- *
- * @调用示例:
- *
- * 	 	 Disp_vShowLogoView("UnionPay.bmp", "中国银联");
+ * 
+ * @Function Name: Disp_nShowLogoView
+ * @Function function: Display standby screen
+ * @Input parameters:
+ * szLogoPath -- The image path of the standby screen, the format needs to be 565 format
+ * szScreenTip -- Standby screen prompt information content
+ * 
+ * @Output Parameters: None
+ * 
+ * @Return value: None
+ * 
+ * @Remark:
+ * 
+ * @Call Example:
+ * 
+ * Disp_vShowLogoView("UnionPay.bmp", "China UnionPay");
  */
 void Disp_vShowLogoView(Int8 *szLogoPath, Int8* pszScreenTip);
 
 /*
  * @author:
- * @Date: 	10-27-2022
+ * @Date: 10-27-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowAmountInputView
- * @函数功能: 显示金额输入界面
- * @输入参数:	 
- *				nX  nY 			--金额框坐标
- * 				nWidth  nHeight 	--金额框大小
- *				pszCurrencyFlag	--货币符号字符串
- *				nMinLen			--最小长度限制
- *				nMaxLen			--最大长度限制
- *				nLenOfBuffer		--pszAmount所指向 buffer长度
- *				nTimeoutSec		--超时时间(单位秒)
- *			nStyle	-----数字键响应以及自动索引功能(预留，填0)
- * @输出参数:
- *				pszAmount		--输入金额buffer
- * @返回值:
- * 			成功 	  -- 金额长度
- *			失败	  -- RET_DPORT_FAILD
- *			用户取消 	-- RET_DRPOT_CANCEL
- * @备注:
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nShowAmountInputView
+ * @Function function: Display amount input interface
+ * @Input parameters:
+ * nX nY --Amount box coordinates
+ * nWidth nHeight --Amount box size
+ * pszCurrencyFlag -- Currency symbol string
+ * nMinLen --Minimum length limit
+ * nMaxLen --Maximum length limit
+ * nLenOfBuffer --buffer length pointed to by pszAmount
+ * nTimeoutSec --Timeout time (unit seconds)
+ * nStyle -----Number key response and automatic indexing function (reserve, fill in 0)
+ * @Output parameters:
+ * pszAmount --Enter the amount buffer
+ * @Return value:
+ * Success -- Amount length
+ * Failed -- RET_DPORT_FAILD
+ * User Cancel -- RET_DRPOT_CANCEL
+ * @Remark:
+ * 
+ * @Call Example:
  */
 int 	Disp_nShowAmountInputView(int nX, int nY, int nWidth, int nHeight,
 								  char* pszCurrencyFlag, int nMinLen, int nMaxLen, 
@@ -730,31 +715,30 @@ int 	Disp_nShowAmountInputView(int nX, int nY, int nWidth, int nHeight,
 
 /*
  * @author:
- * @Date: 	10-27-2022
+ * @Date: 10-27-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowAmountInputViewEx
- * @函数功能: 显示金额输入界面
- * @输入参数:	 
- *				nX  nY 			--金额框坐标
- * 				nWidth  nHeight 	--金额框大小
- *				pszCurrencyFlag	--货币符号字符串
- *				nMinLen			--最小长度限制
- *				nMaxLen			--最大长度限制
- *				nLenOfBuffer		--pszAmount所指向 buffer长度
- *				nTimeoutSec		--超时时间(单位秒)
-                pszInfo         --输入小于长度限制时的提示
- *			    nStyle	-----数字键响应以及自动索引功能(预留，填0)
- * @输出参数:
- *				pszAmount		--输入金额buffer
- * @返回值:
- * 			成功 	  -- 金额长度
- *			失败	  -- RET_DPORT_FAILD
- *			用户取消 	-- RET_DRPOT_CANCEL
- * @备注:
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nShowAmountInputViewEx
+ * @Function function: Display amount input interface
+ * @Input parameters:
+ * nX nY --Amount box coordinates
+ * nWidth nHeight --Amount box size
+ * pszCurrencyFlag -- Currency symbol string
+ * nMinLen --Minimum length limit
+ * nMaxLen --Maximum length limit
+ * nLenOfBuffer --buffer length pointed to by pszAmount
+ * nTimeoutSec --Timeout time (unit seconds)
+ * pszInfo --A prompt when input is less than the length limit
+ * nStyle -----Number key response and automatic indexing function (reserve, fill in 0)
+ * @Output parameters:
+ * pszAmount --Enter the amount buffer
+ * @Return value:
+ * Success -- Amount length
+ * Failed -- RET_DPORT_FAILD
+ * User Cancel -- RET_DRPOT_CANCEL
+ * @Remark:
+ * 
+ * @Call Example:
  */
 int Disp_nShowAmountInputViewEx(int nX, int nY, int nWidth, int nHeight,
 								  char* pszCurrencyFlag, int nMinLen, int nMaxLen, 
@@ -764,28 +748,27 @@ int Disp_nShowAmountInputViewEx(int nX, int nY, int nWidth, int nHeight,
 
 /*
  * @author:
- * @Date: 	10-27-2022
+ * @Date: 10-27-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowPasswdInputView
- * @函数功能: 显示用户登录密码输入框
- * @输入参数:
- *				nX  nY 			--密码框坐标
- * 				nWidth  nHeight 	--密码框大小 
- 				nLenOfBuffer		--pszPasswd所指向buffer长度
- 				nTimeoutSec		--超时时间
- *				nStyle	-----数字键响应以及自动索引功能(预留，填0) 				
- * @输出参数: 
- 				pszPasswd		--输入密码buffer
- *
- * @返回值:
- * 			成功 			-- 返回输入的密码长度
- 			失败			-- RET_DPORT_FAILD  (包括超时)
- *			用户取消 	-- RET_DRPOT_CANCEL
- * @备注:
- *			用户输入字符串最大长度，根据显示框的宽度于每个字符的宽度决定
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nShowPasswdInputView
+ * @Function function: Display user login password input box
+ * @Input parameters:
+ * nX nY --Password box coordinates
+ * nWidth nHeight --password box size
+ * nLenOfBuffer --buffer length pointed to by pszPasswd
+ * nTimeoutSec --Timeout time
+ * nStyle -----Number key response and automatic indexing function (reserve, fill in 0)
+ * @Output parameters:
+ * pszPasswd -- Enter password buffer
+ * 
+ * @Return value:
+ * Success -- Returns the entered password length
+ * Failed -- RET_DPORT_FAILD (including timeout)
+ * User Cancel -- RET_DRPOT_CANCEL
+ * @Remark:
+ * The maximum length of the string entered by the user is determined based on the width of the display box and the width of each character.
+ * @Call Example:
  */
 int 	Disp_nShowPasswdInputView(int nX, int nY, int nWidth, int nHeight, int nMinLen, 
 							int nMaxLen,int nLenOfBuffer,char* pszPasswd, 
@@ -794,31 +777,30 @@ int 	Disp_nShowPasswdInputView(int nX, int nY, int nWidth, int nHeight, int nMin
 
 /*
  * @author:
- * @Date: 	10-27-2022
+ * @Date: 10-27-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowPINPADInputView
- * @函数功能: 内置密码键盘输入框
- * @输入参数:
- *			  	X			--输入框起始坐标
- * 				Y 			--输入框起始坐标
- * 				nWidth		--输入框宽度
- * 				nHeight		--输入框高度
- 				pszInputPin	--输入PIN属性
- 				nLenOfPinBuffer --pszPin所指向buffer长度
- 				ntimeoutsec:	超时时间，秒为单位，最长为60秒
- *
- * @输出参数: pszPin	返回的PIN码
- *
- * @返回值:
- * 			成功 		- 固定返回用户输入的字符长度
- 			失败			- RET_DPORT_FAILD
- *			用户取消 		-RET_DRPOT_CANCEL
- 			超时			-RET_DPORT_TIMEOUT
- * @备注:
- *			用户输入字符串最大长度，根据显示框的宽度于每个字符的宽度决定
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nShowPINPADInputView
+ * @Function function: Built-in password keyboard input box
+ * @Input parameters:
+ * X --Input box start coordinates
+ * Y --Input box start coordinates
+ * nWidth --Input box width
+ * nHeight --Input box height
+ * pszInputPin --Input PIN attribute
+ * nLenOfPinBuffer --buffer length pointed to by pszPin
+ * ntimeoutsec: Timeout time, seconds in units, maximum of 60 seconds
+ * 
+ * @Output parameters: pszPin The PIN code returned
+ * 
+ * @Return value:
+ * Success - Fixed return the character length entered by the user
+ * Failed - RET_DPORT_FAILD
+ * User Cancel -RET_DRPOT_CANCEL
+ * Timeout -RET_DPORT_TIMEOUT
+ * @Remark:
+ * The maximum length of the string entered by the user is determined based on the width of the display box and the width of each character.
+ * @Call Example:
  */
 int 	Disp_nShowPINPADInputView(int nX,int nY,int nWidth,int nHeight,
 		  	  	  	  	  	  	  InputPinPara *pszInputPin,
@@ -826,33 +808,32 @@ int 	Disp_nShowPINPADInputView(int nX,int nY,int nWidth,int nHeight,
 
 /*
  * @author:
- * @Date: 	10-27-2022
+ * @Date: 10-27-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowIPInputLine
- * @函数功能: 显示IP输入框
- * @输入参数:
- 				X		--输入框起始坐标
- 				Y 		--输入框起始坐标
- 				nWidth		--输入框宽度
- 				nHeight		--输入框高度
- 				nMinLen		--输入最小长度限制
- 				nMaxLen		--输入最大长度限制
- 				nLenOfBuffer	--pszIP所指向内存的大小
- 				nTimeoutSec	--超时时间
- *				nStyle	-----数字键响应以及自动索引功能(预留，填0) 				
- *
- * @输出参数: pszIP		--返回IP字符串
- *
- * @返回值:
- * 			成功 	- 固定返回用户输入的字符长度
- *			失败	- RET_DPORT_FAILD
- *			用户取消  - RET_DRPOT_CANCEL
- *			超时	-RET_DPORT_TIMEOUT		
- * @备注:
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nShowIPInputLine
+ * @Function Function: Display IP input box
+ * @Input parameters:
+ * X --Input box start coordinates
+ * Y --Input box start coordinates
+ * nWidth --Input box width
+ * nHeight --Input box height
+ * nMinLen --Input minimum length limit
+ * nMaxLen --Input maximum length limit
+ * nLenOfBuffer --The size of memory pointed to by pszIP
+ * nTimeoutSec --Timeout time
+ * nStyle -----Number key response and automatic indexing function (reserve, fill in 0)
+ * 
+ * @Output parameters: pszIP --Return IP string
+ * 
+ * @Return value:
+ * Success - Fixed return the character length entered by the user
+ * Failed - RET_DPORT_FAILD
+ * User Cancel - RET_DRPOT_CANCEL
+ * Timeout -RET_DPORT_TIMEOUT
+ * @Remark:
+ * 
+ * @Call Example:
  */
 
 int 	Disp_nShowIPInputLine(int X, int Y, int nWidth, int nHeight, int nMinLen, int nMaxLen, 
@@ -860,92 +841,89 @@ int 	Disp_nShowIPInputLine(int X, int Y, int nWidth, int nHeight, int nMinLen, i
 
 /*
  * @author:
- * @Date: 	10-27-2022
+ * @Date: 10-27-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nGetUserDisplayRange
- * @函数功能: 返回屏幕可显示区域范围( X, Y 轴的起至参数)
- * @输入参数:
- *
- * @输出参数: 
- *				pnStartX		起始X坐标
- *				pnEndX		起始Y坐标
- *				pnStartY		终止X坐标
- *				pnEndY		终止Y坐标
- *
- * @返回值:
- * 			无
- * @备注:
- *
- * @调用示例:
- *
- *	int nStartX, nEndX, nStartY, nEndY;
- * 	Disp_vGetUserDisplayRange(&nStartX, nEndX, &nStartY, &nEndY);
- *
+ * 
+ * @Function Name: Disp_nGetUserDisplayRange
+ * @Function function: Return to the screen to display the area range (from X, Y axis to parameters)
+ * @Input parameters:
+ * 
+ * @Output parameters:
+ * pnStartX Start X coordinate
+ * pnEndX Start Y coordinate
+ * pnStartY Terminate X coordinate
+ * pnEndY terminates Y coordinate
+ * 
+ * @Return value:
+ * none
+ * @Remark:
+ * 
+ * @Call Example:
+ * 
+ * int nStartX, nEndX, nStartY, nEndY;
+ * Disp_vGetUserDisplayRange(&nStartX, nEndX, &nStartY, &nEndY);
  */
 void Disp_vGetUserDisplayRange(int *pnStartX, int *pnEndX, int *pnStartY, int *pnEndY);
 
 /*
  * @author:
- * @Date: 	10-25-2022
+ * @Date: 10-25-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowListView
- * @函数功能: 列表显示窗口，用于显示单列表窗口
- *
- * @输入参数:
- * 				iX 	iY 		--列表框坐标
- 				uWidth uHeight	--列表大小
- 				pszTitle			--列表标题 
- * 				 pszListItem  -- 显示列表
- * 				 nItemCount   -- 显示项目数
- *				nItemsPerPage	--每页显示项目数
- *				nSelectItem		--初始选中项目
- *				nTimeoutSec		--超时时间:单位秒
- *				nStyle	-----数字键响应以及自动索引功能	
- *@输出参数:
- *				pnIndexOfSelect --选择的项目索引(从0开始计)
- *
- * @返回值:
- *			成功:RET_DPORT_NORMAL
- *			超时:RET_DPORT_TIMEOUT
- *			取消:RET_DRPOT_CANCEL
- *
- * @备注: 只支持 英文、数字输入
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nShowListView
+ * @Function Function: List display window, used to display single list window
+ * 
+ * @Input parameters:
+ * iX iY --List box coordinates
+ * uWidth uHeight --list size
+ * pszTitle --list title
+ * pszListItem -- Show list
+ * nItemCount -- Show the number of items
+ * nItemsPerPage --The number of items displayed per page
+ * nSelectItem --Initially selected item
+ * nTimeoutSec --Timeout time: unit seconds
+ * nStyle -----Number key response and automatic indexing function
+ * @Output parameters:
+ * pnIndexOfSelect --The selected item index (counted from 0)
+ * 
+ * @Return value:
+ * Success:RET_DPORT_NORMAL
+ * Timeout:RET_DPORT_TIMEOUT
+ * Cancel:RET_DRPOT_CANCEL
+ * 
+ * @Note: Only supported in English and digital inputs
+ * 
+ * @Call Example:
  */
 int Disp_nShowListView(int iX, int iY, unsigned int uWidth, unsigned int uHeight, char* pszTitle, char** pszListItem, int nItemCount, int nItemsPerPage,
 									 int nSelectItem, int nTimeoutSec, int* pnIndexOfSelect, unsigned int nStyle);
 /*
  * @author:
- * @Date: 	10-25-2022
+ * @Date: 10-25-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowListViewEx
- * @函数功能: 列表显示窗口，用于显示单列表窗口
- *
- * @输入参数:
- * 				pszTitle			--列表标题 
- * 				 pszListItem  -- 显示列表
- * 				 nItemCount   -- 显示项目数
- *				nItemsPerPage	--每页显示项目数
- *				nSelectItem		--初始选中项目
- *				nTimeoutSec		--超时时间:单位秒
- *				nStyle	-----数字键响应以及自动索引功能	
- *@输出参数:
- *				pnIndexOfSelect --选择的项目索引(从0开始计)
- *
- * @返回值:
- *			成功:RET_DPORT_NORMAL
- *			超时:RET_DPORT_TIMEOUT
- *			取消:RET_DRPOT_CANCEL
- *
- * @备注: 只支持 英文、数字输入
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nShowListViewEx
+ * @Function Function: List display window, used to display single list window
+ * 
+ * @Input parameters:
+ * pszTitle --list title
+ * pszListItem -- Show list
+ * nItemCount -- Show the number of items
+ * nItemsPerPage --The number of items displayed per page
+ * nSelectItem --Initially selected item
+ * nTimeoutSec --Timeout time: unit seconds
+ * nStyle -----Number key response and automatic indexing function
+ * @Output parameters:
+ * pnIndexOfSelect --The selected item index (counted from 0)
+ * 
+ * @Return value:
+ * Success:RET_DPORT_NORMAL
+ * Timeout:RET_DPORT_TIMEOUT
+ * Cancel:RET_DRPOT_CANCEL
+ * 
+ * @Note: Only supported in English and digital inputs
+ * 
+ * @Call Example:
  */
 int Disp_nShowListViewEx(char* pszTitle, char** pszListItem, int nItemCount, int nItemsPerPage,
 									 int nSelectItem, int nTimeoutSec, int* pnIndexOfSelect, 
@@ -953,35 +931,34 @@ int Disp_nShowListViewEx(char* pszTitle, char** pszListItem, int nItemCount, int
 
 /*
  * @author:
- * @Date: 	10-25-2022
+ * @Date: 10-25-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowTableView
- * @函数功能: 双列表显示UI.用于双列显示
- *
- * @输入参数:
-  * 				iX 	iY 		--列表框坐标
- 				uWidth uHeight	--列表大小
- * 				pszTitle			--列表标题 
- * 				 pszListItem  -- 显示列表
- * 				 nItemCount   -- 显示项目数
- *				nItemsPerPage	--每页显示项目数
- *				nSelectItem		--初始选中项目
- *				nTimeoutSec		--超时时间:单位秒 
- *				nStyle			-----数字键响应以及自动索引功能	
- *@输出参数:
- *				pnIndexOfSelect  --选择的项目索引(从0开始计)
- *
- * @返回值:
-  *			成功:RET_DPORT_NORMAL
- *			超时:RET_DPORT_TIMEOUT
- *			取消:RET_DRPOT_CANCEL
- *			失败:RET_DPORT_FAILD
- *
- * @备注: 只支持 英文、数字输入
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nShowTableView
+ * @Function Function: Double-list display UI. Used for double-column display
+ * 
+ * @Input parameters:
+ * iX iY --List box coordinates
+ * uWidth uHeight --list size
+ * pszTitle --list title
+ * pszListItem -- Show list
+ * nItemCount -- Show the number of items
+ * nItemsPerPage --The number of items displayed per page
+ * nSelectItem --Initially selected item
+ * nTimeoutSec --Timeout time: unit seconds
+ * nStyle -----Number key response and automatic indexing function
+ * @Output parameters:
+ * pnIndexOfSelect --The selected item index (counted from 0)
+ * 
+ * @Return value:
+ * Success:RET_DPORT_NORMAL
+ * Timeout:RET_DPORT_TIMEOUT
+ * Cancel:RET_DRPOT_CANCEL
+ * Failed:RET_DPORT_FAILD
+ * 
+ * @Note: Only supported in English and digital inputs
+ * 
+ * @Call Example:
  */
 int Disp_nShowTableView(int iX, int iY, unsigned int uWidth, unsigned int uHeight,
 							char* pszTitle, char** pszListItem, int nItemCount, int nItemsPerPage,
@@ -989,130 +966,125 @@ int Disp_nShowTableView(int iX, int iY, unsigned int uWidth, unsigned int uHeigh
 
 /*
  * @author:
- * @Date: 	10-25-2022
+ * @Date: 10-25-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowTableViewEx
- * @函数功能: 双列表显示UI.用于双列显示
- *
- * @输入参数:
- * 				pszTitle			--列表标题 
- * 				 pszListItem  -- 显示列表
- * 				 nItemCount   -- 显示项目数
- *				nItemsPerPage	--每页显示项目数
- *				nSelectItem		--初始选中项目
- *				nTimeoutSec		--超时时间:单位秒 
- *				nStyle			-----数字键响应以及自动索引功能	 
- *@输出参数:
- *				pnIndexOfSelect  --选择的项目索引(从0开始计)
- *
- * @返回值:
- *
- * @备注: 只支持 英文、数字输入
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nShowTableViewEx
+ * @Function Function: Double-list display UI. Used for double-column display
+ * 
+ * @Input parameters:
+ * pszTitle --list title
+ * pszListItem -- Show list
+ * nItemCount -- Show the number of items
+ * nItemsPerPage --The number of items displayed per page
+ * nSelectItem --Initially selected item
+ * nTimeoutSec --Timeout time: unit seconds
+ * nStyle -----Number key response and automatic indexing function
+ * @Output parameters:
+ * pnIndexOfSelect --The selected item index (counted from 0)
+ * 
+ * @Return value:
+ * 
+ * @Note: Only supported in English and digital inputs
+ * 
+ * @Call Example:
  */
 
-//列表控件
+// List control
 int Disp_nShowTableViewEx(char* pszTitle, char** pszListItem, int nItemCount,
 					int nItemsPerPage, int nSelectItem,int nTimeoutSec, 
 					int* pnIndexOfSelect, unsigned int nStyle);
 
 /*
  * @author:
- * @Date: 	10-25-2022
+ * @Date: 10-25-2022
  * @Record: create it;
- *
- * @函数名称: Disp_vCleanArea
- * @函数功能:清除指定区域
- *
- * @输入参数:
-					X   Y 			---清除区域的坐标
-					nWidth  nHeight	---清除区域的大小
- *@输出参数:
- *				无
- *
- * @返回值:
- *
- * @备注: 
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_vCleanArea
+ * @Function function: Clear the specified area
+ * 
+ * @Input parameters:
+ * X Y ---Clear the coordinates of the area
+ * nWidth nHeight --- Clear area size
+ * @Output parameters:
+ * none
+ * 
+ * @Return value:
+ * 
+ * @Remark:
+ * 
+ * @Call Example:
  */
 void Disp_vCleanArea(int X, int Y, int nWidth, int nHeight);
 
 /*
  * @author:
- * @Date: 	10-25-2022
+ * @Date: 10-25-2022
  * @Record: create it;
- *
- * @函数名称: Disp_nShowDateInputView
- * @函数功能:显示日期输入框
- *
- * @输入参数:
- *					nTimeOutSec		---超时时间
- *@输出参数:
- *					pDate			---返回的时间值
- *
- * @返回值:
- *				成功:RET_DPORT_NORMAL
- *				失败:RET_DPORT_FAILD
- *				取消:RET_DRPOT_CANCEL
- *				超时:RET_DPORT_TIMEOUT
- *
- * @备注: 
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_nShowDateInputView
+ * @Function function: Display date input box
+ * 
+ * @Input parameters:
+ * nTimeOutSec ---Timeout time
+ * @Output parameters:
+ * pDate ---Returned time value
+ * 
+ * @Return value:
+ * Success:RET_DPORT_NORMAL
+ * Failed:RET_DPORT_FAILD
+ * Cancel:RET_DRPOT_CANCEL
+ * Timeout:RET_DPORT_TIMEOUT
+ * 
+ * @Remark:
+ * 
+ * @Call Example:
  */
 int Disp_nShowDateInputView(SetLocalTimeType* pDate,  int nTimeOutSec);
 
 /*
  * @author:
- * @Date: 	10-25-2022
+ * @Date: 10-25-2022
  * @Record: create it;
- *
- * @函数名称: Disp_vSetSysFont
- * @函数功能:设置系统字体
- *
- * @输入参数:
- *					FontType		---字体类型
- *@输出参数:	无
- *
- * @返回值:		无
- *				
- * @备注: 
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_vSetSysFont
+ * @Function function: Set system font
+ * 
+ * @Input parameters:
+ * FontType --- Font Type
+ * @Output Parameters: None
+ * 
+ * @Return value: None
+ * 
+ * @Remark:
+ * 
+ * @Call Example:
  */
 void Disp_vSetSysFont(DPORT_FONT_SIZE_T FontType);
 
 /*
  * @author:
- * @Date: 	2022-08-14
+ * @Date: 2022-08-14
  * @Record: create it;
- *
- * @函数名称: Disp_vDrawTextA
- * @函数功能:在制定坐标显示字符串
- *
- * @输入参数:
- *				x           x坐标
- *              y           y坐标
- *              w           显示宽度
- *              h           显示长度
- *              pstar       显示字符串
- *              len         字符串长度
- *              nStyle      字体显示方式
- *@输出参数:	无
- *
- * @返回值:		无
- *				
- * @备注: 
- *
- * @调用示例:
- *
+ * 
+ * @Function Name: Disp_vDrawTextA
+ * @Function function: Display string when setting coordinates
+ * 
+ * @Input parameters:
+ * x x coordinate
+ * y y coordinates
+ * w display width
+ * h Display length
+ * pstar display string
+ * len string length
+ * nStyle font display method
+ * @Output Parameters: None
+ * 
+ * @Return value: None
+ * 
+ * @Remark:
+ * 
+ * @Call Example:
  */
 void Disp_vDrawTextA(int x, int y, int w, int h, const char * pStr, int len, DPORT_TEXTSTYLE_T nStyle);
 
@@ -1121,28 +1093,28 @@ int Disp_ReleasKey();
 int Disp_GetKey(int timeoutMs);
 
 int Disp_GetTouchPadAxis(int *piX, int *piY, int timeoutMs);
-/**
- *  struct input_event {
- *		struct timeval time;
- *		__u16 type;
- *		__u16 code;
- *		__s32 value;
- *	};
-*/
-/**
- * @brief 获取触屏事件，返回标准linux input结构体
- *
- * @param event input_event结构体，
- * @param iTimeOut 超时事件
- * @return INT 返回结果
+/*
+ * struct input_event {
+ * struct timeval time;
+ * __u16 type;
+ * __u16 code;
+ * __s32 value;
+ * };
+ */
+/*
+ * @brief Get touch screen events and return to the standard linux input structure
+ * 
+ * @param event input_event structure,
+ * @param iTimeOut timeout event
+ * @return INT Return result
  */
 int Disp_GetTouchPadLinux(struct input_event *event, int timeoutMs);
-/**
- * @brief 获取按键事件，返回标准linux input结构体
- *
- * @param event input_event结构体，
- * @param iTimeOut 超时事件
- * @return INT 返回结果
+/*
+ * @brief Get key event and return the standard linux input structure
+ * 
+ * @param event input_event structure,
+ * @param iTimeOut timeout event
+ * @return INT Return result
  */
 int Disp_GetKeyLinux(struct input_event *event, int timeoutMs);
 
@@ -1159,7 +1131,7 @@ typedef  void (*pUICallback)(int runstate, void *par);
 void Disp_vRegisterPauseCallBack(pUICallback callback);
 
 void Disp_vRegisterResumeCallBack(pUICallback callback);
-//pBuf 单色bmp 缓存10K
+// pBuf Monochrome bmp cache 10K
 int Disp_nElecSign(unsigned char* pBuf,int* pOutLen,char*pCode,int timeout,int x,int y,int width,int height,int isShowBtn);
 
 int Disp_nElecSignEx(unsigned char* pBuf,int* pOutLen,char*pCode,float compress,int timeout,int x,int y,int width,int height,int isShowBtn);

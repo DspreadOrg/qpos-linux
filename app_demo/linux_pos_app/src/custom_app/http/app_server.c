@@ -18,8 +18,6 @@
 +----------------------------------------------------------------------------*/
 #include "app_server.h"
 
-#define URL_TEST    "http://spoc.dspread.com:8084/port/test"
-
 /*-----------------------------------------------------------------------------
 |   Variables
 +----------------------------------------------------------------------------*/
@@ -232,6 +230,124 @@ Rc_t HttpLineStatusCheck(pu8 pTradingFile, const char * pHttpBody)
     return Rc;
 }
 
+int is_chunked_and_process(const char* response, size_t resp_len, Buffer* new_resp) {
+    const char* header_end = "\r\n\r\n";
+    const char* body_start = strstr(response, header_end);
+    if (!body_start) return 0;
+
+    // 检查Transfer-Encoding头
+    const char* te_header = "Transfer-Encoding:";
+    const char* hdr = response;
+    int is_chunked = 0;
+    
+    // 遍历头部
+    while (hdr < body_start) {
+        const char* line_end = strstr(hdr, "\r\n");
+        if (!line_end) break;
+
+        // 检查是否为Transfer-Encoding头
+        if (strncasecmp(hdr, te_header, strlen(te_header)) == 0) {
+            const char* value = hdr + strlen(te_header);
+            while (*value && isspace(*value)) value++;
+            if (strncasecmp(value, "chunked", 7) == 0) {
+                is_chunked = 1;
+                break;
+            }
+        }
+        hdr = line_end + 2;
+    }
+   
+    if (!is_chunked) return 0;
+
+    // 处理分块数据
+    const char* chunk_ptr = body_start + 4;
+    const char* resp_end = response + resp_len;
+    Buffer decoded = {0};
+ 
+    #define MAX_HEX_DIGITS 16
+    #define MAX_BODY_SIZE (10*1024*1024)
+    
+    while (chunk_ptr < resp_end) {
+        // 1. 获取块长度行
+        const char* chunk_end = strstr(chunk_ptr, "\r\n");
+        if (!chunk_end || chunk_end >= resp_end) break;
+    
+        // 2. 安全解析HEX长度
+        char hex_len[MAX_HEX_DIGITS + 1] = {0};
+        size_t hex_size = chunk_end - chunk_ptr;
+        hex_size = (hex_size > MAX_HEX_DIGITS) ? MAX_HEX_DIGITS : hex_size;
+        memcpy(hex_len, chunk_ptr, hex_size);
+        hex_len[hex_size] = '\0';
+    
+        char* endptr;
+        long chunk_size = strtol(hex_len, &endptr, 16);
+        if (endptr == hex_len || *endptr != '\0' || chunk_size <= 0) break;
+    
+        // 3. 指针安全跳转
+        chunk_ptr = chunk_end + 2;
+        if (chunk_ptr + chunk_size + 2 > resp_end) break;
+    
+        // 4. 安全内存分配
+        size_t new_size = decoded.length + chunk_size + 1;
+        if (new_size > MAX_BODY_SIZE) {
+            free(decoded.data);
+            return 0;
+        }
+        void* tmp = realloc(decoded.data, new_size);
+        if (!tmp) {
+            free(decoded.data);
+            return 0;
+        }
+        decoded.data = tmp;
+    
+        // 5. 数据拷贝
+        memcpy(decoded.data + decoded.length, chunk_ptr, chunk_size);
+        decoded.length += chunk_size;
+    
+        // 6. 跳转到下一个块
+        chunk_ptr += chunk_size + 2;
+    }
+
+    // 重构响应头
+    Buffer headers = {0};
+    hdr = response;
+
+    while (hdr < body_start) {
+        const char* line_end = strstr(hdr, "\r\n");
+        if (!line_end) break;
+
+        // 跳过Transfer-Encoding头
+        if (strncasecmp(hdr, te_header, strlen(te_header)) != 0) {
+            // 保留其他头
+            size_t line_len = line_end - hdr + 2;
+            headers.data = realloc(headers.data, headers.length + line_len);
+            memcpy(headers.data + headers.length, hdr, line_len);
+            headers.length += line_len;
+        }
+        
+        hdr = line_end + 2;
+    }
+
+    // 添加Content-Length头
+    char cl_header[128];
+    int cl_len = snprintf(cl_header, sizeof(cl_header), 
+                        "Content-Length: %zu\r\n", decoded.length);
+    headers.data = realloc(headers.data, headers.length + cl_len);
+    memcpy(headers.data + headers.length, cl_header, cl_len);
+    headers.length += cl_len;
+
+    // 组合新响应
+    new_resp->length = headers.length + 2 + decoded.length; // +2 for ending CRLF
+    new_resp->data = malloc(new_resp->length);
+    memcpy(new_resp->data, headers.data, headers.length);
+    memcpy(new_resp->data + headers.length, "\r\n", 2);
+    memcpy(new_resp->data + headers.length + 2, decoded.data, decoded.length);
+
+    free(headers.data);
+    free(decoded.data);
+    return 1;
+}
+
 /*--------------------------------------
 |   Function Name:
 |       RequestHttpTransmit
@@ -241,6 +357,7 @@ Rc_t HttpLineStatusCheck(pu8 pTradingFile, const char * pHttpBody)
 +-------------------------------------*/
 s32 RequestHttpTransmit(char * pSend,u32 SendLen, char * pURL,u32 port, char * pReceived, u32 FrameLengthMax )
 {
+    int ret;
     char * pScheme = NULL;
     char * pHost = NULL;
     s32    Length = 0;
@@ -250,7 +367,6 @@ s32 RequestHttpTransmit(char * pSend,u32 SendLen, char * pURL,u32 port, char * p
     }
 
     OsLog(LOG_DEBUG, "\r\npSend(%d) : \r\n%s\r\n\r\n",SendLen,pSend);
-    //TRACE_VALUE(DBG_TRACE_LVL,pSend,SendLen);
 
     pScheme = malloc(128);
     pHost = malloc(64);
@@ -259,8 +375,57 @@ s32 RequestHttpTransmit(char * pSend,u32 SendLen, char * pURL,u32 port, char * p
     HttpUrlGetScheme(pURL, pScheme, 128);
     HttpUrlGetHost(pURL, pHost, 64);
 
-    Length = SslTransmit((pu8)pHost, port, pSend, SendLen, pReceived, FrameLengthMax, ONLINE_REQUEST_TIMEOUT);
+    if( ssl_server_connect(pHost,port,ONLINE_REQUEST_TIMEOUT,SSL_VERIFY_NONE) != RC_SUCCESS)
+    {
+        ret = -99;
+        if(pScheme!=NULL)
+        {
+            memset(pScheme, 0x00, 128);
+            free(pScheme);
+            pScheme=NULL;
+        }
+        if(pHost!=NULL)
+        {
+            memset(pHost, 0x00,64);
+            free(pHost);
+            pHost=NULL;
+        }
+
+        return ret;
+    }
+
+    if(ssl_send_msg(pSend,SendLen,ONLINE_REQUEST_TIMEOUT) < 0)
+    {
+        ret = -99;
+        goto RequestHttpTransmit_end;
+    }
+        
+    Length = ssl_recv_msg(pReceived,FrameLengthMax,ONLINE_REQUEST_TIMEOUT);    
+
+     if(Length<0)
+    {
+        pReceived[0] = '\0';
+    }
+    else
+    {
+        Buffer new_response = {0};
+        if (is_chunked_and_process(pReceived, Length, &new_response)) {
+            // OsLog(LOG_DEBUG,"Refactored response:\n%.*s\n[Body:%zu]\n",(int)new_response.length, new_response.data, new_response.length);
+            memset(pReceived,0,FrameLengthMax);
+            memcpy(pReceived,new_response.data,new_response.length);
+            Length = new_response.length;      
+            free(new_response.data);
+        } else {
+            #ifdef CFG_DBG
+            OsLog(LOG_DEBUG,"No need refactored\n");
+            #endif
+        }
+
+        
+    }
 RequestHttpTransmit_end:
+
+    ssl_server_disconnect();
     if(pScheme!=NULL)
     {
         memset(pScheme, 0x00, 128);
@@ -277,66 +442,6 @@ RequestHttpTransmit_end:
     OsLog(LOG_DEBUG, "\r\nRECV(%d) : \r\n",Length);
     return Length;
 }
-
-/*--------------------------------------
-|   Function Name:
-|       ServerReques_test
-|   Description:
-|   Parameters:
-|   Returns:
-+-------------------------------------*/
-Rc_t ServerReques_test(pu8 pTransPool)
-{
-    Rc_t Rc=RC_SUCCESS;
-
-    char * strmsg=NULL;
-    char * pRecv=NULL;
-    s32    RecvLen=0;
-    u32    HeadLen=0;
-
-    strmsg=malloc(512);
-    pRecv=malloc(1024);
-    //DispHttpRequst();
-    RequestPackHttpFrame(NULL,URL_TEST,"POST",strmsg,NULL,512);
-    RecvLen=RequestHttpTransmit(strmsg,strlen(strmsg),URL_TEST,URL_SERVER_PORT,pRecv,1024);
-    free(strmsg);
-    #ifdef CFG_DBG
-    OsLog(LOG_DEBUG,"recv(%d)\r\n",RecvLen);
-    #endif
-    if(RecvLen>0)
-    {
-        TRACE_VALUE(DBG_TRACE_LVL,pRecv,RecvLen);
-        HeadLen=GetHttpHeadFramLen((char*)pRecv);
-        T_U8_VIEW Http_head={pRecv,HeadLen};
-        T_U8_VIEW Http_Response={pRecv+HeadLen,RecvLen-HeadLen};
-        #ifdef CFG_DBG
-        OsLog(LOG_DEBUG,"Http_head(%d)\r\n",Http_head.len);
-        TRACE_ASCII(DBG_TRACE_LVL,Http_head.head,Http_head.len);
-        OsLog(LOG_DEBUG,"Response(%d)\r\n",Http_Response.len);
-        TRACE_VALUE(DBG_TRACE_LVL,Http_Response.head,Http_Response.len);
-        #endif
-
-        if(HttpLineStatusCheck(NULL,Http_head.head)==RC_SUCCESS || memcmp(Http_Response.head,"hello",5)==0)
-        {
-            Rc=RC_SUCCESS;
-            #ifdef CFG_DBG
-            OsLog(LOG_DEBUG,"request success\r\n");
-            #endif
-            tlv_replace_(pTransPool,POS_TAG_RES_EN_ONLINE_RESULT, 4, (pu8)"\x8A\x02\x30\x30");
-        }
-        else
-        {
-            tlv_replace_(pTransPool,POS_TAG_RES_EN_ONLINE_RESULT, 4, (pu8)"\x8A\x02\x30\x35");
-        }
-    }
-    else
-    {
-        tlv_replace_(pTransPool,POS_TAG_RES_EN_ONLINE_RESULT, 4, (pu8)"\x8A\x02\x30\x35");
-        Rc=RC_FAIL;
-    }
-    free(pRecv);
-    return Rc;
-}
 /*--------------------------------------
 |   Function Name:
 |       checkRepo
@@ -347,147 +452,4 @@ Rc_t ServerReques_test(pu8 pTransPool)
 static Rc_t checkRepo(pu8 pValue)
 {
     return (strstr(pValue,"path")?RC_SUCCESS:RC_FAIL);
-}
-
-/*--------------------------------------
-|   Function Name:
-|       KeyDataCompare
-|   Description:
-|   Parameters:
-|   Returns:
-+-------------------------------------*/
-Rc_t KeyDataCompare(char * strMsg, char * strKey,const char * strCompareValue)
-{
-    char * pTempBuffer = NULL;
-
-    pTempBuffer = malloc(256);
-
-    memset(pTempBuffer, 0x00, 256);
-
-    HttpGetStrKey(strMsg, strKey, pTempBuffer, 256);
-
-    if(strlen(pTempBuffer) == 0)
-    {
-        free(pTempBuffer);
-        return RC_FAIL;
-    }
-
-    if(strcmp(strCompareValue, pTempBuffer) != 0)
-    {
-        free(pTempBuffer);
-        return RC_FAIL;
-    }
-    else
-    {
-        free(pTempBuffer);
-        return RC_SUCCESS;
-    }
-}
-
-/*--------------------------------------
-|   Function Name:
-|       UpdateKeyDataToTLV
-|   Description:
-|   Parameters:
-|   Returns:
-+-------------------------------------*/
-Rc_t UpdateKeyDataToTLV(char * strMsg, char * strKey, u32 Tag, pu8 pTradingFile )
-{
-    char * pTempBuffer = NULL;
-
-    pTempBuffer = malloc(256);
-
-    memset(pTempBuffer, 0x00, 256);
-
-    HttpGetStrKey(strMsg, strKey, pTempBuffer, 256);
-
-    if(strlen(pTempBuffer) == 0)
-    {
-        free(pTempBuffer);
-        return RC_FAIL;
-    }
-    else
-    {
-        T_U8_VIEW uvValue={pTempBuffer,strlen(pTempBuffer)};
-        //tlv_replace_(pTradingFile, Tag, strlen(pTempBuffer), (pu8)pTempBuffer);
-        if(pTradingFile!=NULL)
-        {
-            set_tlv_view(pTradingFile,Tag, uvValue);
-        }
-
-        free(pTempBuffer);
-        return RC_SUCCESS;
-    }
-}
-
-/*--------------------------------------
-|   Function Name:
-|       UpdateKeyDataToTLV_AndCompare
-|   Description:
-|   Parameters:
-|   Returns:
-+-------------------------------------*/
-Rc_t UpdateKeyDataToTLV_AndCompare(char * strMsg, char * strKey, u32 Tag, pu8 pTradingFile, char * strCompareValue )
-{
-    char * pTempBuffer = NULL;
-
-    pTempBuffer = malloc(256);
-
-    memset(pTempBuffer, 0x00, 256);
-
-    HttpGetStrKey(strMsg, strKey, pTempBuffer, 256);
-
-    if(strlen(pTempBuffer) == 0)
-    {
-        free(pTempBuffer);
-        return RC_FAIL;
-    }
-    else
-    {
-        tlv_replace_(pTradingFile, Tag, strlen(pTempBuffer), (pu8)pTempBuffer);
-    }
-
-    if(strcmp(strCompareValue, pTempBuffer) != 0)
-    {
-        free(pTempBuffer);
-        return RC_FAIL;
-    }
-    else
-    {
-        free(pTempBuffer);
-        return RC_SUCCESS;
-    }
-}
-
-
-s32 RequestHttpTransmitNew(char * pSend,u32 SendLen, char * pURL,u32 port, char * pReceived, u32 FrameLengthMax )
-{
-    char * pHost = NULL;
-    s32    Length = 0;
-    if(pSend == NULL || pURL == NULL || FrameLengthMax == 0)
-    {
-        return 0;
-    }
-
-    OsLog(LOG_DEBUG, "\r\npSend(%d) : \r\n%s\r\n\r\n",SendLen,pSend);
-    pHost = malloc(64);
-    memset(pHost, 0x00,64);
-
-    HttpUrlGetHost(pURL, pHost, 64);
-
-    if(HttpServerConnect(pHost,443,ONLINE_REQUEST_TIMEOUT) != RC_SUCCESS)
-       return -1;
-
-    Length = SslTransmit((pu8)pHost, port, pSend, SendLen, pReceived, FrameLengthMax, ONLINE_REQUEST_TIMEOUT);
-RequestHttpTransmit_end:
-
-    if(pHost!=NULL)
-    {
-        memset(pHost, 0x00,64);
-        free(pHost);
-        pHost=NULL;
-    }
-    HttpServerDisConnect();
-    OsLog(LOG_DEBUG, "\r\nRECV(%d) : \r\n",Length);
-    return Length;
 }

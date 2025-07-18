@@ -34,7 +34,6 @@ extern lv_obj_t * Icon_time;
 extern lv_obj_t * Icon_batt_percent;
 extern lv_obj_t * Icon_Gprs_Conn_status;
 
-extern lv_obj_t * validateMsg;
 extern lv_obj_t * imgBack;
 extern lv_obj_t * imgDelete;
 extern lv_obj_t * imgCollect;
