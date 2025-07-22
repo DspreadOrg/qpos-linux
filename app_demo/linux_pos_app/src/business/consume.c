@@ -98,7 +98,7 @@ PR_INT32 ReadMagCard(CardDataInfo *DataInfo){
     return PR_NORMAL;
 }
 
-PR_INT32 ReadCardProc(PR_INT8 *pszAmount,PR_INT32 nTimeoutS,PR_INT32 *pRetSwipeType,CardDataInfo *pCardDataInfo){
+PR_INT32 ReadCardProc(PR_INT8 *pszAmount,PR_INT32 nTimeoutS,PR_INT32 *pRetSwipeType,CardDataInfo *pCardDataInfo,u32 cardsSupported){
 
     PR_INT8 szDisplayAmount[12+2] = {0};
     PR_INT8 szPiccType[8] = {0};
@@ -106,54 +106,72 @@ PR_INT32 ReadCardProc(PR_INT8 *pszAmount,PR_INT32 nTimeoutS,PR_INT32 *pRetSwipeT
     PR_INT32 nRet = PR_FAILD;
     long long start = get_sys_tick();
     unsigned char atr[64] = {0};
-
+    CardDev_Disable(0);
     TransView_vClearPort();
     if(CardDev_Enable() != PR_NORMAL){
         TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Card Device Open Failed");
         return PR_FAILD;
     }
     TransView_vShowLine(1,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"%s",szDisplayAmount);
-    TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Swipe/Insert/Tap");
+    if(cardsSupported == CARD_NFC|CARD_IC|CARD_MAG)
+        TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Swipe/Insert/Tap");
+    else if(cardsSupported == CARD_IC)
+        TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Please Insert Card");    
+    else if(cardsSupported == CARD_NFC)
+        TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Please Tap Card");
+    else if(cardsSupported == CARD_MAG)
+        TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Please Swipe Card");    
+
     PR_nUtilNumberToAmt(pszAmount,sizeof(szDisplayAmount),szDisplayAmount);
     while (get_sys_tick() - start < nTimeoutS*1000)
     {
-        nRet = OsPiccPoll(szPiccType,ucATQx);
-        if(nRet == RET_OK){
-            *pRetSwipeType = INPUT_RFCARD;
-            nRet = PR_NORMAL;
-            goto EXIT;
-        }
-        nRet = OsIccDetect(0);
-        if(nRet == RET_OK){
-                if(OsIccInit(ICC_USER_SLOT,0,atr) == 0)
-                {
-                    OsBeep(7,100);
-                    #ifdef CFG_DBG
-                    OsLog(LOG_INFO,"Dspread: ----------INPUT_INSERTIC-----------");
-                    #endif
-                    *pRetSwipeType = INPUT_INSERTIC;
-                    nRet = PR_NORMAL;
-                }
-                else
-                {
-                    OsBeep(7,100);
-                    #ifdef CFG_DBG
-                    OsLog(LOG_INFO,"Dspread: ----------INPUT_INSERTIC ERROR-----------");
-                    #endif
-                    nRet = PR_ICC_ERR;
-                }
-            goto EXIT;
-        }
-        nRet = OsMsrSwiped();
-        if(nRet){
-            if(ReadMagCard(pCardDataInfo) != PR_NORMAL){
-                OsMsrReset();
-            }else{
-                *pRetSwipeType = INPUT_STRIPE;
+        if(cardsSupported&CARD_NFC)
+        {
+            nRet = OsPiccPoll(szPiccType,ucATQx);
+            if(nRet == RET_OK){
+                *pRetSwipeType = INPUT_RFCARD;
                 nRet = PR_NORMAL;
                 goto EXIT;
             }
         }
+        if(cardsSupported&CARD_IC)
+        {
+            nRet = OsIccDetect(0);
+            if(nRet == RET_OK){
+                    if(OsIccInit(ICC_USER_SLOT,0,atr) == 0)
+                    {
+                        OsBeep(7,100);
+                        #ifdef CFG_DBG
+                        OsLog(LOG_INFO,"Dspread: ----------INPUT_INSERTIC-----------");
+                        #endif
+                        *pRetSwipeType = INPUT_INSERTIC;
+                        nRet = PR_NORMAL;
+                    }
+                    else
+                    {
+                        OsBeep(7,100);
+                        #ifdef CFG_DBG
+                        OsLog(LOG_INFO,"Dspread: ----------INPUT_INSERTIC ERROR-----------");
+                        #endif
+                        nRet = PR_ICC_ERR;
+                    }
+                goto EXIT;
+            }
+        }
+        if(cardsSupported&CARD_MAG)
+        {
+            nRet = OsMsrSwiped();
+            if(nRet){
+                if(ReadMagCard(pCardDataInfo) != PR_NORMAL){
+                    OsMsrReset();
+                }else{
+                    *pRetSwipeType = INPUT_STRIPE;
+                    nRet = PR_NORMAL;
+                    goto EXIT;
+                }
+            }
+        }
+
         nRet = KB_nWaitKeyMS(300);
 		if(nRet == EM_KEY_CANCEL){
             nRet = PR_CANCLE;
@@ -393,7 +411,27 @@ PR_INT32 Emv_Auth(PR_INT8* pszAmount,PR_INT32 nRetSwipeType){
         TransView_vShowLine(3,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Failed");
     }else{
 #ifdef POS_OFFLINE
-        TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
+        if(emvTransParams.icc_type == CONTACTLESS_ICC)
+        {
+            EmvOnlineData_t emvOnlineData;
+            memset(&emvOnlineData,0,sizeof(EmvOnlineData_t));
+            nEmvRet = onlineProcess(&emvOnlineData);
+            if(nEmvRet == PR_NORMAL)
+            {
+                if(emvOnlineData.ackdatalen > 0)
+                {
+                    nEmvRet = Emv_SetOnlineResult(&emvOnlineData);
+                    TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
+                }
+
+               else
+                    TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
+            }
+        }
+        else
+        {
+            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
+        }
 #endif
 
 #ifdef POS_PAPER_TRADING
@@ -420,7 +458,7 @@ PR_INT32 CousumeTransProc(){
     	return PR_FAILD;
     }
     memset(&t_CardDataInfo,0x0,sizeof(CardDataInfo));
-    nRet = ReadCardProc(Amount,30,&nRetSwipeType,&t_CardDataInfo);
+    nRet = ReadCardProc(Amount,30,&nRetSwipeType,&t_CardDataInfo,CARD_IC|CARD_NFC|CARD_MAG);
     if(nRet != PR_NORMAL){
         return nRet;
     }
@@ -432,6 +470,7 @@ PR_INT32 CousumeTransProc(){
         }
         Emv_Auth(Amount,nRetSwipeType);
     }
+    CardDev_Disable(0);
     return PR_NORMAL;
 }
 

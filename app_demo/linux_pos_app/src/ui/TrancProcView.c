@@ -96,6 +96,10 @@ PR_INT32 TransView_nShowPinpadView(PR_INT32 KeyIdx,PR_INT8* pszAmount,PR_UINT8 *
 	{
 		case RET_OK:
 			return PR_NORMAL;
+
+		case ERR_PED_NO_PIN_INPUT:
+			return ERR_PED_NO_PIN_INPUT;
+				
 		case ERR_PED_PIN_INPUT_CANCEL:
 			return RET_DRPOT_CANCEL;
 			

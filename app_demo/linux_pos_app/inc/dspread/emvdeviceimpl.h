@@ -19,7 +19,8 @@ typedef enum
 	KERNEL_RUPAY,
 	KERNEL_BANCOMAT,
 	KERNEL_INTERAC,
-	KERNEL_QUICS
+	KERNEL_QUICS,
+	KERNEL_ENTRYPOINT
 
 }EmvKernelType;
 
@@ -270,6 +271,8 @@ int	Emv_GetCapkTotalNum();
 unsigned long EMV_L2_GetLastError();
 
 int Emv_GetKernelVersion(EmvKernelType kernelType,unsigned char *ver);
+//feturn: 0 succes  OTHER fail
+int Emv_SetOnlineResult(EmvOnlineData_t* pOnlineData);
 
 #ifdef __cplusplus
 }
