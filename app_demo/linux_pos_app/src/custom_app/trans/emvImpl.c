@@ -265,14 +265,21 @@ int inputPasswd(int type, char *pszPin){
 			return PR_FAILD;
 		}
 
-		ret = OsPedGetPinDukptEx(PED_PIN_IPEK_INDEX,get_transaction_data()->sCardNo, (char *)"4,5,6", 0x20, 60*1000,get_transaction_data()->sPinKsn, pszPin,InputPinCallback);
+		ret = OsPedGetPinDukptEx(PED_PIN_IPEK_INDEX,get_transaction_data()->sCardNo, (char *)"0,4,5,6", 0x20, 60*1000,get_transaction_data()->sPinKsn, pszPin,InputPinCallback);
 		OsLog(LOG_DEBUG,"--------OsPedGetPinDukptEx ret = %d",ret);
 		OsPedClose ();
 		if(ret == RET_OK)
 		{
 			get_transaction_data()->emv_emter_online_pin_result = 1;
 			memcpy(get_transaction_data()->sPin,pszPin,8);
+			return 8;
 		}
+		else if (ret == ERR_PED_NO_PIN_INPUT)
+		{
+			return 0;
+		}
+		else
+			return -1;
 	}
 	else
 	{
@@ -391,8 +398,7 @@ PR_INT32 Pack_EmvData(PR_UINT8* pEmvData,PR_INT32 *pEmvDataLen)
 int onlineProcess(EmvOnlineData_t* pOnlineData){
 	GuiEventRegister(LCD_DISP_GO_ONLINE);
 	Emv_GetCardInfo(get_transaction_data());
-	sale_online_request(pOnlineData);
-    return PR_NORMAL;
+    return sale_online_request(pOnlineData);
 }
 
 int certConfirm(unsigned char type, unsigned char *pcon, unsigned char len){
@@ -464,8 +470,26 @@ PR_INT32 EmvL2_Init(){
 
 PR_INT32 EmvL2_Proc(EmvTransParams_t emvTransParams){
     EMV_L2_Return nEmvRet = APP_RC_START;
+	int ret = PR_FAILD;
 
     nEmvRet = Emv_Process(emvTransParams);
+	if(emvTransParams.icc_type == CONTACTLESS_ICC && nEmvRet == APP_RC_COMPLETED)
+	{
+		// do contactless trans online request
+		EmvOnlineData_t emvOnlineData;
+		memset(&emvOnlineData,0,sizeof(EmvOnlineData_t));
+		ret = onlineProcess(&emvOnlineData);
+		if(ret == PR_NORMAL)
+		{
+			if(memcmp(emvOnlineData.iccResponse,"00",2) == 0 && emvOnlineData.ackdatalen > 0)
+				ret = Emv_SetOnlineResult(&emvOnlineData);
+		}
+
+		if(ret == PR_NORMAL)
+			nEmvRet = APP_RC_COMPLETED;
+		else
+			nEmvRet = APP_RC_TERMINAL;
+	}
     return nEmvRet;
 }
 

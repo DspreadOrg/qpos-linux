@@ -1,7 +1,6 @@
 #ifndef _UI_PIN_EMVPINDISP_H
 #define _UI_PIN_EMVPINDISP_H
 #include "app_includes.h"
-#include "lib_fun.h"
 
 typedef enum{
 	PinTypeOnline,

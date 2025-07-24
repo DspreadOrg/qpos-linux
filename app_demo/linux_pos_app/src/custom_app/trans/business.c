@@ -237,12 +237,9 @@ PR_INT32 Emv_Auth(PR_INT8* pszAmount,PR_INT32 nRetSwipeType){
     }else if(nRetSwipeType == INPUT_RFCARD){
         emvTransParams.icc_type = CONTACTLESS_ICC;
     }
-    else
-    {
-        DSP_Debug();
+    else{
         return -1;
     }
-    DSP_Debug();
     nEmvRet = EmvL2_Proc(emvTransParams);
     return nEmvRet;
 }

@@ -5,6 +5,11 @@
 extern "C"
 {
 #endif
+
+#define EMV_OFFLINEPIN_INPUT    1   /*Offline password*/
+#define EMV_OFFLINE_ONLY_INPUT  2   /*Last offline password*/
+#define EMV_ONLINEPIN_INPUT   3   /*Online password*/
+
 // kernel type definition
 typedef enum
 {
@@ -19,7 +24,8 @@ typedef enum
 	KERNEL_RUPAY,
 	KERNEL_BANCOMAT,
 	KERNEL_INTERAC,
-	KERNEL_UP_CTLS
+	KERNEL_QUICS,
+	KERNEL_ENTRYPOINT
 
 }EmvKernelType;
 
@@ -64,10 +70,6 @@ typedef enum
 #define EMVTAG_RFID_OFFLINE_BALANCE 0x9F5D
 #define EMVTAG_PAN_SFI_RECORDNO 0xBC
 #define EMVTAG_TRACK2_RECORDNO 0xBE
-
-#define EMV_OFFLINEPIN_INPUT    1   /*offline pin*/
-#define EMV_OFFLINE_ONLY_INPUT  2   /*latest offline pin*/
-#define EMV_ONLINEPIN_INPUT   3   /*online pin*/
 
 /*
  * Terminal configuration parameters
@@ -250,7 +252,7 @@ typedef enum
 int Emv_KernelInit(const EmvTermConfig_t emvTermCfg, EmvCallBack_t t_callbackfun);
 
 EMV_L2_Return Emv_Process(EmvTransParams_t emvTransParams);
-EMV_L2_Return Emv_Process1(EmvTransParams_t emvTransParams);
+
 unsigned char* Emv_GetCoreData(unsigned int tagname, int *pvallen);
 
 // return value: 0 success -1 fail
@@ -274,6 +276,8 @@ int	Emv_GetCapkTotalNum();
 unsigned long EMV_L2_GetLastError();
 
 int Emv_GetKernelVersion(EmvKernelType kernelType,unsigned char *ver);
+//feturn: 0 succes  OTHER fail
+int Emv_SetOnlineResult(EmvOnlineData_t* pOnlineData);
 
 #ifdef __cplusplus
 }
