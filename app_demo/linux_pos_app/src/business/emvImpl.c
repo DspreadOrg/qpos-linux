@@ -247,6 +247,11 @@ int emv_process_disp(EmvKernelDisp type)
 		TransView_vClearPort();
 		TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Please retap card");
 		break;
+	case EMV_DISP_OFFLINE_PIN_BLOCKED:
+		TransView_vClearPort();
+		TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Offline PIN Blocked");
+		OsSleep(5000);
+		break;	
 	default:
 		break;
 	}
