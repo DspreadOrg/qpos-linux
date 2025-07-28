@@ -210,8 +210,7 @@ int inputPasswd(int cType, char *pszPin){
 			case PR_CANCLE:
 				return -3;
 			case PR_BYPASS:
-				return -2;
-// Online pin status = PINPAD_OK Return to 0
+				return 0;
 			default:
 				memcpy(pszPin,PinBlock,strlen((PR_INT8*)PinBlock));
                 printf("offline pin  %s  \n",(PR_INT8*)PinBlock);
