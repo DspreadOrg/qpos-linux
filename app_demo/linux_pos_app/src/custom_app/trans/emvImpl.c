@@ -165,7 +165,7 @@ int inputOfflinePasswd(char *pPin)
     int ret,pinLength;
     int keyValue = EM_KEY_INVALID; 
     char pin[12] = {0};
-    int pinLenMin = 4;
+    int pinLenMin = 0;
     int pinLenMax = 6;
     ST_TIMER Timer;
     int counter = 0;

@@ -8,11 +8,7 @@
 #define CFG_DBG
 #endif
 
-#if 0
-#define CFG_LOCAL_TEST   //本地测试，发布时必须关闭
-#endif
-
-#define APP_VERSION "V1.0.1"
+#define APP_VERSION "V1.0.2"
 
 #ifdef CFG_DBG
 
