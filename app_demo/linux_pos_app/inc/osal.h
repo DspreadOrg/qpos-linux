@@ -1721,6 +1721,18 @@ int OsWLModulePowerOn(void);
 #define RET_CONNECTING 1 //connecting
 #define ERR_EAP_ID -3359 //Certificate chain error or certificate verification failure
 
+
+//Error codes during WIFI connection process
+#define ERR_WLAN_ADD_NETWORK -3360
+#define ERR_WLAN_SET_SSID -3361
+#define ERR_WLAN_SET_PASSWORK -3362
+#define ERR_WLAN_ENABLE_NETWORK -3363
+#define ERR_WLAN_SAVE_CONFIG -3364
+#define ERR_WLAN_SELECT_NETWORK -3365
+#define ERR_WLAN_CONNECT_TO_AP -3366	//Physical connection failure, connection issues other than incorrect password
+#define ERR_WLAN_AP_DISCONNECT -3367	//WiFi disconnected
+#define ERR_WLAN_UDHCPC_GET_IPADDR -3368//Failed to obtain IP (weak signal or router with static IP)
+
 // Encryption type list
 #define PARE_CIPHERS_NONE 0x00000000 //no encryption
 

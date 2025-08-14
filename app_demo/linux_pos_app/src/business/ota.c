@@ -4,7 +4,21 @@
 #define COM_CELLULAR 1
 
 #define TMS_FW_HEART_CUSTOM_URL               "https://www.dspreadser.net:9011/terminal"  
-
+static bool gUpdateFlag = false;
+void ShowUpdateMsgBox()
+{
+    if(gUpdateFlag)
+    {
+        if (RET_DPORT_OK == TransView_nDoMessageBox((char *)"OTA UPDATE", BOX_STYLE_OK | BOX_STYLE_CANCEL, VIEW_TIMEOUT_FOREVER, (char *)"New Version,Update?"))
+        {
+            Ota_Process();
+        }
+        else
+        {
+            gUpdateFlag = false;
+        }
+    }
+}
 void TmsDispCallback(u32 id, char *pMsg)
 {
     u32 i ;
@@ -26,6 +40,9 @@ void TmsDispCallback(u32 id, char *pMsg)
             TransView_vClearPort();
             TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Upgrading...");
         break;
+        case TMS_DISP_HAVE_UPDATE_TASE:
+            gUpdateFlag = true;
+            break;
         default:
             break;
     }
@@ -40,16 +57,13 @@ void larktms_init()
     larktmsCbk.ssl_send = ssl_send_msg;
     larktmsCbk.ssl_recv = ssl_recv_msg;
 
-    larktms_ssl_Init(&larktmsCbk);
-    LarkTms_Disp_Callback_Register(TmsDispCallback);
+    larktms_service_start(&larktmsCbk,TmsDispCallback,TMS_FW_HEART_CUSTOM_URL,APP_VERSION);
 }
 
-int Ota_Process(int com_type)
+int Ota_Process()
 {
     int result = -1,key;
     unsigned char dispMsg[64]= {0};
-
-    larktms_init();
 
     TransView_vClearAllScreen();
     TransView_vShowLine(0, EM_DTYPE_REVERT, EM_ALIGN_CENTER,(char*)"OTA");
@@ -170,7 +184,7 @@ int Ota_Wifi(void)
         OsLog(LOG_ERROR,"OsWifiCheck ssid = %s bssid =%s", ssid, bssid);
     }
 
-    Ota_Process(COM_WIFI);
+    Ota_Process();
 
 EXIT:
     OsLog(LOG_ERROR,"%s.%d Ota_Wifi EXIT",__FUNCTION__, __LINE__);
@@ -203,7 +217,7 @@ PR_INT32 Func_OTA_Test(void)
                     Ota_Wifi();
                     break;
                 case 1:
-                    Ota_Process(COM_CELLULAR);
+                    Ota_Process();
                     break;
             }
         }else if(nRet == RET_DRPOT_CANCEL || nRet == RET_DPORT_TIMEOUT){

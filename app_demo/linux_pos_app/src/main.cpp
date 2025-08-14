@@ -1,6 +1,6 @@
 #include "appinc.h"
 #include <signal.h>
-
+#include "ota.h"
 void sigHandle(int sig)
 {
     switch (sig) {
@@ -156,7 +156,7 @@ int App_nInitialization()
 	DisplayInit();   //UI init
     DB_bInit(szAppId); //database init
     EmvL2_Init();   //EMV init
-	 
+    larktms_init(); // TMS init
     //TEST write Ic card params and capk
     SetDefaultIccParamForTest();
     //TEST write cup mK、tpk tdk  tak
@@ -164,6 +164,9 @@ int App_nInitialization()
     //END TEST
 
     WirelessInit();
+
+
+    
     Ntp_TimeSync_Proc();
 	return 0;
 }
@@ -281,6 +284,8 @@ int Idle_nEntery()
 	{
 		//idle
 		TransView_vShowLogoView();
+        //ota msg
+        ShowUpdateMsgBox();
 		//check key
 		nRet = KB_nWaitKeyMS_Ex(500);
 		if(nRet == EM_KEY_ENTER){
