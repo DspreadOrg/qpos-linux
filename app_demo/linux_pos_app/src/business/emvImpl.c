@@ -128,6 +128,8 @@ char** ConvertAppList(AidCandidate_t *pList,int listNum){
         }
         memset(p[i],0x0,len);
 		memcpy(p[i],pList[i]._lable,len-1);  
+
+		OsLog(LOG_DEBUG,"table index %d",pList[i]._table_index);
     }
 	return p;
 }
@@ -159,6 +161,15 @@ int confirmCardInfo(char *pan,int len){
     memcpy(emvTransData.Pan,pan,len);
     return 0;
 }
+
+int updateKernelId(unsigned char *aid,int aidLen,int *kernelId)
+{
+	//This function will be called multiple times. 
+	//The APP needs to check the AID passed in by this function.
+	// If you need to update the kernelid corresponding to this AID, please set the * kernelId parameter and return 0. Otherwise, return -1;
+	return -1;
+}
+
 //You can call Emv_SetCoreData in this callback function to update tagvalue after select aid
 void updateTagAfterSelectApp()
 {
@@ -629,6 +640,7 @@ static void Initialize_EMV_TermConfig(EmvTermConfig_t *ptermconfig)
 static void Initialize_EMV_CallBackFun(EmvCallBack_t *pcallbackfun)
 {
 	pcallbackfun->EMV_AidSelect = aidSelect;
+	pcallbackfun->EMV_SetKernelId = updateKernelId;
 	pcallbackfun->EMV_ConfirmCardInfo = confirmCardInfo;
 	pcallbackfun->EMV_InputPasswd = inputPasswd;
 	pcallbackfun->EMV_CertConfirm = certConfirm;
