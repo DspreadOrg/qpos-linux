@@ -387,6 +387,22 @@ FAIL:
     return PR_NORMAL;
 }
 
+void setTransTime(PR_INT8 *szTime)
+{
+    ST_TIME Time;
+    char *pTemp = NULL;
+    pTemp = malloc(20);
+    memset(pTemp,0,20);
+    OsGetTime(&Time);
+    sprintf(pTemp,"%04d",Time.Year);
+    sprintf(pTemp+4,"%02d",Time.Month);
+    sprintf(pTemp+6,"%02d",Time.Day);
+    sprintf(pTemp+8,"%02d",Time.Hour);
+    sprintf(pTemp+10,"%02d",Time.Minute);
+    sprintf(pTemp+12,"%02d",Time.Second);
+    asc_to_bcd(pTemp,14,szTime);
+    free(pTemp);
+}
 PR_INT32 Emv_Auth(PR_INT8* pszAmount,PR_INT32 nRetSwipeType){
     EmvTransParams_t emvTransParams;
     PR_INT32 nEmvRet;
@@ -397,6 +413,7 @@ PR_INT32 Emv_Auth(PR_INT8* pszAmount,PR_INT32 nRetSwipeType){
     emvTransParams.ec_support = 1; 
     emvTransParams.sm_support = 0; 
     emvTransParams.force_online_enable = 0; 
+    setTransTime(emvTransParams.trans_time);
     Business_GetTradeTsc((char*)emvTransParams.tsc,sizeof(emvTransParams.tsc));
     if(nRetSwipeType == INPUT_INSERTIC){
         emvTransParams.icc_type = CONTACT_ICC;
