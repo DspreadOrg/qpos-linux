@@ -1,5 +1,6 @@
 #include "app_includes.h"
 #include <signal.h>
+#include "app_ota.h"
 
 static pthread_t lvgl_tick_tid;
 static pthread_t lvgl_tid;
@@ -78,7 +79,8 @@ int main(int argc, char *argv[])
     thread_init();
     if (pthread_create(&lvgl_tick_tid, NULL, tick_thread, NULL) != 0)
         printf("can't create thread\n");
-        
+      
+    larktms_init();
     appStart();
 
     ymframwork_finish(ret);//system api

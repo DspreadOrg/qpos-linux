@@ -93,8 +93,6 @@ void DispDownloading()
     lv_obj_align(Upgrade_bar,LV_ALIGN_CENTER, 0,20);
     lv_obj_add_style(Upgrade_bar, &style_indic, LV_PART_INDICATOR);
 
-    DSP_Debug();
-
 	lv_timer_enable(true);
 }
 
@@ -115,7 +113,7 @@ void download_cb(lv_event_t * event)
 		uint32_t key=lv_indev_get_key(indev);
 		switch(key) 
 		{
-            case LV_KEY_ESC:
+            case LV_KEY_BACKSPACE:
                 DispMenuOptions();
                 break;
                 
@@ -251,20 +249,10 @@ void Firmware_OTA()
     }
 
 }
-
 void Firmware_OTA_Check()
 {
     Rc_t result = RC_FAIL;
     process = 0;
-
-    static LarkTmsCallBack_t larktmsCbk;
-    larktmsCbk.ssl_connect = ssl_server_connect;
-    larktmsCbk.ssl_disconnect= ssl_server_disconnect;
-    larktmsCbk.ssl_send = ssl_send_msg;
-    larktmsCbk.ssl_recv = ssl_recv_msg;
-
-    larktms_ssl_Init(&larktmsCbk);
-    LarkTms_Disp_Callback_Register(TmsDispCallback);
 
     result = larktms_client_check(TMS_FW_HEART_CUSTOM_URL,APP_VERSION);
 
@@ -308,9 +296,23 @@ void TmsDispCallback(u32 id, char *pMsg)
             break;
         case TMS_DISP_UPGRADING:
             GuiEventRegister(LCD_DISP_OTA_UPGRADING);
-        break;
+            break;
+        case TMS_DISP_HAVE_UPDATE_TASE:
+            GuiEventRegister(LCD_DISP_OTA_FIRMWARE_NEED_DOWNLOAD);
+            break;
         default:
             break;
     }
 
+}
+
+void larktms_init()
+{
+    static LarkTmsCallBack_t larktmsCbk;
+    larktmsCbk.ssl_connect = ssl_server_connect;
+    larktmsCbk.ssl_disconnect= ssl_server_disconnect;
+    larktmsCbk.ssl_send = ssl_send_msg;
+    larktmsCbk.ssl_recv = ssl_recv_msg;
+
+    larktms_service_start(&larktmsCbk,TmsDispCallback,TMS_FW_HEART_CUSTOM_URL,APP_VERSION);
 }

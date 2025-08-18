@@ -453,6 +453,7 @@ static void Initialize_EMV_CallBackFun(EmvCallBack_t *pcallbackfun)
 	pcallbackfun->EMV_OnlineProcess = onlineProcess;
 	pcallbackfun->EMV_AfterReadRecord = NULL;
 	pcallbackfun->EMV_AfterSelectApp = NULL;
+	pcallbackfun->EMV_SetKernelId = NULL;
 }
 
 PR_INT32 EmvL2_Init(){
