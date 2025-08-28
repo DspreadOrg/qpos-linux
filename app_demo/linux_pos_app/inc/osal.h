@@ -1480,6 +1480,46 @@ int OsPiccIsoCommand(int cid, ST_APDU_REQ*ApduReq,ST_APDU_RSP*ApduRsp);
  */
 int OsPiccOffCarrier(void);
 
+
+/*
+Function: card search
+parameter:
+PcPiccType [Output] Found card type: 'A' - A card 'B' - B card
+PucATQx [Output] Card response data during card search: A card has 2 bytes, B card has 12 bytes
+PATQxLen [Output] ATQx data length
+return:
+0 card search successful
+Other failures (see function return value list)
+*/ 
+int OsPiccSearch(char*pcPiccType, unsigned char*pucATQx,int *pATQxLen);
+
+/*
+Function: to prevent conflicts and select cards
+parameter:
+PcPiccType [Input] Found card type: 'A' - A card 'B' - B card
+PucUID [Output] Unique identifier of the card: A card can have 4, 7, or 10 bytes, while B card has 4 bytes
+PUIDLen [Output] UID Data Length
+PucSAK [Output] Card response data during card selection, with a length of 1 byte. SAK is the data responded to by the last selection command of card A, while card B ignores this parameter
+return:
+0 card search successful
+Other failures (see function return value list)
+*/ 
+int OsPiccAntiSel(const char pcPiccType,unsigned char *pucUID, int *pUIDLen, unsigned char*pucSAK);
+
+/*
+Function:Activate the card 
+parameter:
+PcPiccType [Input] Found card type: 'A' - A card 'B' - B card
+PucRATS [Output] activates the response data of the card:
+When using A card, pucRATS responds to ATS command response data
+When using a B card, pucRATS is the data that responds to the ATTRIB command
+PROTSLen [Output] ATS data length
+return:
+0 card search successful
+Other failures (see function return value list)
+*/ 
+int OsPiccActive(const char pcPiccType, unsigned char *pucRATS,int *pRATSLen);
+
 /*
  * 17 Communication Port
  */
