@@ -588,7 +588,7 @@ int onlineProcess(EmvOnlineData_t* pOnlineData){
 	return PR_NORMAL;
 #else
 
-#ifdef POS_PAPER_TRADING
+#if POS_PAPER_TRADING
     if(Is_Valid_Network() == PR_NORMAL){
 		iRet = ppp_connect_test();
         if(iRet == 0){
@@ -606,6 +606,7 @@ int onlineProcess(EmvOnlineData_t* pOnlineData){
 #else
    
 	TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Connect To Server");
+	OsSleep(2000);
 	memcpy(pOnlineData->iccResponse,"00",2);
 	// memcpy(pOnlineData->ackdata,"\x72\x20\x86\x0E\x04\xDA\x00\x00\x02\x01\x92\x42\x81\x02\x7A\x08\xE4\x36\x86\x06\x04\xDA\x00\x00\x00\x01\x86\x06\x04\xDA\x00\x00\x01\x01",34);
 	// pOnlineData->ackdatalen = 34;

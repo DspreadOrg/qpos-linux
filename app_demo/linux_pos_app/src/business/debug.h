@@ -8,7 +8,7 @@ extern "C"
 {
 #endif
 
-#define POS_OFFLINE 1
+#define POS_OFFLINE
 
 #define POS_PAPER_TRADING 0  
 

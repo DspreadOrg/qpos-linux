@@ -112,8 +112,15 @@ PR_INT32 ReadCardProc(PR_INT8 *pszAmount,PR_INT32 nTimeoutS,PR_INT32 *pRetSwipeT
         TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Card Device Open Failed");
         return PR_FAILD;
     }
-    TransView_vShowLine(1,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"%s",szDisplayAmount);
-    if(cardsSupported == CARD_NFC|CARD_IC|CARD_MAG)
+
+    if(pszAmount)
+    {
+        TransView_vShowLine(1,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"%s",szDisplayAmount);
+        PR_nUtilNumberToAmt(pszAmount,sizeof(szDisplayAmount),szDisplayAmount);
+    }
+
+
+    if(cardsSupported == (CARD_NFC|CARD_IC|CARD_MAG))
         TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Swipe/Insert/Tap");
     else if(cardsSupported == CARD_IC)
         TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Please Insert Card");    
@@ -122,7 +129,6 @@ PR_INT32 ReadCardProc(PR_INT8 *pszAmount,PR_INT32 nTimeoutS,PR_INT32 *pRetSwipeT
     else if(cardsSupported == CARD_MAG)
         TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Please Swipe Card");    
 
-    PR_nUtilNumberToAmt(pszAmount,sizeof(szDisplayAmount),szDisplayAmount);
     while (get_sys_tick() - start < nTimeoutS*1000)
     {
         if(cardsSupported&CARD_NFC)
@@ -427,7 +433,7 @@ PR_INT32 Emv_Auth(PR_INT8* pszAmount,PR_INT32 nRetSwipeType){
     if(nEmvRet != PR_NORMAL){
         TransView_vShowLine(3,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Failed");
     }else{
-#ifdef POS_OFFLINE
+
         if(emvTransParams.icc_type == CONTACTLESS_ICC)
         {
             EmvOnlineData_t emvOnlineData;
@@ -437,21 +443,51 @@ PR_INT32 Emv_Auth(PR_INT8* pszAmount,PR_INT32 nRetSwipeType){
             {
                 if(emvOnlineData.ackdatalen > 0)
                 {
-                    nEmvRet = Emv_SetOnlineResult(&emvOnlineData);
-                    TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
-                }
+                    #ifdef APP_CTL_DOUBLE_TAP_POLL_CARD 
+                    int RetSwipeType = 0;
+                    CardDataInfo t_CardDataInfo;
+                    memset(&t_CardDataInfo,0x0,sizeof(CardDataInfo));
+                    if(ReadCardProc(NULL,30,&RetSwipeType,&t_CardDataInfo,CARD_NFC) == PR_NORMAL)
+                    {
+                        nEmvRet = Emv_SetOnlineResult(APP_POLL_CTL_MODE,&emvOnlineData);
+                        if(nEmvRet == PR_NORMAL)
+                        {
+                            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
+                        }
+                        else
+                        {
+                            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Failed");
+                        }
+                    }
+                    else
+                    {
+                        TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Failed");
+                    }
+                    #else
+                        nEmvRet = Emv_SetOnlineResult(KERNEL_POLL_CTL_MODE,&emvOnlineData);
+                        if(nEmvRet == PR_NORMAL)
+                        {
+                            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
+                        }
+                        else
+                        {
+                            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Failed");
+                        }
+                    #endif
 
+                }
                else
+               {
                     TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
+               }
             }
         }
         else
         {
             TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
         }
-#endif
 
-#ifdef POS_PAPER_TRADING
+#if POS_PAPER_TRADING
         PrintOrder(2);
 #else   
         PrintOrder(1);
