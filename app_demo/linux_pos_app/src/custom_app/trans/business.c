@@ -230,7 +230,6 @@ PR_INT32 Emv_Auth(PR_INT8* pszAmount,PR_INT32 nRetSwipeType){
     emvTransParams.trans_type = EMV_L2_SALE;  
     memcpy((char *)emvTransParams.trans_amount,pszAmount,12);
     Business_getSysTime((char*)emvTransParams.trans_time,sizeof(emvTransParams.trans_time));
-    memcpy(emvTransParams.trans_currency_code,"\x01""\x56", 2);
     emvTransParams.force_online_enable = 0; 
     if(nRetSwipeType == INPUT_INSERTIC ){
         emvTransParams.icc_type = CONTACT_ICC;
