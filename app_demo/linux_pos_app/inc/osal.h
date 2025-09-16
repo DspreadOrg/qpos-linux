@@ -316,6 +316,9 @@ int OsDownLoadAndUpgradeFile();
 int OsGetSysBootMode(int *pMode);
 // Get the hardware version hw_version[0] ='4', type A30 '7', type A50 Other unknown
 void OsGetHwVersion(char *hw_version);
+//
+int OsGetMisFlag(int *flag );
+
 int OsGetFactoryTestStep();
 int OsSetFactoryTestStep(int flag);
 
