@@ -244,7 +244,8 @@ void Disp_nSetMsgBoxLanguage(Uint8 language);
  * @Call Example:
  */
 void Disp_vInit(void);
-
+//barState 0 does not display status bar 1 displays status bar
+void Disp_vInitEx(int barState);
 /*
  * @author:
  * @Date: 10-10-2022
@@ -360,6 +361,16 @@ void Disp_vShowStr(Uint8 nAtLine, Uint8 nType, Uint8 nPattern, Int8* fmt, ...);
  * @Call Example:
  */
 void Disp_vShowImage(Uint8* pcBmpData, Uint32 LenofBufferSize, POINT_T tStartPoint, Uint32 uBmpWidth, Uint32 uBmpHeight);
+
+/*
+*Param: 
+	path: picture path
+	tStartPoint: picture start point
+*Return:
+	None	
+* @Remark:Image files do not require any conversion and only support displaying BMP, JPG, and PNG images.
+*/
+void Disp_vShowPICByPath(const char *path, POINT_T tStartPoint);
 
 /*
  * @author:
@@ -1061,6 +1072,18 @@ int Disp_nShowDateInputView(SetLocalTimeType* pDate,  int nTimeOutSec);
  * @Call Example:
  */
 void Disp_vSetSysFont(DPORT_FONT_SIZE_T FontType);
+/*
+*@ Function Name: Dispw_SETysVectorFont
+*@ Function Function: Set system vector font (specify font file path)
+*
+*@ Input Parameters:
+*PFontFilePath - Font file path
+*@Output parameter: None
+*
+*@ Return value: None
+*/
+#define SYS_DEFAULT_FONT_FILE_PATH "/customer/ymos/fonts/Arabic.ttf"  // The firmware version 20250930 comes with a default font library
+void Disp_vSetSysVectorFont(const char* pFontFilePath);
 
 /*
  * @author:

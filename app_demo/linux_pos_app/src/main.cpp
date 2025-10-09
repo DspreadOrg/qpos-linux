@@ -46,6 +46,7 @@ void signalHandle(){
 
 void DisplayInit(){
     Disp_vInit(); //UI  init
+    Disp_vSetSysVectorFont(SYS_DEFAULT_FONT_FILE_PATH);
     TransView_vClearAllScreen();
 	TransView_vShowLine(2, EM_DTYPE_NORMAL,EM_ALIGN_CENTER, (char*)"App Init");
 }
@@ -160,7 +161,7 @@ int App_nInitialization()
     //TEST write Ic card params and capk
     SetDefaultIccParamForTest();
     //TEST write cup mK、tpk tdk  tak
-    Pinpad_Init();
+    //Pinpad_Init();
     //END TEST
 
     WirelessInit();

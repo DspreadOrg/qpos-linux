@@ -280,6 +280,23 @@ PR_INT32 TransView_nShowAmountInputViewEx(CurrencyIndicate_T nIndicate,
 
 void TransView_vShowLogoView()
 {
+	#if 0
+	PR_INT8 FilePath[128] = {0};
+	PR_INT8 szDisp[128] = {0};
+	PR_INT8 AppPath[128] = {0};
+	
+	Business_getAppPath(AppPath,sizeof(AppPath));
+	sprintf(FilePath,"%s/res/dog.jpg",AppPath);
+    POINT_T tStartPoint;
+    tStartPoint.X = 0;
+    tStartPoint.Y = 22;
+    Disp_vShowPICByPath(FilePath, tStartPoint);
+
+	// TransView_vShowLine(0, EM_DTYPE_NORMAL,EM_ALIGN_CENTER,"%s","Bienvenido, buenos días");
+	// TransView_vShowLine(1, EM_DTYPE_NORMAL,EM_ALIGN_CENTER,"خوش آمدید،");
+	// TransView_vShowLine(2, EM_DTYPE_NORMAL,EM_ALIGN_CENTER,"%s","Добро пожаловать,доброе утро");
+	// TransView_vShowLine(5, EM_DTYPE_NORMAL,EM_ALIGN_CENTER,"%s","ברוכים הבאים. בוקר טוב.");
+	#else
 	PR_INT8 FilePath[128] = {0};
 	PR_INT8 szDisp[128] = {0};
 	PR_INT8 AppPath[128] = {0};
@@ -288,6 +305,7 @@ void TransView_vShowLogoView()
 	sprintf(FilePath,"%s/res/Dspread.565",AppPath);
 	sprintf(szDisp,"DSPREAD\n%s\nWELCOME",APP_VERSION);
 	Disp_vShowLogoView(FilePath, szDisp);
+	#endif
 }
 
 PR_INT32 TransView_nShowMsgBox(PR_INT8* szTitle,PR_INT8* szDisplayMsg)
