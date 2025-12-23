@@ -323,6 +323,7 @@ PR_INT32 qrcode_unionpay_dis_ret_msg (PR_INT8 * szReadBuf, PR_INT32 iReadLen )
 
 PR_INT32 Mag_Auth(PR_INT8* pszAmount,CardDataInfo *DataInfo){
     PR_UINT8 PinBlock[16+1] = {0};
+    PR_UINT8 PinKsn[10+1] = {0};
     PR_INT32 keyIndex = 1;
     PR_INT32 iRet = PR_FAILD;
     PR_INT32 pinLen = 0;
@@ -335,7 +336,7 @@ PR_INT32 Mag_Auth(PR_INT8* pszAmount,CardDataInfo *DataInfo){
 	PR_INT8 szRecvBuf[READBUFF_SIZE + 1] = {0};
 
     OsLog(LOG_DEBUG,"Card Num  【%s】",DataInfo->Pan);
-	iRet = TransView_nShowPinpadView(1,pszAmount,(PR_UINT8*)DataInfo->Pan,(char *)"0,6",0x00,60,PinBlock);
+    iRet = TransView_nShowPinpadDukptView(PED_PIN_IPEK_INDEX,pszAmount,(PR_UINT8*)DataInfo->Pan,(char *)"0,6",0x20,60,PinKsn,PinBlock);
 	if(iRet != RET_OK){
         return PR_FAILD;
     }

@@ -57,7 +57,7 @@ static char s_ResponseCodeTable[][RESPONSE_CODE_LENGTH] =
 	{'A', '7'},
 };
 
-#define MAX_HINT_STRING_LENGTH	64
+#define MAX_HINT_STRING_LENGTH	128
 static PR_INT8 s_ResopnseCodeHints [][MAX_HINT_STRING_LENGTH]=
 {
 	"Successful trade",

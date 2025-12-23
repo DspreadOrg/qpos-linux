@@ -111,6 +111,49 @@ PR_INT32 TransView_nShowPinpadView(PR_INT32 KeyIdx,PR_INT8* pszAmount,PR_UINT8 *
 	}
 }
 
+PR_INT32 TransView_nShowPinpadDukptView(PR_INT32 KeyIdx,PR_INT8* pszAmount,PR_UINT8 *DataIn, PR_INT8 *ExpPinLen, PR_INT32 Mode, PR_UINT64 TimeoutS, PR_UINT8 *pPinBlock,PR_UINT8 *pinKsn)
+{
+    PR_INT32 nRet = PR_FAILD;
+	PR_INT8 DisplayAmount[12+2] = {0};
+	TransView_vClearPort();
+    
+	nRet = OsPedOpen();
+	if(nRet != RET_OK){
+		TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_LEFT,(char*)"SE Exception");
+		return PR_FAILD;
+	}
+
+	nRet = OsPedIncreaseKsnDukpt(KeyIdx);
+	if(nRet != RET_OK){
+		TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_LEFT,(char*)"SE Exception");
+		OsPedClose ();
+		return PR_FAILD;
+	}
+
+	PR_nUtilNumberToAmt(pszAmount,sizeof(DisplayAmount),DisplayAmount);
+    TransView_vShowLine(1,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"%s",DisplayAmount);
+	TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_LEFT,(char*)"Pls Enter PIN");
+	TransView_vShowLine(4,EM_DTYPE_NORMAL,EM_ALIGN_LEFT,(char*)"If Wrong Press [CLEAR]");
+	nRet = OsPedGetPinDukpt(KeyIdx,(PR_UINT8*)DataIn,ExpPinLen,0x20,TimeoutS*1000, pinKsn, pPinBlock);
+
+	DSP_Info("OsPedGetPinBlock ret = %d",	nRet);
+	OsPedClose();
+	switch(nRet)
+	{
+		case RET_OK:
+			return PR_NORMAL;
+		case ERR_PED_NO_PIN_INPUT:
+			return ERR_PED_NO_PIN_INPUT;
+		case ERR_PED_PIN_INPUT_CANCEL:
+			return RET_DRPOT_CANCEL;
+			
+		case ERR_PED_INPUT_PIN_TIMEOUT:
+			return RET_DPORT_TIMEOUT;
+			
+		default:
+			return PR_FAILD;
+	}
+}
 PR_INT32 TransView_nGetOfflinePin(PR_INT8* szAmount,
 										PR_INT32 nOfflinePinType,
 										PR_INT32 nAtLine,

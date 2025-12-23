@@ -5,6 +5,10 @@
 extern "C"
 {
 #endif
+
+#define EMV_OFFLINEPIN_INPUT    1   /*Offline password*/
+#define EMV_OFFLINE_ONLY_INPUT  2   /*Last offline password*/
+#define EMV_ONLINEPIN_INPUT   3   /*Online password*/
 // kernel type definition
 typedef enum
 {

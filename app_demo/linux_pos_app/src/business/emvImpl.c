@@ -20,6 +20,7 @@ typedef struct tagEmvTransData
 	PR_INT8 TransAmount[12+1];
 	PR_INT8 PinBlock[8+1];
 	PR_INT32 PinLen;          //Enter the length of the pin
+	PR_INT8 PinKsn[10+1];
 }EmvTransData;
 static EmvTransData emvTransData;
 
@@ -197,7 +198,7 @@ int inputPasswd(int cType, char *pszPin){
     PR_INT32 pinLen;
     PR_UINT8 PinBlock[16+1] = {0};
     if(cType == EMV_ONLINEPIN_INPUT){
-        nRet = TransView_nShowPinpadView(1,emvTransData.TransAmount,(PR_UINT8*)emvTransData.Pan,(char *)"0,6",0x00,60,PinBlock);
+		nRet = TransView_nShowPinpadDukptView(PED_PIN_IPEK_INDEX,emvTransData.TransAmount,(PR_UINT8*)emvTransData.Pan,(char *)"0,6",0x20,60,emvTransData.PinKsn,PinBlock);
         TransView_vClearPort();
 		switch (nRet)
 		{
@@ -548,7 +549,7 @@ PR_INT32 emv_onlineData_proc (PR_INT8 * szReadBuf, PR_INT32 iReadLen,EmvOnlineDa
 
 // Online result: Online result-1 Online failed >=0 Online successful (with message response)
 int onlineProcess(EmvOnlineData_t* pOnlineData){
-	PR_INT32 iRet = 0;
+	PR_INT32 iRet = PR_FAILD;
 	PR_INT32 iLen = 0;
 	PR_INT32 iSendLen = 0;
 	PR_INT32 iRecvLen = 0;
@@ -610,13 +611,13 @@ int onlineProcess(EmvOnlineData_t* pOnlineData){
 	memcpy(pOnlineData->iccResponse,"00",2);
 	// memcpy(pOnlineData->ackdata,"\x72\x20\x86\x0E\x04\xDA\x00\x00\x02\x01\x92\x42\x81\x02\x7A\x08\xE4\x36\x86\x06\x04\xDA\x00\x00\x00\x01\x86\x06\x04\xDA\x00\x00\x01\x01",34);
 	// pOnlineData->ackdatalen = 34;
-    return PR_NORMAL;
+    iRet =  PR_NORMAL;
 #endif
 
 #endif
 
 FAIL:
-    return PR_FAILD;
+    return iRet;
     
 }
 

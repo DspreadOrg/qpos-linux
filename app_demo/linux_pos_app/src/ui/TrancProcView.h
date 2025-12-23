@@ -44,10 +44,11 @@ typedef enum tagCurrencyIndicate
 	INDICATE_FOR_MAX_NUMS,
 }CurrencyIndicate_T;
 
-#define EMV_OFFLINEPIN_INPUT    1   /*Offline password*/
-#define EMV_OFFLINE_ONLY_INPUT  2   /*Last offline password*/
-#define EMV_ONLINEPIN_INPUT   3   /*Online password*/
+#define PED_PIN_IPEK_INDEX 0x01
+#define PED_EMV_IPEK_INDEX 0x02
+#define PED_TRK_IPEK_INDEX 0x03
 
+#define PED_MKSK_TPK       0x01
 
 KB_KEYMAP_T KB_nWaitKeyMS(Int32 MS);
 
@@ -177,6 +178,7 @@ PR_INT32 TransView_nNumber_En_Symbol_InputViewEx(PR_INT8*  pszTip,
 PR_INT32 TransView_nShowAmountInputView(PR_INT32 nLenOfBuffer, PR_INT8* pszAmountoutput);
 
 PR_INT32 TransView_nShowPinpadView(PR_INT32 KeyIdx,PR_INT8* pszAmount,PR_UINT8 *DataIn, PR_INT8 *ExpPinLen, PR_INT32 Mode, PR_UINT64 TimeoutS, PR_UINT8 *pPinBlock);
+PR_INT32 TransView_nShowPinpadDukptView(PR_INT32 KeyIdx,PR_INT8* pszAmount,PR_UINT8 *DataIn, PR_INT8 *ExpPinLen, PR_INT32 Mode, PR_UINT64 TimeoutS, PR_UINT8 *pPinBlock,PR_UINT8 *pinKsn);
 
 PR_INT32 TransView_nGetOfflinePin(PR_INT8* szAmount,
 										PR_INT32 nOfflinePinType,
