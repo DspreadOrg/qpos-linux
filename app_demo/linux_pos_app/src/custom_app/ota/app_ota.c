@@ -188,6 +188,22 @@ void ui_sn_not_found()
 	lv_timer_enable(true);
 }
 
+void ui_task_invalid()
+{
+	u32 timeout=2000;
+	lv_timer_enable(false);
+	lv_obj_clean(Main_Panel);
+
+	lv_obj_t * imgOKIcon = lv_img_create(Main_Panel);
+	lv_img_set_src(imgOKIcon, &lv_Fail_Icon);
+	lv_obj_align(imgOKIcon, LV_ALIGN_TOP_MID, 0, 20);
+
+	lv_text_create(Main_Panel, "The task is invalid", &mediumMsg_style, LV_ALIGN_CENTER, 0, -5);
+	lv_timer_t * timer= lv_timer_create(timerOut_cb, timeout,(pvoid)timeout);
+	lv_timer_set_repeat_count(timer, 1);
+	lv_timer_enable(true);
+}
+
 /*----------------------------------------------------------------------------
 |   Function Name:
 |       ui_tms_fail
@@ -270,6 +286,9 @@ void Firmware_OTA_Check()
         case TMS_ERR_SN_NOT_REGISTER:
             GuiEventRegister(LCD_DISP_SN_NOT_REGIESTER);
             break;
+        case TMS_ERR_TASK_INVALID:
+            GuiEventRegister(LCD_DISP_OTA_TASK_INVALID);
+            break;   
         default:
             GuiEventRegister(LCD_DISP_OTA_UPDATE_FAIL);
             break;    

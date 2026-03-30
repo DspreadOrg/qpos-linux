@@ -406,7 +406,9 @@ void GuiDisplay(u32 id){
 		case LCD_DISP_SN_NOT_REGIESTER:
 			ui_sn_not_found();
 			break;
-
+		case LCD_DISP_OTA_TASK_INVALID:
+			ui_task_invalid();
+			break;
 		case LCD_DISP_EMV_APP_BLOCK:
 			DispAppBlock();
 			break;

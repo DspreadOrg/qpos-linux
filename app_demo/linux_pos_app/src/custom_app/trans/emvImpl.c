@@ -469,6 +469,28 @@ PR_INT32 EmvL2_Init(){
     return PR_NORMAL;
 }
 
+void led_disp_nfc_success_prompt()
+{
+    OsLed(0,0,0,1);
+    OsSleep(30);
+    OsLed(0,0,1,1);
+    OsSleep(30);
+    OsLed(0,1,1,1);
+    OsSleep(30);
+    OsLed(0,0,0,0);
+}
+
+void led_disp_nfc_fail_prompt()
+{
+    OsLed(0,0,0,1);
+    OsSleep(30);
+    OsLed(0,0,1,1);
+    OsSleep(30);
+    OsLed(1,1,1,1);
+    OsSleep(30);
+    OsLed(0,0,0,0);
+}
+
 PR_INT32 EmvL2_Proc(EmvTransParams_t emvTransParams){
     EMV_L2_Return nEmvRet = APP_RC_START;
 	int ret = PR_FAILD;
@@ -476,6 +498,7 @@ PR_INT32 EmvL2_Proc(EmvTransParams_t emvTransParams){
     nEmvRet = Emv_Process(emvTransParams);
 	if(emvTransParams.icc_type == CONTACTLESS_ICC && nEmvRet == APP_RC_COMPLETED)
 	{
+		led_disp_nfc_success_prompt();
 		// do contactless trans online request
 		EmvOnlineData_t emvOnlineData;
 		memset(&emvOnlineData,0,sizeof(EmvOnlineData_t));
@@ -490,7 +513,11 @@ PR_INT32 EmvL2_Proc(EmvTransParams_t emvTransParams){
 			nEmvRet = APP_RC_COMPLETED;
 		else
 			nEmvRet = APP_RC_TERMINAL;
+		
 	}
+#ifdef CFG_OFFLINE_TEST	
+		nEmvRet = APP_RC_COMPLETED;
+#endif	
     return nEmvRet;
 }
 

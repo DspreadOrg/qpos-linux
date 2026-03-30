@@ -1,7 +1,6 @@
-#include "app_includes.h"
 #include <signal.h>
+#include "app_includes.h"
 #include "app_ota.h"
-#include "ntp.h"
 
 static pthread_t lvgl_tick_tid;
 static pthread_t lvgl_tid;

@@ -4,13 +4,15 @@
 /*-----------------------------------------------------------------------------
 |   DEBUG
 +----------------------------------------------------------------------------*/
-#if 1
+#if 0
 #define CFG_DBG
 #endif
 
-#define APP_VERSION "V1.0.3"
+#define APP_VERSION "V1.0.5"
 
 #ifdef CFG_DBG
+
+#define CFG_OFFLINE_TEST
 
 static inline void getInfo( const char* module, int line, const char* func ){
     OsLog(LOG_DEBUG, "\rDspread: %s | %s | %d | ", module, func,line);

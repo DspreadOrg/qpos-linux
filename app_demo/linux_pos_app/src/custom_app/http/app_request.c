@@ -112,6 +112,13 @@ int sale_online_request(EmvOnlineData_t* pOnlineData)
     u8 url[128] = {0};
     u32 urlLen = 0;
 
+#ifdef CFG_OFFLINE_TEST	
+    OsSleep(2000);
+    memcpy(pOnlineData->iccResponse,"00",2); //responcess
+    ret = PR_NORMAL;
+     return ret;
+#endif
+
     body=(pu8)malloc(SERVER_REQUEST_BODY_LENGTH);
     pSend=(pu8)malloc(SERVER_REQUEST_LENGTH);
     memset(body,0,SERVER_REQUEST_BODY_LENGTH);

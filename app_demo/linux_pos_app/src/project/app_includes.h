@@ -22,6 +22,8 @@ extern "C"
 #include "ui_card.h"
 #include "ui_emvPinDisp.h"
 
+#include "ntp.h"
+
 #ifdef __cplusplus
 }
 #endif

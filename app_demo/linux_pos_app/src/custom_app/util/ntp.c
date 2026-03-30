@@ -54,6 +54,80 @@ int setBeijingTime(time_t ntpTm)
     }
 }
 
+// Set system time to Israel local time, input NTP UTC+0 time stamp (time_t type)
+// Return 0 = set success, Return -1 = set failed
+int setIsraelTime(time_t ntpTm)
+{
+    ST_TIME t_systime;
+    time_t israelTime = ntpTm;
+    // Use gmtime for UTC standard time parsing, NOT localtime (critical, avoid timezone offset error)
+    struct tm *tm_utc = gmtime(&ntpTm);
+
+    // Israel timezone rule core logic:
+    // Daylight Saving Time (IDT, UTC+3) : Last Sunday of March 02:00  ~  Last Sunday of October 02:00
+    // Standard Time (IST, UTC+2) : Other time periods of the year
+    int month = tm_utc->tm_mon + 1; // tm_mon: 0=Jan, 1=Feb ... 11=Dec, need +1 to get real month
+    int day = tm_utc->tm_mday;      // Current day of the month
+    int week = tm_utc->tm_wday;     // tm_wday: 0=Sunday, 1=Monday ... 6=Saturday
+
+    if(month > 3 && month < 10)
+    {
+        // Whole April to September are always Daylight Saving Time (UTC+3)
+        israelTime = ntpTm + 3*60*60;
+    }
+    else if(month == 3)
+    {
+        // March : Start DST at 02:00 of the last Sunday
+        int lastSunDay = 31 - ((week - day%7) + 7)%7;
+        if( (day > lastSunDay) || (day == lastSunDay && tm_utc->tm_hour >= 2) )
+        {
+            israelTime = ntpTm + 3*60*60;
+        }
+        else
+        {
+            israelTime = ntpTm + 2*60*60;
+        }
+    }
+    else if(month == 10)
+    {
+        // October : End DST at 02:00 of the last Sunday, back to Standard Time
+        int lastSunDay = 31 - ((week - day%7) + 7)%7;
+        if( (day < lastSunDay) || (day == lastSunDay && tm_utc->tm_hour < 2) )
+        {
+            israelTime = ntpTm + 3*60*60;
+        }
+        else
+        {
+            israelTime = ntpTm + 2*60*60;
+        }
+    }
+    else
+    {
+        // January, February, November, December : always Standard Time (UTC+2)
+        israelTime = ntpTm + 2*60*60;
+    }
+
+    // Parse the calculated Israel time to time struct
+    struct tm *tm_info = gmtime(&israelTime);
+    t_systime.Year = tm_info->tm_year + 1900;  // tm_year: years since 1900, need +1900
+    t_systime.Month = tm_info->tm_mon + 1;     // tm_mon start from 0, need +1
+    t_systime.Day = tm_info->tm_mday;
+    t_systime.Hour = tm_info->tm_hour;
+    t_systime.Minute = tm_info->tm_min;
+    t_systime.Second = tm_info->tm_sec;
+
+    OsLog(LOG_DEBUG,"Online time synchronization(Israel)  %d-%d-%d %d:%d:%d \n", 
+          t_systime.Year,t_systime.Month,t_systime.Day,t_systime.Hour,t_systime.Minute,t_systime.Second);
+          
+    if(OsSetTime(&t_systime) == 0)
+    {
+        return 0;  // Time set success
+    }
+    else
+    {
+        return -1; // Time set failed
+    }
+}
 int ntp_sync_time(char *host_name)
 {   
     struct timeval tv;

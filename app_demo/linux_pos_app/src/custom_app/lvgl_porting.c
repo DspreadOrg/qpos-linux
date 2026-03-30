@@ -505,7 +505,6 @@ void appStart()
 {
     if(lvgl_Queue_Init() != PR_NORMAL)
     {
-        DSP_Debug();
         exit(1);
     }
 
