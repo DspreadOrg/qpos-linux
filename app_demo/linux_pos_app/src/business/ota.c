@@ -84,6 +84,9 @@ int Ota_Process()
         case TMS_ERR_SN_NOT_REGISTER:
             strcpy(dispMsg,"Device not registered");
             break;
+        case TMS_ERR_TASK_INVALID:
+            strcpy(dispMsg,"Task Invalid");
+            break; 
         default:
             strcpy(dispMsg,"Check failed");
             break;    

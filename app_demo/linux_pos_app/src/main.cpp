@@ -159,15 +159,11 @@ int App_nInitialization()
     EmvL2_Init();   //EMV init
     larktms_init(); // TMS init
     //TEST write Ic card params and capk
-    SetDefaultIccParamForTest();
+    // SetDefaultIccParamForTest();
     //TEST write cup mK、tpk tdk  tak
     //Pinpad_Init();
     //END TEST
-
     WirelessInit();
-
-
-    
     Ntp_TimeSync_Proc();
 	return 0;
 }

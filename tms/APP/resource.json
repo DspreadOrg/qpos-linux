@@ -1,0 +1,15 @@
+{
+	"fileName": "qposlinux_app_V1.0.2.apk",
+	"packageType": "AP",
+	"supportVersion": ".*",
+	"md5": "eb36fa5d88a70d423caefcc70664bcc1",
+	"desc": "update",
+	"platformVersion": 3,
+	"version": "V1.0.2",
+	"diffType": 1,
+	"customerVersion": "0.0.0",
+	"customerName": "DSPREAD",
+	"machineType": "A30",
+	"hardwarePlatform": "M",
+	"osVersion": "Q"
+}

@@ -488,7 +488,7 @@ PR_INT32 Emv_8583_Pack(EmvTransData *pEmvTransData,PR_INT8 * szPackStr, PR_INT32
 
 	nLength = nPackSize;
 	ASSERT_NORMAL(PubIsoToStr_separate(szPackStr, &m_iso, &nLength));
-	ASSERT_NORMAL(Business_CalcMac(1, (uchar*)szPackStr, nLength - 8, (uchar*)(szPackStr + nLength - 8)));
+	// ASSERT_NORMAL(Business_CalcMac(1, (uchar*)szPackStr, nLength - 8, (uchar*)(szPackStr + nLength - 8)));
 	*nRetLen = nLength;
 	dbg_printfWHex((uchar *)szPackStr, *nRetLen, "8583 data");
 	return 0;
@@ -561,6 +561,7 @@ int onlineProcess(EmvOnlineData_t* pOnlineData){
         return -1;
     }
 	TransView_vClearPort();
+	TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Connect To Server");
 	Emv_GetCardInfo(&emvTransData);
     BUFCLR(szBuf);
 	iRet = Emv_8583_Pack(&emvTransData,szBuf, sizeof(szBuf) - 1, &iLen);
@@ -606,7 +607,6 @@ int onlineProcess(EmvOnlineData_t* pOnlineData){
     }
 #else
    
-	TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Connect To Server");
 	OsSleep(2000);
 	memcpy(pOnlineData->iccResponse,"00",2);
 	// memcpy(pOnlineData->ackdata,"\x72\x20\x86\x0E\x04\xDA\x00\x00\x02\x01\x92\x42\x81\x02\x7A\x08\xE4\x36\x86\x06\x04\xDA\x00\x00\x00\x01\x86\x06\x04\xDA\x00\x00\x01\x01",34);
