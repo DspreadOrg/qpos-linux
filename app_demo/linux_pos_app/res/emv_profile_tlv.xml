@@ -324,7 +324,6 @@
 	<DF01>00</DF01> <!--Application Selection Indicator-->
 	<9F09>0064</9F09> <!--Terminal Application Version Number-->
 	<9F1B>00000000</9F1B> <!--Terminal Floor Limit-->
-	<9F66>3680C000</9F66> <!--Terminal Default Transaction Qualifiers-->
 	<9F8125>9F3704</9F8125> <!--Contact Default Dynamic Data Authentication Data Object List (DDOL)-->
 	<9F8127>00</9F8127> <!--Contact Maximum Target Percentage to be Used for Biased Random Selection-->
 	<9F8128>00</9F8128> <!--Contact Target Percentage to Be Used for Random Selection-->

@@ -6,6 +6,32 @@ This repository provides a comprehensive implementation of a payment terminal ap
 
 The Qpos lvgl_demo is a standalone POS solution with connectivity capabilities via Wi-Fi and 4G/2G. The payment application runs directly on the terminal itself. The device integrates multiple processing components: a main application processor, a secure element for cryptographic operations, and connectivity modules. The main processor handles the user interface and application logic, while the secure processor manages communication with payment cards and secure operations. The connectivity modules provide network capabilities.
 
+# Project Architecture
+
+```
+qpos-linux/
+├── app-demo/              # Main demonstration application
+│   ├── linux_pos_app/     # Application layer code
+│   │   ├── lib            # sdk and emv libraries
+│   │   ├── lib_debug      # sdk and emv debug libraries
+│   │   ├── lib_pub        # Utility libraries
+│   │   ├── pkg_bat        # Compiled script, packaged script
+│   │   ├── src            # app source code
+│   │   └── res            # Resource files used by the app
+│   │        └── emv_profile_tlv.xml     # EMV parameter configuration file
+│   └── doc/               # Application layer code
+│       ├── EMV TAG BOOK_V1.0.9.pdf     # Emv tag book
+│       └── QPosPlus (Linux) Api.docx   # API detailed documentation
+├── qpos-linux-tools/       # Installation guide for the compilation environment
+└── tools/                  # PC tool
+    ├── AppDownloadTool     # App download tool
+    ├── logcat              # Script tool for getting logs   
+    ├── SignTool            # APP signing tool
+    └── Tms             # Script and examples for generating OTA packages
+        ├── APP         # Script and example for generating an OTA package for an app
+        └── Resource    # Script and example for generating an OTA package for resource    
+```
+
 The application architecture follows a modular design with several key components:
 
 ## 1.Core Modules
