@@ -46,7 +46,7 @@ The application architecture follows a modular design with several key component
 
 The project uses CMake for building and includes all necessary libraries for payment processing, cryptography, and UI rendering. The code is structured to be maintainable and extensible, allowing for easy addition of new payment methods or features.
 
-For more information about the D30 payment terminal and its capabilities, please refer to the project documentation.
+For more information about the qpos payment terminal and its capabilities, please refer to the project documentation.
 
 ## 2.Technical Overview
 
@@ -64,7 +64,7 @@ The following is a complete card transaction process, with key function codes an
 
 ## 3 TMS
 
-The demo already supports dspread tms,TMS supports MQTT push update task function.Please refer to [app_ota. c]((https://github.com/DspreadOrg/D30-linux/blob/main/app_demo/src/ota/ota.c)).If TMS access and credentials are required, please contact technical personnel
+The demo already supports dspread tms,TMS supports MQTT push update task function.Please refer to [app_ota. c](https://github.com/DspreadOrg/qpos-linux/blob/demo-with-lvgl/app_demo/linux_pos_app/src/custom_app/ota/app_ota.c).If TMS access and credentials are required, please contact technical personnel
 
 ```
 void TmsDispCallback(u32 id, char *pMsg)
