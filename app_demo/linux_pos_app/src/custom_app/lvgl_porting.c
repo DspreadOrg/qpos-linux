@@ -38,7 +38,7 @@ touch_key g_touch_key = { 0, 0, -1, 0 };
 +-------------------------------------*/
 static void LvglPortingCallbackLog(const char *buf)
 {
-	//OsLog(LOG_DEBUG, "%s\r\n", buf);
+	OsLog(LOG_DEBUG, "%s\r\n", buf);
 
 }
 #endif

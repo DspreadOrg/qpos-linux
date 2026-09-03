@@ -260,8 +260,8 @@ void Enter_Amount(void)
 	lv_obj_set_style_opa(input,LV_OPA_TRANSP,0);
 
 	lv_icon_create(Main_Panel, &lv_Menu_Icon, LV_ALIGN_BOTTOM_LEFT, 0, 0);
-	imgDelete = lv_icon_create(Main_Panel, "", LV_ALIGN_BOTTOM_MID, 0, 0);
-	imgContinue = lv_icon_create(Main_Panel, "", LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+	imgDelete = lv_icon_create(Main_Panel, NULL, LV_ALIGN_BOTTOM_MID, 0, 0);
+	imgContinue = lv_icon_create(Main_Panel, NULL, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 
 	lv_timer_enable(true);
 }

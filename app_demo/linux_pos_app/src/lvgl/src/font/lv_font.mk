@@ -17,7 +17,6 @@ CSRCS += lv_font_montserrat_26.c
 CSRCS += lv_font_montserrat_28.c
 CSRCS += lv_font_montserrat_28_compressed.c
 CSRCS += lv_font_montserrat_30.c
-CSRCS += lv_symbol_signal_wifi.c
 CSRCS += lv_font_montserrat_32.c
 CSRCS += lv_font_montserrat_34.c
 CSRCS += lv_font_montserrat_36.c

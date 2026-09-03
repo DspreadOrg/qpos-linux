@@ -80,7 +80,7 @@ void DispAbout()
 	lv_obj_clean(Main_Panel);
 
     u8 ver[16] = {0};
-    getKernelInsLibVer(ver);
+    getSDKVersion(ver);
 
     lv_text_create(Main_Panel, "About", &title_style, LV_ALIGN_TOP_MID, 0, -3);
 
@@ -90,7 +90,7 @@ void DispAbout()
     lv_group_add_obj(s_group_keypad_indev,Icon_btn);	    		
 
 	// Left labels    
-    lv_text_create(Main_Panel, "InsLib Ver:", &message_style, LV_ALIGN_TOP_LEFT, 0, 40);
+    lv_text_create(Main_Panel, "SDK Ver:", &message_style, LV_ALIGN_TOP_LEFT, 0, 40);
 
 	// Right labels
     lv_text_create(Main_Panel, ver, &message_style, LV_ALIGN_TOP_RIGHT, 0, 40);

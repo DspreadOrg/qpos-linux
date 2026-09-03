@@ -100,6 +100,8 @@ lv_obj_t * lv_text_create(lv_obj_t *parent, const char *text, lv_style_t *style,
 +---------------------------------------------------------------------------*/
 lv_obj_t * lv_icon_create(lv_obj_t *parent, const void * src, lv_align_t align, lv_coord_t x_ofs, lv_coord_t y_ofs)
 {
+    if(src == NULL)
+        return NULL;
     lv_obj_t * img = lv_img_create( parent );
     lv_img_set_src( img, src );	
     lv_obj_align( img, align, x_ofs, y_ofs );
@@ -127,3 +129,18 @@ uint32_t lv_get_btn_key(lv_event_t * e)
     
     return key;
 }    
+
+
+void ui_lv_img_set_src(lv_obj_t * obj, char* fileName){
+    char filePath[128] = {0};
+    char appPath[128] = {0};
+    struct stat st;
+    memset(filePath,0x0,sizeof(filePath));
+    getcwd(appPath,sizeof(appPath));
+    strcat(filePath,"A:");
+    strcat(filePath,appPath);
+    strcat(filePath,"/res/");
+    strcat(filePath,fileName);
+    OsLog(LOG_DEBUG,"filePath = %s",filePath);
+    lv_img_set_src(obj, filePath);
+}
