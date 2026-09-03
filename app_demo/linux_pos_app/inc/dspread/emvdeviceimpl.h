@@ -286,7 +286,7 @@ int Emv_GetKernelVersion(EmvKernelType kernelType,unsigned char *ver);
  mode == 1:app mode The app needs to first open the card reader and prompt to tap card. Call the interface after detecting the card.
 //feturn: 0 succes  OTHER fail
  */
-int Emv_SetOnlineResult(PollCardMode mode,EmvOnlineData_t* pOnlineData);
+int Emv_SetContactlessOnlineResult(PollCardMode mode,EmvOnlineData_t* pOnlineData);
 
 #ifdef __cplusplus
 }

@@ -450,7 +450,7 @@ PR_INT32 Emv_Auth(PR_INT8* pszAmount,PR_INT32 nRetSwipeType){
                     memset(&t_CardDataInfo,0x0,sizeof(CardDataInfo));
                     if(ReadCardProc(NULL,30,&RetSwipeType,&t_CardDataInfo,CARD_NFC) == PR_NORMAL)
                     {
-                        nEmvRet = Emv_SetOnlineResult(APP_POLL_CTL_MODE,&emvOnlineData);
+                        nEmvRet = Emv_SetContactlessOnlineResult(APP_POLL_CTL_MODE,&emvOnlineData);
                         if(nEmvRet == PR_NORMAL)
                         {
                             TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
@@ -465,7 +465,7 @@ PR_INT32 Emv_Auth(PR_INT8* pszAmount,PR_INT32 nRetSwipeType){
                         TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Failed");
                     }
                     #else
-                        nEmvRet = Emv_SetOnlineResult(KERNEL_POLL_CTL_MODE,&emvOnlineData);
+                        nEmvRet = Emv_SetContactlessOnlineResult(KERNEL_POLL_CTL_MODE,&emvOnlineData);
                         if(nEmvRet == PR_NORMAL)
                         {
                             TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
