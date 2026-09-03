@@ -812,6 +812,24 @@ int OsPedGetKsnDukpt(int GroupIdx, unsigned char *Ksn);
 int OsPedIncreaseKsnDukpt (int GroupIdx);
 
 /*
+ *Function:
+    Update the key using TR-31 format, support tmk,tpk(pin key), tdk(data key) tak(mac key),dukpt ipek(3 des)
+    Supports version B:
+    Key usage: 
+            KO TMK  
+            P0 TPK  
+            D0 TDK  
+            M0 TAK
+            B1 IPEK
+ * Parameter
+    SrcKeyType: PED_TLK or PED_TMK
+    SrcKeyIdx: PED_TLK or PED_TMK index
+    DstKeyIdx: Index of the new key
+    KeyBlock: TR-31 block data 
+    KeyBlkLen: block data length
+*/
+int OsPedInjectKeyBlockByTR_31(unsigned char SrcKeyType,unsigned char SrcKeyIdx,unsigned char DstKeyIdx,unsigned char *KeyBlock, int KeyBlkLen);
+/*
  * 11 printer
  */
 
