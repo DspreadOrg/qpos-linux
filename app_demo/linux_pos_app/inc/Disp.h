@@ -141,7 +141,8 @@ typedef enum DPORT_IME_TYPE
 	DPORT_IME_PY = (1<<0),
 	DPORT_IME_EN = (1<<1),
 	DPORT_IME_NUM =(1<<2),
-	DPORT_IME_SYMBOL = (1<<3)
+	DPORT_IME_SYMBOL = (1<<3),
+	DPORT_IME_HEX = (1<<4)
 }DPORT_IME_T;
 
 // Prompt box interface type
@@ -205,6 +206,9 @@ typedef struct tagListShowInfo{
 	Uint8 uFlag;
 }ListShowInfo;
 
+#define DPORT_RGB(R, G, B) \
+	((Uint32)((((Uint32)(R) & 0xFFU) << 16) | \
+				(((Uint32)(G) & 0xFFU) << 8) | ((Uint32)(B) & 0xFFU)))
 /*
  * @author:
  * @Date: 06-10-2022
@@ -1158,6 +1162,18 @@ void Disp_vRegisterResumeCallBack(pUICallback callback);
 int Disp_nElecSign(unsigned char* pBuf,int* pOutLen,char*pCode,int timeout,int x,int y,int width,int height,int isShowBtn);
 
 int Disp_nElecSignEx(unsigned char* pBuf,int* pOutLen,char*pCode,float compress,int timeout,int x,int y,int width,int height,int isShowBtn);
+
+/*
+ * Display a string in the specified line, and set the text color and background color for this display.
+ * nTextColor、nBackColor Use 0xRRGGBB fomart，Can be constructed using the DPORT_RGB macro.。
+ */
+void Disp_vShowStrWithColor(Uint8 nAtLine, Uint8 nType, Uint8 nPattern,
+							Uint32 nTextColor, Uint32 nBackColor, Int8* fmt, ...);
+//Set the color for list display
+void Disp_vSetListColors(Uint32 clrTitleBack, Uint32 clrTitleText, Uint32 clrListText,Uint32 clrSelectBack, Uint32 clrSelectText);
+
+//Restore the list display color
+void Disp_vResetListColors(void);
 #ifdef __cplusplus
 }
 #endif

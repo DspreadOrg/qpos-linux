@@ -254,7 +254,7 @@ typedef enum
 	APP_RC_NUMS,
 }EMV_L2_Return;
 
-int Emv_KernelInit(const EmvTermConfig_t emvTermCfg, EmvCallBack_t t_callbackfun);
+int Emv_Kernel_Init(EmvCallBack_t t_callbackfun);
 
 EMV_L2_Return Emv_Process(EmvTransParams_t emvTransParams);
 

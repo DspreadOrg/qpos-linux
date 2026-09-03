@@ -144,11 +144,6 @@ void Pinpad_Init(){
         }
     //}
 }
-
-void SetDefaultIccParamForTest(){
-	EmvL2_SetDefaultAidAndCapk();
-}
-
 int App_nInitialization()
 {
     char szAppId[] = "linux_pos_app";
@@ -271,6 +266,53 @@ int TransEntery_nDoTransInDefaultEntry()
     return PR_NORMAL;
 }
 
+void UITest2(){
+    int ret;
+    char temp[32] = {0};
+    Disp_vInit();
+    Disp_vClearPort();
+    Disp_vShowStrWithColor(0, EM_DTYPE_REVERT, EM_ALIGN_CENTER,DPORT_RGB(0,0,0),DPORT_RGB(46,43,255),(char*)"AAAAAAAAA");
+    Disp_vShowStrWithColor(1,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,DPORT_RGB(46,43,255),DPORT_RGB(0,0,0),(char*)"BBBBBBBBB");
+	Disp_vShowStr(2,EM_DTYPE_NORMAL,EM_ALIGN_LEFT,(char*)"CCCCCCCCCCCC");
+	Disp_vShowStr(3,EM_DTYPE_NORMAL,EM_ALIGN_LEFT,(char*)"DDDDDDDDDDDD");
+	Disp_vShowStr(4,EM_DTYPE_NORMAL,EM_ALIGN_LEFT,(char*)"EEEEEEEEEEEE");   
+    Disp_vShowStr(5,EM_DTYPE_NORMAL,EM_ALIGN_LEFT,(char*)"FFFFFFFFFFFF");    
+    ret = Disp_GetKey(60*1000);
+
+    
+    char* szLoadMenuText[]=
+	{
+			(char*)"AAAAAAAAAA",
+			(char*)"BBBBBBBBBB",
+			(char*)"CCCCCCCCCC",
+			(char*)"DDDDDDDDDD",
+			(char*)"EEEEEEEEEE",
+			(char*)"FFFFFFFFFF"
+	};
+    int nItems = sizeof(szLoadMenuText)/sizeof(char*);
+    int nSelect = 0;
+    Disp_vClearLine(1);
+	Disp_vCleanArea(0,(24 + 36),320, 200);
+    memset(temp,0x0,sizeof(temp));
+    Disp_vSetListColors(DPORT_RGB(220, 32, 32), DPORT_RGB(255, 255, 255),
+                        DPORT_RGB(24, 72, 200), DPORT_RGB(24, 72, 200), DPORT_RGB(255, 255, 255));
+    Disp_nShowListViewEx((char*)"TEST LIST", szLoadMenuText, nItems, 6, nSelect, 30, &nSelect, DPORT_AUTO_INDEX_CONTINUITY);
+
+    char *pListItem[] = {(char*)"Sale",(char*)"Void",(char*)"Refund",(char*)"Pre-Auth",(char*)"Offline",(char*)"Prnter",(char*)"Other"};
+	int nNumOfItems = sizeof(pListItem)/sizeof(char *);
+    nSelect = 0;
+    Disp_vClearLine(1);
+	Disp_vCleanArea(0,(24 + 36),320, 200);
+    memset(temp,0x0,sizeof(temp));
+    Disp_vSetListColors(DPORT_RGB(220, 32, 32), DPORT_RGB(24, 72, 200),
+                        DPORT_RGB(24, 72, 200), DPORT_RGB(220, 32, 32), DPORT_RGB(0, 0, 0));
+    Disp_nShowTableViewEx((char*)"MAIN MENU", pListItem, nNumOfItems, 8, nSelect, 30, &nSelect, DPORT_AUTO_INDEX_CONTINUITY);
+    // Disp_vResetListColors();
+
+    Disp_vClearLine(1);
+	Disp_vCleanArea(0,(24 + 36),320, 200);
+    Disp_vShowStr(2, EM_DTYPE_REVERT, EM_ALIGN_CENTER,(char*)"Test success");
+}
 
 int Idle_nEntery()
 {   
