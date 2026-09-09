@@ -90,7 +90,17 @@ The following is a complete card transaction process, with key function codes an
 
 ## 3 TMS
 
-The demo already supports dspread tms,TMS supports MQTT push update task function.Please refer to [app_ota. c](https://github.com/DspreadOrg/qpos-linux/blob/demo-with-lvgl/app_demo/linux_pos_app/src/custom_app/ota/app_ota.c).If TMS access and credentials are required, please contact technical personnel
+The device supports updating APP resource files and EMV parameters via OTA.
+
+[How to update app?](https://github.com/DspreadOrg/qpos-linux/blob/demo-with-lvgl/tools/tms/APP/readme.md)
+
+[How to update resource?](https://github.com/DspreadOrg/qpos-linux/blob/demo-with-lvgl/tools/tms/Resource/readme.md)
+
+[How to update emv?](https://github.com/DspreadOrg/qpos-linux/blob/demo-with-lvgl/tools/tms/Emv/readme.md)
+
+If TMS access and credentials are required, please contact technical personnel.
+
+Here is how to use TMS in the demo.Please refer to [app_ota. c](https://github.com/DspreadOrg/qpos-linux/blob/demo-with-lvgl/app_demo/linux_pos_app/src/custom_app/ota/app_ota.c).
 
 ```
 void TmsDispCallback(u32 id, char *pMsg)
