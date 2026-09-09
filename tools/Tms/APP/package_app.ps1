@@ -1,6 +1,6 @@
 # Check if argument is provided (新增machineType和customerName参数，总参数数=3)
 if ($args.Count -ne 3) {
-    Write-Host "Usage: resource_package.ps1 <zip_file> <machineType> <customerName>"
+    Write-Host "Usage: resource_package.ps1 <apk_file> <machineType> <customerName>"
     exit 1
 }
 
