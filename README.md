@@ -159,7 +159,7 @@ Cardholder          EMV Chip Card         POS Terminal         Acquirer         
 
 The device supports updating APP resource files and EMV parameters via OTA.
 
-[How to update app?](https://github.com/DspreadOrg/qposlinux/blob/main/tools/Tms/APP/readme.md)
+[How to update app?](https://github.com/DspreadOrg/qpos-linux/blob/main/tools/Tms/APP/readme.md)
 
 [How to update resource?](https://github.com/DspreadOrg/qpos-linux/blob/main/tools/Tms/Resource/readme.md)
 
