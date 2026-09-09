@@ -1,6 +1,6 @@
 # Qpos SDK - Demo
 
-Release 1.0.0
+Release 1.0.1
 
 This repository provides a comprehensive implementation of a payment terminal application that enables you to process credit and debit card payments (including VISA, MasterCard, American Express and more) with a modern touchscreen interface.
 
@@ -157,7 +157,17 @@ Cardholder          EMV Chip Card         POS Terminal         Acquirer         
 
 ## 3 TMS
 
-The demo already supports dspread tms,TMS supports MQTT push update task function.Please refer to [ota. c](https://github.com/DspreadOrg/qpos-linux/blob/main/app_demo/linux_pos_app/src/business/ota.c).If TMS access and credentials are required, please contact technical personnel
+The device supports updating APP resource files and EMV parameters via OTA.
+
+[How to update app?](https://github.com/DspreadOrg/qposlinux/blob/main/tools/Tms/APP/readme.md)
+
+[How to update resource?](https://github.com/DspreadOrg/qpos-linux/blob/main/tools/Tms/Resource/readme.md)
+
+[How to update emv?](https://github.com/DspreadOrg/qpos-linux/blob/main/tools/Tms/Emv/readme.md)
+
+If TMS access and credentials are required, please contact technical personnel.
+
+Here is how to use TMS in the demo.Please refer to [ota. c](https://github.com/DspreadOrg/qpos-linux/blob/main/app_demo/linux_pos_app/src/business/ota.c).
 
 ```
 void TmsDispCallback(u32 id, char *pMsg)
