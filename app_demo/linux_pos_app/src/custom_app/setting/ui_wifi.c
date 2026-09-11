@@ -161,7 +161,7 @@ void DispWifiSetting()
     lv_add_btn(btn_list, ConnectDisconnectWifi_cb,  104, 62, "2", "Disconnect\nWi-Fi", LV_ALIGN_CENTER, 0, 7, true);
     lv_add_btn(btn_list, ConnectDisconnectWifi_cb, 78, 62, "3", "Forget\nWi-Fi", LV_ALIGN_CENTER, 0, 7, true);
 
-    lv_obj_t * imgOK = lv_icon_create(Main_Panel, "", LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    lv_obj_t * imgOK = lv_icon_create(Main_Panel, NULL, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 
     lv_timer_enable(true);
 }

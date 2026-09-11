@@ -44,8 +44,8 @@ void DispPinEntry( void ){
 	lv_textarea_set_align(pin_lable, LV_TEXT_ALIGN_CENTER);
 	lv_obj_align(pin_lable, LV_ALIGN_CENTER, 0, 0);
 
-    imgDelete = lv_icon_create(Main_Panel, "", LV_ALIGN_BOTTOM_MID, 0, 0);
-    imgCollect = lv_icon_create(Main_Panel, "", LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    imgDelete = lv_icon_create(Main_Panel, NULL, LV_ALIGN_BOTTOM_MID, 0, 0);
+    imgCollect = lv_icon_create(Main_Panel, NULL, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 
     lv_textarea_set_text( pin_lable,"");     
     
@@ -97,8 +97,8 @@ void DispOfflinePinEntry( void ){
     lv_obj_add_event_cb(offlinePIn, OfflinePinEntry_cb, LV_EVENT_ALL, NULL);
     lv_group_add_obj(s_group_keypad_indev,offlinePIn);
 
-    imgDelete = lv_icon_create(Main_Panel, "", LV_ALIGN_BOTTOM_MID, 0, 0);
-    imgCollect = lv_icon_create(Main_Panel, "", LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    imgDelete = lv_icon_create(Main_Panel, NULL, LV_ALIGN_BOTTOM_MID, 0, 0);
+    imgCollect = lv_icon_create(Main_Panel, NULL, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 
 	lv_timer_enable(true);
 }

@@ -62,7 +62,7 @@ void DispSettingOptions()
     lv_add_btn(btn_list, SettingOptions_cb, 86, 56, "3", "About", LV_ALIGN_CENTER, 0, 0, true);
 
     lv_icon_create(Main_Panel, &lv_Menu_Icon, LV_ALIGN_BOTTOM_LEFT, 0, 0); 
-    lv_icon_create(Main_Panel, "OK", LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    lv_icon_create(Main_Panel, NULL, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 	
     lv_timer_enable(true);	
 }

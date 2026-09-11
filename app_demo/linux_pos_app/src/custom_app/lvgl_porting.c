@@ -366,7 +366,7 @@ void lvgl_init()
 	lv_log_register_print_cb(LvglPortingCallbackLog);
     #endif
     lv_init();
-
+    
     /*lvgl display driver register*/
 
 	lv_disp_draw_buf_init(&s_lv_disp_draw_buf, s_lv_color, NULL, CFG_LVGL_HOR_RES*CFG_LVGL_VER_RES/CFG_LVGL_FLASH_MEM_DIV);

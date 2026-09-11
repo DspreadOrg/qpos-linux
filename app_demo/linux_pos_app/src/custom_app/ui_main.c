@@ -23,7 +23,7 @@ extern ONLINE_STATUS onlineStatus;
 static void DispInit()
 {
 	lv_timer_enable(false);
-
+	
 	ui_init_styles();
 	Show_StatusBar();
 	lv_text_create(Main_Panel, "Device Init...", &title_style, LV_ALIGN_CENTER, 0, 0);
