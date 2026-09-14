@@ -124,14 +124,16 @@ void DispSimSetting()
 
  	lv_text_create(Main_Panel, "Gprs Setting", &title_style, LV_ALIGN_TOP_MID, 0, 0);
  
-	lv_obj_t * btn_list = lv_btn_list_create(330, 155, LV_ALIGN_CENTER, 30, 30);
+	lv_obj_t * btn_list = lv_btn_list_create(240, 155, LV_ALIGN_CENTER, 30, 30);
+	lv_obj_set_style_pad_column(btn_list, 20, 0);   /* ★ 列间距（同排按钮之间） */
+	lv_obj_set_style_pad_row(btn_list,    0, 0);   /* ★ 行间距（换行后两行之间） */
     lv_group_remove_all_objs(s_group_keypad_indev);
 	if(GetSimContnectStatus()){        
-		lv_add_btn(btn_list, SimSetting_cb, 118, 62, "1", "Open\nAirplane", LV_ALIGN_CENTER, 0, 4, true);
-    	lv_add_btn(btn_list, SimSetting_cb, 118, 62, "2", "Close\nAirplane", LV_ALIGN_CENTER, 0, 4, false);
+		lv_add_imgBtn(btn_list, SimSetting_cb, "  Open\nAirplane",	"menu_open_airplane.png", LV_ALIGN_CENTER,true);
+		lv_add_imgBtn(btn_list, SimSetting_cb, "  Close\nAirplane",	"menu_close_airplane2.png", LV_ALIGN_CENTER,false);
     }else{        
-		lv_add_btn(btn_list, SimSetting_cb, 118, 62, "1", "Open\nAirplane", LV_ALIGN_CENTER, 0, 4, false);
-    	lv_add_btn(btn_list, SimSetting_cb, 118, 62, "2", "Close\nAirplane", LV_ALIGN_CENTER, 0, 4, true);    
+		lv_add_imgBtn(btn_list, SimSetting_cb, "  Open\nAirplane",	"menu_open_airplane2.png", LV_ALIGN_CENTER,false);
+		lv_add_imgBtn(btn_list, SimSetting_cb, "Close\nAirplane",	"menu_close_airplane.png", LV_ALIGN_CENTER,true);
     }
 
     lv_timer_enable(true);
@@ -159,7 +161,7 @@ static void SimSetting_cb(lv_event_t * event)
 	switch(key)
 	{
 		case LV_KEY_ESC:
-			DispSettingOptions();
+			DispMenuOptions();
 			break;
 		
 		case LV_KEY_1:	

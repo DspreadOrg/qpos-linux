@@ -12,15 +12,19 @@ static void Help_cb(lv_event_t * event);
 static void SettingOptions_cb(lv_event_t * event)
 {	    
     lv_event_code_t code = lv_event_get_code(event);
-    lv_indev_t * indev = lv_indev_get_act();
+    lv_indev_t *indev = lv_indev_get_act();
     lv_indev_type_t indev_type = lv_indev_get_type(indev);
     uint32_t key = EVENT_KEY_NONE;
 
-    if(indev_type==LV_INDEV_TYPE_KEYPAD && code==LV_EVENT_KEY)
-        key = lv_indev_get_key(indev); 
-    else if(indev_type==LV_INDEV_TYPE_POINTER && code == LV_EVENT_CLICKED)
-        key = lv_get_btn_key(event);  
-
+    if (indev_type == LV_INDEV_TYPE_KEYPAD && code == LV_EVENT_KEY) {
+        key = lv_indev_get_key(indev);
+    }
+    else if (indev_type == LV_INDEV_TYPE_POINTER && code == LV_EVENT_CLICKED) {
+        key = lv_get_btn_key(event);          /* 你自己的实现 */
+    }
+    else if (indev_type == LV_INDEV_TYPE_KEYPAD && code == LV_EVENT_CLICKED) {
+        key = LV_KEY_ENTER;  
+    }
     switch(key)
     {	        
         case LV_KEY_1:
@@ -57,9 +61,14 @@ void DispSettingOptions()
 
     lv_obj_t * btn_list = lv_btn_list_create(340, 155, LV_ALIGN_CENTER, 20, 5);
     lv_group_remove_all_objs(s_group_keypad_indev);
-    lv_add_btn(btn_list, SettingOptions_cb, 86, 56, "1", "Wi-Fi", LV_ALIGN_CENTER, 0, 0, true);
-    lv_add_btn(btn_list, SettingOptions_cb, 86, 56, "2", "GPRS", LV_ALIGN_CENTER, 0, 0, true);
-    lv_add_btn(btn_list, SettingOptions_cb, 86, 56, "3", "About", LV_ALIGN_CENTER, 0, 0, true);
+    // lv_add_btn(btn_list, SettingOptions_cb, 86, 56, "1", "Wi-Fi", LV_ALIGN_CENTER, 0, 0, true);
+    // lv_add_btn(btn_list, SettingOptions_cb, 86, 56, "2", "GPRS", LV_ALIGN_CENTER, 0, 0, true);
+    // lv_add_btn(btn_list, SettingOptions_cb, 86, 56, "3", "About", LV_ALIGN_CENTER, 0, 0, true);
+
+    lv_add_imgBtn(btn_list, SettingOptions_cb, "Wi-Fi",	"menu_wifi.png", LV_ALIGN_CENTER,true);
+    lv_add_imgBtn(btn_list, SettingOptions_cb, "GPRS",	    "menu_gprs.png", LV_ALIGN_CENTER,true);
+	lv_add_imgBtn(btn_list, SettingOptions_cb, "About",	"menu_about.png", LV_ALIGN_CENTER,true);
+
 
     lv_icon_create(Main_Panel, &lv_Menu_Icon, LV_ALIGN_BOTTOM_LEFT, 0, 0); 
     lv_icon_create(Main_Panel, NULL, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
@@ -91,9 +100,20 @@ void DispAbout()
 
 	// Left labels    
     lv_text_create(Main_Panel, "SDK Ver:", &message_style, LV_ALIGN_TOP_LEFT, 0, 40);
-
 	// Right labels
     lv_text_create(Main_Panel, ver, &message_style, LV_ALIGN_TOP_RIGHT, 0, 40);
+
+	// Left labels    
+    lv_text_create(Main_Panel, "Firmware Ver:", &message_style, LV_ALIGN_TOP_LEFT, 0, 70);
+        char sVer[32] = {0};
+    OsGetSysVersion(0x01,&sVer[0]);
+	// Right labels
+    lv_text_create(Main_Panel, sVer, &message_style, LV_ALIGN_TOP_RIGHT, 0, 70);
+
+	// Left labels    
+    lv_text_create(Main_Panel, "Os Ver:", &message_style, LV_ALIGN_TOP_LEFT, 0, 100);
+	// Right labels
+    lv_text_create(Main_Panel, "Linux 4.9.84", &message_style, LV_ALIGN_TOP_RIGHT, 0, 100);
 
     lv_timer_enable(true);	
 }
@@ -116,7 +136,7 @@ static void Help_cb(lv_event_t * event)
         uint32_t key=lv_indev_get_key(indev);
         if( key == LV_KEY_ESC )
         {
-            DispSettingOptions();
+            DispMenuOptions();
         }
     }	
 }

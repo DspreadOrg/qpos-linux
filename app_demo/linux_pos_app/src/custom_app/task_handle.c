@@ -30,6 +30,13 @@ void EventHandle(u32 Event_id)
             Firmware_OTA_Check();
             break;
 
+        case EVENT_QR_PAYMENT:
+            qr_payment_check();
+            break;    
+
+        case EVENT_PRINTER:
+            PrintStart(1);
+            break;    
         default:
             break;
     }

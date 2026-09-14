@@ -184,6 +184,15 @@ typedef enum
     LCD_DISP_WIFI_LIST,
     LCD_DISP_WIFI_CONNECT_SUCCESS,
     LCD_DISP_WIFI_CONNECT_FAIL,
+    //qr
+    LCD_DISP_QR_PAYMENT_CHECK,
+    LCD_DISP_QR_PAYMENT_SUCCESS,
+
+    //printer
+    LCD_DISP_PRINTER_NOT_SUPPORT,
+    LCD_DISP_PRINTER_NOT_WORKING,
+    LCD_DISP_PRINTER_PRINTING,
+    LCD_DISP_PINTER_SUCCESS,
 }LCD_DISP_ID_T;
 
 typedef struct
@@ -214,4 +223,6 @@ void GuiDisplay(u32 id);
 void DispProcess(const char * prompt);
 void DispMenuOptions();
 
+void disp_success(const char * prompt);
+void disp_fail(const char * prompt);
 #endif

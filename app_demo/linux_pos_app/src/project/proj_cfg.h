@@ -8,7 +8,7 @@
 #define CFG_DBG
 #endif
 
-#define APP_VERSION "V1.0.6"
+#define APP_VERSION "V1.0.7"
 
 #ifdef CFG_DBG
 

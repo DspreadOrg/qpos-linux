@@ -49,5 +49,7 @@ void DispSignature( void )
 	lv_obj_set_style_bg_grad_color( label, lv_color_hex( SIGN_FIELD_COLOR ), 0 );
 	lv_obj_add_style( label, &gStyleSignature, LV_STATE_DEFAULT );
 
+	
+
 	lv_timer_enable( true );
 }

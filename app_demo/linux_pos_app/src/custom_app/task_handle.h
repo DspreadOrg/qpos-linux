@@ -14,6 +14,10 @@ typedef enum
 
 	EVENT_OTA_CHECK,
     EVENT_OTA_DOWNLOAD,
+
+    EVENT_QR_PAYMENT,
+
+    EVENT_PRINTER,
 }EVENT_T;
 
 #endif

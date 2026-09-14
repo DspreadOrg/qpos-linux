@@ -23,40 +23,67 @@ void DispCards(u32 cardsSupported) {
     lv_timer_enable( false );
 	lv_obj_clean( Main_Panel );
 
-    if(cardsSupported == (CARD_NFC|CARD_IC|CARD_MAG))
+    if(0)
     {
-        lv_text_create( Main_Panel, "Pls Chip NFC MAG", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
-        lv_icon_create( Main_Panel, &lv_Contactless_Icon, LV_ALIGN_CENTER, 50, 10 );
-        lv_icon_create( Main_Panel, &lv_Chip_Icon, LV_ALIGN_CENTER, -10, 10 );
-        lv_icon_create( Main_Panel, &lv_Strip_Icon, LV_ALIGN_CENTER, -80, 10 );
+        lv_text_create( Main_Panel, "Pls insert/tap/swipe card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
+        lv_obj_t * insertCard = lv_img_create(Main_Panel);
+        ui_lv_img_set_src(insertCard,"insertCard.png");
+        lv_obj_align(insertCard, LV_ALIGN_CENTER, -78, 0);
+
+        lv_obj_t * tapcard = lv_img_create(Main_Panel);
+        ui_lv_img_set_src(tapcard,"tapcard.png");
+        lv_obj_align(tapcard, LV_ALIGN_CENTER, 0, 0);
+
+    	lv_obj_t * swipeCard = lv_img_create(Main_Panel);
+        ui_lv_img_set_src(swipeCard,"swipeCard.png");
+        lv_obj_align(swipeCard, LV_ALIGN_CENTER, 78, 0);
     }
-    else if(cardsSupported == (CARD_NFC|CARD_IC))
+    else if(1)
     {
         lv_text_create( Main_Panel, "Pls insert/tap card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
-        lv_icon_create( Main_Panel, &lv_Contactless_Icon, LV_ALIGN_CENTER, 50, 10 );
-        lv_icon_create( Main_Panel, &lv_Chip_Icon, LV_ALIGN_CENTER, -30, 10 );
+        lv_obj_t * insertCard = lv_img_create(Main_Panel);
+        ui_lv_img_set_src(insertCard,"insertCard.png");
+        lv_obj_align(insertCard, LV_ALIGN_CENTER, -40, 0);
+
+        lv_obj_t * tapcard = lv_img_create(Main_Panel);
+        ui_lv_img_set_src(tapcard,"tapcard.png");
+        lv_obj_align(tapcard, LV_ALIGN_CENTER, 40, 0);
     }
     else if(cardsSupported == CARD_IC)
     {
         lv_text_create( Main_Panel, "Pls insert card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
-        lv_icon_create( Main_Panel, &lv_Chip_Icon, LV_ALIGN_CENTER, -10, 10 );
+        lv_obj_t * insertCard = lv_img_create(Main_Panel);
+        ui_lv_img_set_src(insertCard,"insertCard.png");
+        lv_obj_align(insertCard, LV_ALIGN_CENTER, 0, 0);
     }
     else if(cardsSupported == CARD_MAG)
     {
         lv_text_create( Main_Panel, "Pls swipe card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
-        lv_icon_create( Main_Panel, &lv_Strip_Icon, LV_ALIGN_CENTER, -10, 10 );
+     	lv_obj_t * swipeCard = lv_img_create(Main_Panel);
+        ui_lv_img_set_src(swipeCard,"swipeCard.png");
+        lv_obj_align(swipeCard, LV_ALIGN_CENTER, 0, 0);
     }
     else if(cardsSupported == CARD_NFC)
     {
         lv_text_create( Main_Panel, "Pls tap card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
-        lv_icon_create( Main_Panel, &lv_Contactless_Icon, LV_ALIGN_CENTER, -10, 10 );
+        lv_obj_t * tapcard = lv_img_create(Main_Panel);
+        ui_lv_img_set_src(tapcard,"tapcard.png");
+        lv_obj_align(tapcard, LV_ALIGN_CENTER, 0, 0);
     }
     else
     {
         lv_text_create( Main_Panel, "Pls insert/tap/swipe card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
-        lv_icon_create( Main_Panel, &lv_Contactless_Icon, LV_ALIGN_CENTER, 50, 10 );
-        lv_icon_create( Main_Panel, &lv_Chip_Icon, LV_ALIGN_CENTER, -10, 10 );
-        lv_icon_create( Main_Panel, &lv_Strip_Icon, LV_ALIGN_CENTER, -80, 10 );
+        lv_obj_t * insertCard = lv_img_create(Main_Panel);
+        ui_lv_img_set_src(insertCard,"insertCard.png");
+        lv_obj_align(insertCard, LV_ALIGN_CENTER, -78, 0);
+
+        lv_obj_t * tapcard = lv_img_create(Main_Panel);
+        ui_lv_img_set_src(tapcard,"tapcard.png");
+        lv_obj_align(tapcard, LV_ALIGN_CENTER, 0, 0);
+
+    	lv_obj_t * swipeCard = lv_img_create(Main_Panel);
+        ui_lv_img_set_src(swipeCard,"swipeCard.png");
+        lv_obj_align(swipeCard, LV_ALIGN_CENTER, 78, 0);
     }
 
     lv_obj_t * Icon_btn = lv_imgbtn_create( Main_Panel );

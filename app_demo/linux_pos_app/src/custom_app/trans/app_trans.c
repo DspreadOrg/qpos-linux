@@ -85,6 +85,21 @@ void Trans_Payment()
     Enter_Amount();
 }
 
+void Qr_Payment()
+{
+    if(g_pTransBuffer)
+    {
+        free(g_pTransBuffer);
+        g_pTransBuffer=NULL;
+    }
+
+    OsLog(LOG_DEBUG,"Dspread: <%s,%d>--------------",__FUNCTION__,__LINE__);
+    g_pTransBuffer=malloc(TRANS_POOL_MAX);
+    memset(g_pTransBuffer,0,TRANS_POOL_MAX);
+    GuiEventRegister(LCD_DISP_QR_PAYMENT_CHECK);
+    EventRegister(EVENT_QR_PAYMENT);
+    
+}
 void Start_Payment( void ) {
 	GuiEventRegister(LCD_DISP_START_TRANSACTION);
 	lCardsSupported = CARD_NFC|CARD_IC|CARD_MAG;
@@ -96,4 +111,10 @@ void startFallback( void ) {
 	lFallbackActive = true;
 	GuiEventRegister(LCD_DISP_START_TRANSACTION);
 	read_cards_process(CARD_MAG);
+}
+
+void qr_payment_check()
+{
+    OsSleep(2000);
+    GuiEventRegister(LCD_DISP_QR_PAYMENT_SUCCESS);
 }

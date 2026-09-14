@@ -34,4 +34,6 @@ typedef enum
 void Trans_Payment();
 void emvOnlineProcess(unsigned char *pTradingFile);
 void Start_Payment( void );
+void Qr_Payment();
+void qr_payment_check();
 #endif

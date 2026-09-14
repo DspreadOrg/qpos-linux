@@ -10,6 +10,7 @@
 #include "app_trans.h"
 #include "tms_cfg.h"
 #include "ui_emvSelectMultiApp.h"
+#include "ui_qrcode.h"
 
 extern ONLINE_STATUS onlineStatus;
 
@@ -41,15 +42,21 @@ static void DispInit()
 static void MenuOptions_cb(lv_event_t * event)
 {
     lv_event_code_t code = lv_event_get_code(event);
-    lv_indev_t * indev = lv_indev_get_act();
+    lv_indev_t *indev = lv_indev_get_act();
     lv_indev_type_t indev_type = lv_indev_get_type(indev);
     uint32_t key = EVENT_KEY_NONE;
 
-    if(indev_type==LV_INDEV_TYPE_KEYPAD && code==LV_EVENT_KEY)
+    if (indev_type == LV_INDEV_TYPE_KEYPAD && code == LV_EVENT_KEY) {
         key = lv_indev_get_key(indev);
-    else if(indev_type==LV_INDEV_TYPE_POINTER && code == LV_EVENT_CLICKED)
-        key = lv_get_btn_key(event);
-  
+    }
+    else if (indev_type == LV_INDEV_TYPE_POINTER && code == LV_EVENT_CLICKED) {
+        /* 触摸点击：用容器的 user_data 或 obj 索引反查按键号 */
+        key = lv_get_btn_key(event);          /* 你自己的实现 */
+    }
+    else if (indev_type == LV_INDEV_TYPE_KEYPAD && code == LV_EVENT_CLICKED) {
+        key = LV_KEY_ENTER;                   /* 焦点按回车 */
+    }
+	OsLog(LOG_DEBUG,"key = %d",key);
     switch(key)
     {	        
 		case LV_KEY_1:
@@ -57,17 +64,32 @@ static void MenuOptions_cb(lv_event_t * event)
             break;
         
         case LV_KEY_2:
-            DispSettingOptions();
+            ui_create_qrcode();
             break;
         
         case LV_KEY_3:
-            EventRegister(EVENT_OTA_CHECK);
-            break;
-        
+			DispSignature();	
+            break;  
+
         case LV_KEY_4:
-			DispSignature();			
+            DispWifiSetting();
+            break;  
+
+		case LV_KEY_5:
+			DispSimSetting();
+			break;	
+
+		case LV_KEY_6:
+            PrintTest();
             break;
-       
+
+		case LV_KEY_7:
+            DispAbout();
+            break;
+
+		case LV_KEY_ENTER:
+			Trans_Payment();
+			break;	
         default:				
             break;
     }    
@@ -89,18 +111,30 @@ void DispMenuOptions()
 
     lv_obj_clear_flag(Main_Panel, LV_OBJ_FLAG_SCROLLABLE);
 
-    lv_text_create(Main_Panel, "Menu", &title_style, LV_ALIGN_TOP_MID, 0, -3);
+    // lv_text_create(Main_Panel, "Menu", &title_style, LV_ALIGN_TOP_MID, 0, -3);
 
-    lv_obj_t * btn_list = lv_btn_list_create(340, 155, LV_ALIGN_CENTER, 20, 5);
+    lv_obj_t * btn_list = lv_btn_list_create(360, 200, LV_ALIGN_CENTER, 20, 0);
+	lv_obj_set_layout(btn_list, LV_LAYOUT_FLEX);
+	lv_obj_set_flex_flow(btn_list, LV_FLEX_FLOW_ROW_WRAP);
+	lv_obj_clear_flag(btn_list, LV_OBJ_FLAG_SCROLLABLE);
+
+	lv_obj_set_style_pad_column(btn_list, 10, 0);   /* ★ 列间距（同排按钮之间） */
+	lv_obj_set_style_pad_row(btn_list,    0, 0);   /* ★ 行间距（换行后两行之间） */
     lv_group_remove_all_objs(s_group_keypad_indev);
-    lv_add_btn(btn_list, MenuOptions_cb, 86, 56, "1", "Payment", LV_ALIGN_CENTER, 0, 0, true);
-    lv_add_btn(btn_list, MenuOptions_cb, 86, 56, "2", "Setting", LV_ALIGN_CENTER, 0, 0, true);
-    lv_add_btn(btn_list, MenuOptions_cb, 86, 56, "3", "OTA", LV_ALIGN_CENTER  , 0, 0, true);
-    lv_add_btn(btn_list, MenuOptions_cb, 86, 56, "4", "Sign Test", LV_ALIGN_CENTER, 0, 0, true);
-
+    // lv_add_btn(btn_list, MenuOptions_cb, 86, 56, "1", "Payment", LV_ALIGN_CENTER, 0, 0, true);
+    // lv_add_btn(btn_list, MenuOptions_cb, 86, 56, "2", "Setting", LV_ALIGN_CENTER, 0, 0, true);
+    // lv_add_btn(btn_list, MenuOptions_cb, 86, 56, "3", "OTA", LV_ALIGN_CENTER  , 0, 0, true);
+    // lv_add_btn(btn_list, MenuOptions_cb, 86, 56, "4", "Sign Test", LV_ALIGN_CENTER, 0, 0, true);
+	lv_add_imgBtn(btn_list, MenuOptions_cb, "Sale",		"menu_payment.png", LV_ALIGN_CENTER,true);
+	lv_add_imgBtn(btn_list, MenuOptions_cb, "Qrcode",	"menu_qrcode.png", LV_ALIGN_CENTER,true);
+	lv_add_imgBtn(btn_list, MenuOptions_cb, "Sign", 	"menu_sign.png", LV_ALIGN_CENTER,true);
+	lv_add_imgBtn(btn_list, MenuOptions_cb, "Wifi", 	"menu_wifi.png", LV_ALIGN_CENTER,true);
+	lv_add_imgBtn(btn_list, MenuOptions_cb, "Gprs", 	"menu_gprs.png", LV_ALIGN_CENTER,true);
+	lv_add_imgBtn(btn_list, MenuOptions_cb, "Printer", 	"menu_printer.png", LV_ALIGN_CENTER,true);
+	lv_add_imgBtn(btn_list, MenuOptions_cb, "About",	"menu_about.png", LV_ALIGN_CENTER,true);
 
     sprintf(versionLine, "%s", APP_VERSION);
-    lv_text_create(Main_Panel, versionLine, &lightLabel_style, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    lv_text_create(Main_Panel, versionLine, &lightLabel_style, LV_ALIGN_BOTTOM_RIGHT, 0, 5);
 	    
     lv_timer_enable(true);	
 }
@@ -268,7 +302,7 @@ void Enter_Amount(void)
 
 static void timeout_cb()
 {
-	Trans_Payment();
+	DispMenuOptions();
 }
 
 
@@ -363,21 +397,21 @@ void GuiDisplay(u32 id){
 			break;
 
 		case LCD_DISP_TIMEOUT:
-			DispResult(PROMPT_TIMEOUT);
+			disp_fail(PROMPT_TIMEOUT);
 			break;
 
 		case LCD_DISP_TRADE_SUCCESS:
-			DispResult(PROMPT_TRANS_SUCCESS);
+			disp_success(PROMPT_TRANS_SUCCESS);
 			break;
 		case LCD_DISP_TRADE_FAIL:
-			DispResult(PROMPT_TRANS_FAIL);
+			disp_fail(PROMPT_TRANS_FAIL);
 			break;
 		case LCD_DISP_TRANSACTION_TERMINATED:
-			DispResult(PROMPT_TRANS_TERMINATED);
+			disp_fail(PROMPT_TRANS_TERMINATED);
 			break;
 
 		case LCD_DISP_CANCEL:
-			DispResult(PROMPT_USER_CANCEL);
+			disp_fail(PROMPT_USER_CANCEL);
 			break;
 
 		case LCD_DISP_OTA_CHECK:
@@ -475,8 +509,62 @@ void GuiDisplay(u32 id){
 			DispResult(PROMPT_NFC_TAP_TRY_AGAIN);
 			break;	
 
+		case LCD_DISP_QR_PAYMENT_CHECK:
+			DispLoading("Checking payment status...");
+			break;
+
+		case LCD_DISP_QR_PAYMENT_SUCCESS:
+			disp_success("Qr Payment Suucess");
+			break;
+		case LCD_DISP_PRINTER_NOT_SUPPORT:
+		   	DispResult("Printer not supported");
+			break;
+		case LCD_DISP_PRINTER_NOT_WORKING:
+		   	DispResult("Printer error");
+			break;
+		case LCD_DISP_PRINTER_PRINTING:
+		   	DispResult("Printing...");
+			break;
+		case LCD_DISP_PINTER_SUCCESS:
+		   	DispResult("Print completed");
+			break;	
 		default:
 			break;
 	}
 }
 
+void disp_success(const char * prompt)
+{
+	u32 timeout=3000;
+	lv_timer_enable(false);
+	lv_obj_clean(Main_Panel);
+
+	lv_text_create(Main_Panel, prompt, &mediumMsg_style, LV_ALIGN_CENTER, 0, 40);
+
+	lv_obj_t * result_icon = lv_img_create(Main_Panel);
+	ui_lv_img_set_src(result_icon,"success_icon.png");
+	lv_obj_align(result_icon, LV_ALIGN_CENTER, 0, -20);
+
+    lv_timer_t * timer= lv_timer_create(timeout_cb, timeout,(pvoid)timeout);
+	lv_timer_set_repeat_count(timer, 1);
+
+	lv_timer_enable(true);
+}
+
+void disp_fail(const char * prompt)
+{
+	u32 timeout=3000;
+	lv_timer_enable(false);
+	lv_obj_clean(Main_Panel);
+
+	lv_text_create(Main_Panel, prompt, &mediumMsg_style, LV_ALIGN_CENTER, 0, 40);
+
+	lv_obj_t * result_icon = lv_img_create(Main_Panel);
+	ui_lv_img_set_src(result_icon,"fail_icon.png");
+	lv_obj_align(result_icon, LV_ALIGN_CENTER, 0, -20);
+
+    lv_timer_t * timer= lv_timer_create(timeout_cb, timeout,(pvoid)timeout);
+	lv_timer_set_repeat_count(timer, 1);
+
+	lv_timer_enable(true);
+}

@@ -107,7 +107,7 @@ static void wifi_Select_cb(lv_event_t * event)
                 break;
             
 			case LV_KEY_ESC:
-                DispSettingOptions();
+                DispWifiSetting();
                 break;
             
             case LV_KEY_ENTER:
@@ -142,12 +142,14 @@ void DispWifiSetting()
 
     lv_text_create(Main_Panel, "Wi-Fi", &title_style, LV_ALIGN_TOP_MID, 0, 0);
 
-    lv_obj_t * btn_list = lv_btn_list_create(328, 155, LV_ALIGN_CENTER, 0, 30);
+    lv_obj_t * btn_list = lv_btn_list_create(328, 155, LV_ALIGN_CENTER, 20, 30);
+    lv_obj_set_style_pad_column(btn_list, 20, 0);   /* ★ 列间距（同排按钮之间） */
+	lv_obj_set_style_pad_row(btn_list,    0, 0);   /* ★ 行间距（换行后两行之间） */
     lv_group_remove_all_objs(s_group_keypad_indev);
 
     if(get_wifi_conn_status())
     {
-        char wifi_name[MAX_SIZE_NAME_WIFI];
+        char wifi_name[MAX_SIZE_NAME_WIFI] = {0};
         if(getWifiName(wifi_name) )
         {
             lv_obj_t * wifi_name_label = lv_text_create(Main_Panel, "", &message_style, LV_ALIGN_TOP_MID, 0, 30);
@@ -157,9 +159,12 @@ void DispWifiSetting()
         }
     }
 
-    lv_add_btn(btn_list, ConnectDisconnectWifi_cb, 78, 62, "1", "Connect\nWi-Fi", LV_ALIGN_CENTER, 0, 7, true);
-    lv_add_btn(btn_list, ConnectDisconnectWifi_cb,  104, 62, "2", "Disconnect\nWi-Fi", LV_ALIGN_CENTER, 0, 7, true);
-    lv_add_btn(btn_list, ConnectDisconnectWifi_cb, 78, 62, "3", "Forget\nWi-Fi", LV_ALIGN_CENTER, 0, 7, true);
+    // lv_add_btn(btn_list, ConnectDisconnectWifi_cb, 78, 62, "1", "Connect\nWi-Fi", LV_ALIGN_CENTER, 0, 7, true);
+    // lv_add_btn(btn_list, ConnectDisconnectWifi_cb,  104, 62, "2", "Disconnect\nWi-Fi", LV_ALIGN_CENTER, 0, 7, true);
+    // lv_add_btn(btn_list, ConnectDisconnectWifi_cb, 78, 62, "3", "Forget\nWi-Fi", LV_ALIGN_CENTER, 0, 7, true);
+    lv_add_imgBtn(btn_list, ConnectDisconnectWifi_cb, "Connect",	"menu_wifi_search.png", LV_ALIGN_CENTER, true);
+	lv_add_imgBtn(btn_list, ConnectDisconnectWifi_cb, "Disconnect",	"menu_wifi_disconnect.png", LV_ALIGN_CENTER, true);
+	lv_add_imgBtn(btn_list, ConnectDisconnectWifi_cb, "Forget", 	"menu_wifi_forget.png", LV_ALIGN_CENTER, true);
 
     lv_obj_t * imgOK = lv_icon_create(Main_Panel, NULL, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 
@@ -188,7 +193,7 @@ static void ConnectDisconnectWifi_cb(lv_event_t * event)
     switch(key)
     {
         case LV_KEY_ESC:
-            DispSettingOptions();
+            DispMenuOptions();
             break;
 
         case LV_KEY_1:
@@ -270,7 +275,7 @@ static void WifiConnect_cb(lv_event_t * event)
     lv_obj_t * ta = lv_event_get_target(event);
     const char * txt = lv_textarea_get_text(ta);
     if(code == LV_EVENT_CANCEL ||key == LV_KEY_ESC){
-        DispSettingOptions();
+        void DispWifiSetting();
 
     }else if(code == LV_EVENT_READY || key == LV_KEY_ENTER){
         if(strlen(txt)>0){
@@ -326,7 +331,7 @@ static void WifiWarning_cb(lv_event_t * event)
         switch(key)
         {	        
 			case LV_KEY_ESC:
-				DispSettingOptions();
+				DispWifiSetting();
 				break;		   		
             
             default:				
@@ -394,7 +399,7 @@ static void WifiConnectionFail_cb(lv_event_t * event)
 +---------------------------------------------------------------------------*/
 void DispWifiConnectionMessage(const char * message)
 {
-    u32 timeout=1000;
+    u32 timeout=2000;
     lv_timer_enable(false);
 	lv_obj_clean(Main_Panel);    	
 
@@ -421,7 +426,7 @@ void DispWifiConnectionMessage(const char * message)
 +---------------------------------------------------------------------------*/
 static void WifiConnectionOK_cb()
 {   
-   DispSettingOptions();    	    
+   DispMenuOptions();    	    
 }
 
 /*----------------------------------------------------------------------------
@@ -466,7 +471,7 @@ static void ForgetWifi_cb(lv_event_t * event)
         switch(key)
         {	        
 		    case LV_KEY_ESC:
-                DispSettingOptions();
+                DispWifiSetting();
                 break;
 
             case LV_KEY_ENTER:				

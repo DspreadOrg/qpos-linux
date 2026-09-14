@@ -76,6 +76,45 @@ lv_obj_t * lv_add_btn(lv_obj_t *btn_list, lv_event_cb_t event_cb, lv_coord_t w, 
 
 /*----------------------------------------------------------------------------
 |   Function Name:
+|       lv_add_btn
+|   Description: 
+|   Parameters:
+|   Returns:
++---------------------------------------------------------------------------*/
+lv_obj_t *lv_add_imgBtn(lv_obj_t *btn_list, lv_event_cb_t event_cb,
+                        char *header, char *image, lv_align_t align,bool enabled)
+{
+    lv_obj_t *btn_container = lv_obj_create(btn_list);
+    lv_obj_remove_style_all(btn_container);              
+    lv_obj_clear_flag(btn_container, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(btn_container, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_size(btn_container, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+
+    lv_obj_t *imgBtn = lv_img_create(btn_container);
+    ui_lv_img_set_src(imgBtn, image);
+    lv_obj_clear_flag(imgBtn, LV_OBJ_FLAG_CLICKABLE);  
+    lv_obj_align(imgBtn, LV_ALIGN_TOP_MID, 0, 0);
+
+    lv_obj_t *btn_header = lv_label_create(btn_container);
+    lv_label_set_text(btn_header, header);
+    lv_obj_add_style(btn_header, &btn_header_style, LV_STATE_DEFAULT);
+    lv_obj_align_to(btn_header, imgBtn, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
+
+    lv_obj_update_layout(btn_container);
+
+    if(enabled)
+    {
+        lv_obj_add_event_cb(btn_container, event_cb, LV_EVENT_CLICKED, NULL);
+        lv_obj_add_event_cb(btn_container, event_cb, LV_EVENT_KEY,     NULL);
+
+        lv_group_add_obj(s_group_keypad_indev, btn_container);
+    }
+
+    return btn_container;
+}
+
+/*----------------------------------------------------------------------------
+|   Function Name:
 |       lv_text_create
 |   Description: 
 |   Parameters:
