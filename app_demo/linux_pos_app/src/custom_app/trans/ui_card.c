@@ -23,7 +23,7 @@ void DispCards(u32 cardsSupported) {
     lv_timer_enable( false );
 	lv_obj_clean( Main_Panel );
 
-    if(0)
+    if(cardsSupported == (CARD_NFC|CARD_IC|CARD_MAG))
     {
         lv_text_create( Main_Panel, "Pls insert/tap/swipe card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
         lv_obj_t * insertCard = lv_img_create(Main_Panel);
@@ -38,7 +38,7 @@ void DispCards(u32 cardsSupported) {
         ui_lv_img_set_src(swipeCard,"swipeCard.png");
         lv_obj_align(swipeCard, LV_ALIGN_CENTER, 78, 0);
     }
-    else if(1)
+   else if(cardsSupported == (CARD_NFC|CARD_IC))
     {
         lv_text_create( Main_Panel, "Pls insert/tap card", &title_style, LV_ALIGN_TOP_MID, 0, -3 );
         lv_obj_t * insertCard = lv_img_create(Main_Panel);
