@@ -64,17 +64,19 @@ int DataEncrypt(int keyIndex,unsigned char *inData,int inDataLen,unsigned char *
 
     ret = OsPedOpen();
     if(ret != RET_OK){
-        OsLog(LOG_DEBUG,"Dspread: -----------------%s-----%d   ret= %d",__FUNCTION__,__LINE__,ret);
-        return 0;
+        free(tempBuf);
+		return 0;
     }
 
     ret = OsPedDesDukpt(keyIndex,0x01,NULL, reLen, tempBuf, outData, ksn,DUKPT_ENC_CBC);
     if(ret != RET_OK){
         OsPedClose();
+		free(tempBuf);
         return 0;
     } 
 
     OsPedClose();   
+	free(tempBuf);
     return reLen;
 }
 
