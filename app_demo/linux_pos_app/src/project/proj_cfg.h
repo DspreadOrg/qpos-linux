@@ -12,8 +12,9 @@
 
 #ifdef CFG_DBG
 
+#if 0
 #define CFG_OFFLINE_TEST
-
+#endif
 static inline void getInfo( const char* module, int line, const char* func ){
     OsLog(LOG_DEBUG, "\rDspread: %s | %s | %d | ", module, func,line);
 }

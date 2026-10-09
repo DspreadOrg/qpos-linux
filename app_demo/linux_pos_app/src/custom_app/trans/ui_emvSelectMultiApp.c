@@ -79,7 +79,7 @@ static void multiAppSelectCb( lv_event_t * event ) {
 
         switch( keyPressed ) {
             case LV_KEY_ESC:
-                TransKbdEvent( EVENT_KEY_CANCEL );
+                checkTextSelected(NULL);
                 break;
 
             case LV_KEY_UP:

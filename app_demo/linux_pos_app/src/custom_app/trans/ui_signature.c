@@ -11,8 +11,8 @@ static void signatureCallback() {
     PR_INT8 szCode[] = "45323233";
     PR_INT32 elceSignTimeOut = 60;
 	DSP_Debug();
-	elceSignBuf = malloc(4*1024);
-	memset(elceSignBuf,0,4*1024);
+	elceSignBuf = malloc(10*1024);
+	memset(elceSignBuf,0,10*1024);
 	disp_disable_update();
 	nElecSignRet = Disp_nElecSignEx(elceSignBuf,&elceSignLen,NULL,0.8,elceSignTimeOut,10,75,300,125,0);
 	disp_enable_update();

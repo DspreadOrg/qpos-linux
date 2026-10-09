@@ -381,7 +381,7 @@ static void WifiConnectionFail_cb(lv_event_t * event)
         switch(key)
         {	        
 		   case LV_KEY_ESC:
-    				//DispSettingByScreen();			
+    			DispWifiSetting();			
 				break;						   		
             
             default:				

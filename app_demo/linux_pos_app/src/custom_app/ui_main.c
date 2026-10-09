@@ -236,6 +236,7 @@ static void Payment_cb(lv_event_t * event)
         switch(key)
         {              
 			case LV_KEY_DOWN:
+			case LV_KEY_ESC:
 				DispMenuOptions();
 				break;
 				
