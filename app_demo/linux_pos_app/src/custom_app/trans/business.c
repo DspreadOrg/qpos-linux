@@ -168,7 +168,7 @@ PR_INT32 ReadCardProc(PR_INT32 nTimeoutS,PR_INT32 *pRetSwipeType,CardDataInfo *p
                 goto EXIT;
             }
         }
-        if(cardsSupported&CARD_NFC)
+        if(cardsSupported&CARD_IC)
         {
             nRet = OsIccDetect(0);
             if(nRet == RET_OK){
