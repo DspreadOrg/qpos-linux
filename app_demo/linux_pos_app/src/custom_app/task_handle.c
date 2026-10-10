@@ -36,7 +36,10 @@ void EventHandle(u32 Event_id)
 
         case EVENT_PRINTER:
             PrintStart(1);
-            break;    
+            break;
+        case EVENT_SIGN_PRINTER:
+            printSign();
+            break;        
         default:
             break;
     }

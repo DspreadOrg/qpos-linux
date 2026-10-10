@@ -724,6 +724,9 @@ int OsPedWriteTIK (const unsigned char *KeyBlock);
  * DataIn【Input】
  * ExpPinLen【Input】
  * Mode Select the format of the PIN block:
+         0x20 ISO9564 format 0, KSN not automatically incremented by 1
+        0x21 ISO9564 format 1, KSN not automatically incremented by 1
+        0x22 ISO9564 format 3, KSN not automatically incremented by 1
  * TimeoutMs Enter the timeout time of the PIN, in milliseconds.The maximum value is 3000000: indicates that there is no timeout time and PED does not perform timeout control.
  * Ksn【Output】 10 bytes, pointing to the current KSN.
  * PinBlock【Output】 8 bytes, pointing to the generated PIN block.
@@ -741,6 +744,9 @@ int OsPedGetPinDukpt (int GroupIdx, const unsigned char *DataIn, const char *Exp
  * DataIn【Input】
  * ExpPinLen【Input】
  * Mode Select the format of the PIN block:
+        0x20 ISO9564 format 0, KSN not automatically incremented by 1
+        0x21 ISO9564 format 1, KSN not automatically incremented by 1
+        0x22 ISO9564 format 3, KSN not automatically incremented by 1
  * TimeoutMs Enter the timeout time of the PIN, in milliseconds.The maximum value is 3000000: indicates that there is no timeout time and PED does not perform timeout control.
  * Ksn【Output】 10 bytes, pointing to the current KSN.
  * PinBlock【Output】 8 bytes, pointing to the generated PIN block.

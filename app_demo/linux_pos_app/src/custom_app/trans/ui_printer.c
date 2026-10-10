@@ -35,6 +35,11 @@ void PrintStart(int nCount)
     GuiEventRegister(LCD_DISP_PRINTER_PRINTING);
     for(int i = 0;i< nCount;i++){
         OsPrnReset();
+        Business_getAppPath(AppPath,sizeof(AppPath));
+        sprintf(FilePath,"%s/res/PrintTest.bmp",AppPath);
+        if (access(FilePath, F_OK) == 0){
+            OsPrnPutImage((unsigned char *)FilePath);
+        }
         // OsPrnSetPrintParamsEx(32,1,1,ALIGN_TYPE_CENTER,1);
         // OsPrnPrintf((char *)"به استفاده خوش آمدید");
         OsPrnSetPrintParams(24,1,1,ALIGN_TYPE_CENTER);

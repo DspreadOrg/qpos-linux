@@ -18,6 +18,7 @@ typedef enum
     EVENT_QR_PAYMENT,
 
     EVENT_PRINTER,
+    EVENT_SIGN_PRINTER,
 }EVENT_T;
 
 #endif

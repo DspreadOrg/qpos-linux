@@ -476,6 +476,55 @@ void led_disp_nfc_fail_prompt()
     OsLed(0,0,0,0);
 }
 
+#define RUPAY_AID	"\xA0\x00\x00\x05\x24\x10\x10"   //EMVTAG_AID
+/* RuPay CSU  */
+static const uint8_t CSU_VALUE_1[4] = {0x80, 0x80, 0x80, 0x00};
+static const uint8_t CSU_VALUE_2[4] = {0x80, 0x80, 0x40, 0x00};
+int Contactless_DoubleTap_Check(EmvOnlineData_t emvOnlineData)
+{
+	int iRet = 0;
+	int length =0;
+	unsigned char *value =NULL;
+	unsigned char IssuerData[128] = {0};
+	unsigned char tlvData[512] = {0};
+	do
+	{
+		if(memcmp(emvOnlineData.iccResponse,"00",2) != 0)
+			break;
+		if(emvOnlineData.ackdatalen == 0)
+			break;
+
+		value = Emv_GetCoreData(EMVTAG_AID, &length);
+		if(value == NULL || length == 0)
+			break;
+		if(memcmp(value,RUPAY_AID,7) != 0)
+			break;	
+
+		value = NULL;
+		length = 0;
+		tlv_new_(tlvData,0x7F00,emvOnlineData.ackdatalen,emvOnlineData.ackdata);
+		value = tlv_find_(tlvData,0x91);
+		if(value == NULL)
+			break;
+		length = tlv_get_l_(value);
+		memcpy(IssuerData,tlv_get_v_(value),length);
+		for (size_t i = 0; i + 4 <= length; i++) 
+		{
+			uint8_t b3 = IssuerData[i + 2];
+			if ((b3 & 0xC0) == 0x40 || (b3 & 0xC0) == 0x80) 
+			{
+				if (memcmp(&IssuerData[i], CSU_VALUE_1, 4) == 0 ||	memcmp(&IssuerData[i], CSU_VALUE_2, 4) == 0) 
+				{
+					iRet = 1;
+					break;
+				}
+			}
+		}
+
+	} while (0);
+	
+	return iRet;
+}
 PR_INT32 EmvL2_Proc(EmvTransParams_t emvTransParams){
     EMV_L2_Return nEmvRet = APP_RC_START;
 	int ret = PR_FAILD;
@@ -490,8 +539,8 @@ PR_INT32 EmvL2_Proc(EmvTransParams_t emvTransParams){
 		ret = onlineProcess(&emvOnlineData);
 		if(ret == PR_NORMAL)
 		{
-			if(memcmp(emvOnlineData.iccResponse,"00",2) == 0 && emvOnlineData.ackdatalen > 0)
-				ret = Emv_SetContactlessOnlineResult(KERNEL_POLL_CTL_MODE,&emvOnlineData);
+			if(Emv_CheckContactlessDoubleTap(&emvOnlineData))
+				ret = Emv_SetOnlineResult(KERNEL_POLL_CTL_MODE,&emvOnlineData);
 		}
 
 		if(ret == PR_NORMAL)
