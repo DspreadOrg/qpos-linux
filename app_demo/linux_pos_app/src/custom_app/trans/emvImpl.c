@@ -126,30 +126,35 @@ int confirmCardInfo(char *pan,int len){
 
 int Emv_GetPanByTag5A(char* pan){
 	int len = 0;
+	int n = 0;
 	unsigned char *value = NULL;
-	char sepflag = 0;
-	char *p = NULL;
-	char szPan[32];
+	char szPan[128] = {0};
 
 	if(pan == NULL){
 		return -1;
 	}
 	value = Emv_GetCoreData(0x5A, &len);
 	OsLog(LOG_DEBUG,"5A Len[%d]",len);
-	if(!value || len < 0){
+	if(!value || len <= 0){
 		value = Emv_GetCoreData(0x57, &len);
-		sepflag = 1;
-		OsLog(LOG_DEBUG,"5A Len[%d]",len);
+		OsLog(LOG_DEBUG,"57 Len[%d]",len);
 	}
-	if(len > 0){
+	if(value && len > 0){
 		memset(szPan,0,sizeof(szPan));
 		PR_nUtilBcd2Asc(len,(char *)value, 0,sizeof(szPan), szPan);
 		OsLog(LOG_DEBUG,"szPan1 [%s]",szPan);
-		p = strstr(szPan,"D");
-		if(p){
-			*p = 0x00;
+		// Tag 5A/57 is BCD encoded: PAN is the leading numeric part.
+		// Tag 57 uses 'D' as the field separator, and an odd length PAN
+		// is right padded with 'F', so keep only the leading digits.
+		while(szPan[n] >= '0' && szPan[n] <= '9'){
+			n++;
 		}
+		szPan[n] = 0x00;
 		OsLog(LOG_DEBUG,"szPan2 [%s]",szPan);
+		if(n == 0){
+			OsLog(LOG_DEBUG,"Emv_GetPanByTag5A Failed");
+			return -1;
+		}
 		strcpy(pan,szPan);
 		return 0;
 	}
@@ -475,56 +480,6 @@ void led_disp_nfc_fail_prompt()
     OsSleep(30);
     OsLed(0,0,0,0);
 }
-
-#define RUPAY_AID	"\xA0\x00\x00\x05\x24\x10\x10"   //EMVTAG_AID
-/* RuPay CSU  */
-static const uint8_t CSU_VALUE_1[4] = {0x80, 0x80, 0x80, 0x00};
-static const uint8_t CSU_VALUE_2[4] = {0x80, 0x80, 0x40, 0x00};
-int Contactless_DoubleTap_Check(EmvOnlineData_t emvOnlineData)
-{
-	int iRet = 0;
-	int length =0;
-	unsigned char *value =NULL;
-	unsigned char IssuerData[128] = {0};
-	unsigned char tlvData[512] = {0};
-	do
-	{
-		if(memcmp(emvOnlineData.iccResponse,"00",2) != 0)
-			break;
-		if(emvOnlineData.ackdatalen == 0)
-			break;
-
-		value = Emv_GetCoreData(EMVTAG_AID, &length);
-		if(value == NULL || length == 0)
-			break;
-		if(memcmp(value,RUPAY_AID,7) != 0)
-			break;	
-
-		value = NULL;
-		length = 0;
-		tlv_new_(tlvData,0x7F00,emvOnlineData.ackdatalen,emvOnlineData.ackdata);
-		value = tlv_find_(tlvData,0x91);
-		if(value == NULL)
-			break;
-		length = tlv_get_l_(value);
-		memcpy(IssuerData,tlv_get_v_(value),length);
-		for (size_t i = 0; i + 4 <= length; i++) 
-		{
-			uint8_t b3 = IssuerData[i + 2];
-			if ((b3 & 0xC0) == 0x40 || (b3 & 0xC0) == 0x80) 
-			{
-				if (memcmp(&IssuerData[i], CSU_VALUE_1, 4) == 0 ||	memcmp(&IssuerData[i], CSU_VALUE_2, 4) == 0) 
-				{
-					iRet = 1;
-					break;
-				}
-			}
-		}
-
-	} while (0);
-	
-	return iRet;
-}
 PR_INT32 EmvL2_Proc(EmvTransParams_t emvTransParams){
     EMV_L2_Return nEmvRet = APP_RC_START;
 	int ret = PR_FAILD;
@@ -540,7 +495,7 @@ PR_INT32 EmvL2_Proc(EmvTransParams_t emvTransParams){
 		if(ret == PR_NORMAL)
 		{
 			if(Emv_CheckContactlessDoubleTap(&emvOnlineData))
-				ret = Emv_SetOnlineResult(KERNEL_POLL_CTL_MODE,&emvOnlineData);
+				ret = Emv_SetContactlessOnlineResult(KERNEL_POLL_CTL_MODE,&emvOnlineData);
 		}
 
 		if(ret == PR_NORMAL)

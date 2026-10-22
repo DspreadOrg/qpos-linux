@@ -1,6 +1,7 @@
 #include "ui_signature.h"
 #include "ui_main.h"
 
+static bool signFlag = false;
 static void signatureCallback() {
 	
 	int ret;
@@ -13,6 +14,7 @@ static void signatureCallback() {
 	DSP_Debug();
 	elceSignBuf = malloc(10*1024);
 	memset(elceSignBuf,0,10*1024);
+	signFlag = false;
 	disp_disable_update();
 	nElecSignRet = Disp_nElecSignEx(elceSignBuf,&elceSignLen,NULL,0.8,elceSignTimeOut,10,75,300,125,0);
 	disp_enable_update();
@@ -27,6 +29,7 @@ static void signatureCallback() {
 		OsLog(LOG_DEBUG,"Dspread: elceSignLen = %d",elceSignLen);
 		free(elceSignBuf);
 		// DispMenuOptions();
+		signFlag = true;
 		EventRegister(EVENT_SIGN_PRINTER);
 	}
 }
@@ -34,7 +37,6 @@ static void signatureCallback() {
 void printSign()
 {
 	PR_INT32 ret;
-    PR_INT32 nElecSignRet;
     PR_UINT8 temp[256];
     PR_INT8 FilePath[128] = {0};
 	PR_INT8 AppPath[128] = {0};
@@ -113,7 +115,7 @@ void printSign()
 	OsPrnSetPrintParams(16,1,1,ALIGN_TYPE_LEFT);
 	OsPrnPrintf((char *)"REFERENCE ");
 	OsPrnPrintf((char *)"================================================");
-	if(nElecSignRet == 0){
+	if(signFlag){
 		OsPrnPutElecSignDataByJpg();
 	}else{
 		OsPrnPrintf((char *)"CARDHOLDER SIGNATURE ");

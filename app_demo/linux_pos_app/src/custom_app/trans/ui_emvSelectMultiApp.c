@@ -1,4 +1,5 @@
 #include "ui_emvSelectMultiApp.h"
+#include "emvdeviceimpl.h"
 
 struct App {
     int counter;
