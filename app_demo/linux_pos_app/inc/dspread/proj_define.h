@@ -28,25 +28,6 @@ extern "C"
  * |   Macros
  * +----------------------------------------------------------------------------
  */
-#define APP_VERSION "V1.0.5"
-
-#if 1
-#define CFG_DBG 
-#endif
-
-#ifdef CFG_DBG
-
-static inline void getInfo( const char* module, int line, const char* func ){
-    OsLog(LOG_DEBUG, "\rDspread: %s | %s | %d | ", module, func,line);
-}
-
-#define DSP_Debug()  do{ getInfo(__FILE__, __LINE__, __FUNCTION__);}while(0)
-#define DSP_Info(fmt, ...)  do{ getInfo(__FILE__, __LINE__, __FUNCTION__); OsLog(LOG_DEBUG,fmt,##__VA_ARGS__);}while(0)
-
-#else
-	#define DSP_Debug() ((void)0)
-	#define DSP_Info(fmt, ...)  ((void)0)
-#endif
 
 /*
  * -----------------------------------------------------------------------------
@@ -371,42 +352,6 @@ typedef enum _pos_tag_t
  * |   Typedefs
  * +----------------------------------------------------------------------------
  */
-typedef enum
-{
-    EMV_PROCESS_MAG_OK=0x00,
-    EMV_PROCESS_ONLINE_PIN,
-    EMV_PROCESS_OFFLINE_PIN,
-    EMV_PROCESS_NFC_ONLINE,
-    EMV_PROCESS_NFC_APPROVED,
-    EMV_PROCESS_NFC_DECLINE,
-    EMV_PROCESS_OFFLINE_LASTE_PIN,
-
-    EMV_PROCESS_REVERSAL=0x95,
-    EMV_PROCESS_ICC_APP_SELECT,
-    EMV_PROCESS_MAG_ACCOUNT_TYPE,
-    EMV_PROCESS_ICC_GAC2,
-    EMV_PROCESS_ICC_ONLINE,
-
-    EMV_PROCESS_CUSTOM
-
-}TRANS_MODE_T;
-
-
-typedef struct
-{
-	const char * pinMask;
-}Lcd_Pin_Mask_t,*pLcd_Pin_Mask_t;
-
-typedef enum
-{
-	APP_MSG_ID_FRAME,
-	APP_MSG_ID_KBD,
-	APP_MSG_ID_POLL_SEC_TICK,
-	APP_MSG_ID_TIMER,
-    APP_MSG_ID_SDK_FRAME,
-    APP_MSG_ID_LVGL_FRAME,
-	APP_MSG_ID_NUMS,
-}App_Msg_Id_t;
 
 /*
  * Big-Endian Pointer to Long
@@ -570,7 +515,9 @@ typedef struct{u8 *head; u32 len;} T_U8_VIEW;
  * +----------------------------------------------------------------------------
  */
 
-
+extern u32 get_tlv_value(pu8 pool,u32 T,pu8 V );
+extern void set_tlv_view(u8 *pTlvBuf, u32 dwTag, T_U8_VIEW uvVal);
+extern T_U8_VIEW get_tlv_view(u8 *pTlvBuf, u32 dwTag);
 /*
  * -----------------------------------------------------------------------------
  * |   Constants

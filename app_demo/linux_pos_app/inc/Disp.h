@@ -141,8 +141,7 @@ typedef enum DPORT_IME_TYPE
 	DPORT_IME_PY = (1<<0),
 	DPORT_IME_EN = (1<<1),
 	DPORT_IME_NUM =(1<<2),
-	DPORT_IME_SYMBOL = (1<<3),
-	DPORT_IME_HEX = (1<<4)
+	DPORT_IME_SYMBOL = (1<<3)
 }DPORT_IME_T;
 
 // Prompt box interface type
@@ -206,9 +205,6 @@ typedef struct tagListShowInfo{
 	Uint8 uFlag;
 }ListShowInfo;
 
-#define DPORT_RGB(R, G, B) \
-	((Uint32)((((Uint32)(R) & 0xFFU) << 16) | \
-				(((Uint32)(G) & 0xFFU) << 8) | ((Uint32)(B) & 0xFFU)))
 /*
  * @author:
  * @Date: 06-10-2022
@@ -248,8 +244,7 @@ void Disp_nSetMsgBoxLanguage(Uint8 language);
  * @Call Example:
  */
 void Disp_vInit(void);
-//barState 0 does not display status bar 1 displays status bar
-void Disp_vInitEx(int barState);
+
 /*
  * @author:
  * @Date: 10-10-2022
@@ -365,16 +360,6 @@ void Disp_vShowStr(Uint8 nAtLine, Uint8 nType, Uint8 nPattern, Int8* fmt, ...);
  * @Call Example:
  */
 void Disp_vShowImage(Uint8* pcBmpData, Uint32 LenofBufferSize, POINT_T tStartPoint, Uint32 uBmpWidth, Uint32 uBmpHeight);
-
-/*
-*Param: 
-	path: picture path
-	tStartPoint: picture start point
-*Return:
-	None	
-* @Remark:Image files do not require any conversion and only support displaying BMP, JPG, and PNG images.
-*/
-void Disp_vShowPICByPath(const char *path, POINT_T tStartPoint);
 
 /*
  * @author:
@@ -1076,18 +1061,6 @@ int Disp_nShowDateInputView(SetLocalTimeType* pDate,  int nTimeOutSec);
  * @Call Example:
  */
 void Disp_vSetSysFont(DPORT_FONT_SIZE_T FontType);
-/*
-*@ Function Name: Dispw_SETysVectorFont
-*@ Function Function: Set system vector font (specify font file path)
-*
-*@ Input Parameters:
-*PFontFilePath - Font file path
-*@Output parameter: None
-*
-*@ Return value: None
-*/
-#define SYS_DEFAULT_FONT_FILE_PATH "/customer/ymos/fonts/Arabic.ttf"  // The firmware version 20250930 comes with a default font library
-void Disp_vSetSysVectorFont(const char* pFontFilePath);
 
 /*
  * @author:
@@ -1162,18 +1135,6 @@ void Disp_vRegisterResumeCallBack(pUICallback callback);
 int Disp_nElecSign(unsigned char* pBuf,int* pOutLen,char*pCode,int timeout,int x,int y,int width,int height,int isShowBtn);
 
 int Disp_nElecSignEx(unsigned char* pBuf,int* pOutLen,char*pCode,float compress,int timeout,int x,int y,int width,int height,int isShowBtn);
-
-/*
- * Display a string in the specified line, and set the text color and background color for this display.
- * nTextColor、nBackColor Use 0xRRGGBB fomart，Can be constructed using the DPORT_RGB macro.。
- */
-void Disp_vShowStrWithColor(Uint8 nAtLine, Uint8 nType, Uint8 nPattern,
-							Uint32 nTextColor, Uint32 nBackColor, Int8* fmt, ...);
-//Set the color for list display
-void Disp_vSetListColors(Uint32 clrTitleBack, Uint32 clrTitleText, Uint32 clrListText,Uint32 clrSelectBack, Uint32 clrSelectText);
-
-//Restore the list display color
-void Disp_vResetListColors(void);
 #ifdef __cplusplus
 }
 #endif

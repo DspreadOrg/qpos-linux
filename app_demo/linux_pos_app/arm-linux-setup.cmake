@@ -1,7 +1,11 @@
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR arm)
-set(CMAKE_C_COMPILER "arm-none-linux-gnueabihf-gcc.exe")
-set(CMAKE_CXX_COMPILER "arm-none-linux-gnueabihf-g++.exe")
+if(NOT DEFINED CMAKE_C_COMPILER OR "${CMAKE_C_COMPILER}" STREQUAL "")
+	set(CMAKE_C_COMPILER "arm-none-linux-gnueabihf-gcc.exe")
+endif()
+if(NOT DEFINED CMAKE_CXX_COMPILER OR "${CMAKE_CXX_COMPILER}" STREQUAL "")
+	set(CMAKE_CXX_COMPILER "arm-none-linux-gnueabihf-g++.exe")
+endif()
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)

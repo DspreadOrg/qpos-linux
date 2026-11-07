@@ -237,6 +237,7 @@ DEPRECATEDIN_0_9_8(RSA *RSA_generate_key(int bits, unsigned long e, void
                                          void *cb_arg))
 
 /* New version */
+int YMLib_RSAKeyPairCreate(uint8_t * customerID, RSA *rsa, int bits, BIGNUM *e_value);
 int RSA_generate_key_ex(RSA *rsa, int bits, BIGNUM *e, BN_GENCB *cb);
 /* Multi-prime version */
 int RSA_generate_multi_prime_key(RSA *rsa, int bits, int primes,

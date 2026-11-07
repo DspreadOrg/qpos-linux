@@ -9,6 +9,7 @@ extern "C"
 #define EMV_OFFLINEPIN_INPUT    1   /*Offline password*/
 #define EMV_OFFLINE_ONLY_INPUT  2   /*Last offline password*/
 #define EMV_ONLINEPIN_INPUT   3   /*Online password*/
+
 // kernel type definition
 typedef enum
 {
@@ -166,7 +167,7 @@ typedef struct _EmvCallBack_t
 {	
 // Multi-application selection Return value >=0 Return the selected AID serial number -1 failed
 	int (*EMV_AidSelect)(AidCandidate_t *pList, int listNum);
-	//set kernel id , return: 0 success, other failed 
+//set kernel id , return: 0 success, other failed 
 	int (*EMV_SetKernelId)(unsigned char *aid,int aidLen,int *kernelId);
 // Card number confirmation, return value 0 confirmation -1 failed
 	int (*EMV_ConfirmCardInfo)(char *pan,int len);
@@ -281,7 +282,6 @@ int	Emv_GetCapkTotalNum();
 unsigned long EMV_L2_GetLastError();
 
 int Emv_GetKernelVersion(EmvKernelType kernelType,unsigned char *ver);
-
 /*mode == 0:kernel mode; The kernel will control the opening of the card reader to search for the card and prompt to tap  card.
  mode == 1:app mode The app needs to first open the card reader and prompt to tap card. Call the interface after detecting the card.
 //feturn: 0 succes  OTHER fail
@@ -293,7 +293,6 @@ Func:Check if double tapping is needed
 return 1 need  0 no need
 */
 int Emv_CheckContactlessDoubleTap(EmvOnlineData_t* pOnlineData);
-
 #ifdef __cplusplus
 }
 #endif

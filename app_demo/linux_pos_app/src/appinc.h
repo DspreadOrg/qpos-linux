@@ -1,8 +1,6 @@
 #pragma once
 
-/*
- * Common header files
- */
+/*常见的头文件*/
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -28,21 +26,27 @@
 #include "typedefine.h"
 #include "Disp.h"
 #include "osal.h"
-#include "emvdeviceimpl.h"
-#include "TrancProcView.h"
-#include "business.h"
-#include "utility.h"
-#include "emvdeviceimpl.h"
 
-#include "network.h"
-#include "socket.h"
-#include "network_errno.h"
-#include "cmacro.h"
-#include "function.h"
 #include "debug.h"
-#include "App_iso8583.h"
-#include "TLVUtil.h"
-#include "businessUtil.h"
-#include "ResponseCode.h"
-#include "ntp.h"
+#include "function.h"
+#include "cmacro.h"
+#include "socket.h"
+
 #include "proj_define.h"
+#include "proj_cfg.h"
+
+#include "lib_common.h"
+
+#include "lvgl.h"
+////api
+#include "network.h"
+#include "network_errno.h"
+#include "emvdeviceimpl.h"
+#include "business.h"
+#include "businessUtil.h"
+#include "utility.h"
+#include "emvimpl.h"
+#include "proj_cfg.h"
+
+#include "app_request.h"
+#include "ui_main.h"
