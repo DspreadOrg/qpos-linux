@@ -88,6 +88,11 @@ RESEARCH:
         memset(uvlist, 0x00, sizeof(uvlist));
         list_num=AnalysisWifiList(strApList,uvlist);
     }
+    else
+    {
+        GuiEventRegister(LCD_DISP_WIFI_SEARCH_FAIL);
+        return 0;
+    }
 
     if(list_num == 1)
         goto RESEARCH;

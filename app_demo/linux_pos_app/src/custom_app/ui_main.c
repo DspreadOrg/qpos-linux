@@ -494,6 +494,10 @@ void GuiDisplay(u32 id){
 			DispWifiList();
 			break;
 
+		case LCD_DISP_WIFI_SEARCH_FAIL:	
+			DispResult("Wifi search failed");
+			break;
+
 		case LCD_DISP_WIFI_CONNECT_SUCCESS:
 			DispWifiConnectionMessage("Connect to Wi-Fi");
 			break;	

@@ -144,9 +144,9 @@ int sale_online_request(EmvOnlineData_t* pOnlineData)
 
         #if 1              // just a demo
             memcpy(pOnlineData->iccResponse,"00",2); //responcess
-            //Analyze the EMV data returned by the server, which should include 91tag or 71 or 72tag
-            // memcpy(pOnlineData->ackdata,"\x72\x20\x86\x0E\x04\xDA\x00\x00\x02\x01\x92\x42\x81\x02\x7A\x08\xE4\x36\x86\x06\x04\xDA\x00\x00\x00\x01\x86\x06\x04\xDA\x00\x00\x01\x01",34);
-			// pOnlineData->ackdatalen = 34;
+            // //Analyze the EMV data returned by the server, which should include 91tag or 71 or 72tag
+            // memcpy(pOnlineData->ackdata,"\x91\x10\x0D\xFA\x99\xD3\x80\x80\x40\x00\xFF\xFE\x00\x00\x00\x00\x10\x00",16);
+			// pOnlineData->ackdatalen = 16;
     
             ret = PR_NORMAL;
             goto exit;
