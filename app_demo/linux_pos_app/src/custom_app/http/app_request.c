@@ -133,7 +133,7 @@ int sale_online_request(EmvOnlineData_t* pOnlineData)
     pRecv=(pu8)malloc(SERVER_RECV_LENGTH);
     memset(pRecv,0,SERVER_RECV_LENGTH);
     RecvLen=RequestHttpTransmit(pSend,strlen(pSend),URL_TEST,URL_SERVER_PORT,pRecv,SERVER_RECV_LENGTH);
-    if(1)
+    if(RecvLen>0)
     {
         #ifdef CFG_DBG
         OsLog(LOG_DEBUG,"request success\r\n");
