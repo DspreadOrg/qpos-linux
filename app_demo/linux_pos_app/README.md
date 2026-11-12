@@ -28,14 +28,14 @@ themselves**. There are only three steps: **prepare the tools → build the APK 
 
 Tool checklist (each must run directly from the command line):
 
-| Tool                  | Purpose                      | Check command                            |
-| --------------------- | ---------------------------- | ---------------------------------------- |
-| CMake (3.10 or newer) | Generate the build files     | `cmake --version`                        |
-| make                  | Run the build                | `make --version`                         |
-| ARM cross toolchain   | Build QposPlus / QposTrio    | `arm-none-linux-gnueabihf-gcc --version` |
-| MIPS cross toolchain  | Build D70                    | `mips-linux-gnu-gcc --version`           |
-| zip                   | Create the APK               | `where zip`                              |
-| adb (recommended)     | Detect device type / install | `adb devices`                            |
+| Tool                  | Purpose                      | Check command                                                                                            |
+| --------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------- |
+| CMake (3.10 or newer) | Generate the build files     | `cmake --version`                                                                                        |
+| make                  | Run the build                | `make --version`                                                                                         |
+| ARM cross toolchain   | Build QposPlus / QposTrio    | [arm-none-linux-gnueabihf-gcc](https://github.com/DspreadOrg/qpos_linux_tools)                           |
+| MIPS cross toolchain  | Build D70                    | [mips-linux-gnu-gcc](https://drive.google.com/file/d/1l_7en4xNMv_u2sRMVfjIJ60aywg5QypL/view?usp=sharing) |
+| zip                   | Create the APK               | [Download](https://github.com/DspreadOrg/qpos_linux_tools)                                               |
+| adb (recommended)     | Detect device type / install | `adb devices`                                                                                            |
 
 Notes:
 

@@ -1,10 +1,10 @@
-# Qpos SDK - Demo
+# Qpos SDK - LVGL Demo
 
-Release 1.0.1
+Release 1.0.0
 
 This repository provides a comprehensive implementation of a payment terminal application that enables you to process credit and debit card payments (including VISA, MasterCard, American Express and more) with a modern touchscreen interface.
 
-The app_demo is a standalone POS solution with connectivity capabilities via Wi-Fi and 4G/2G. The payment application runs directly on the terminal itself. The device integrates multiple processing components: a main application processor, a secure element for cryptographic operations, and connectivity modules. The main processor handles the user interface and application logic, while the secure processor manages communication with payment cards and secure operations. The connectivity modules provide network capabilities.
+The Qpos lvgl_demo is a standalone POS solution with connectivity capabilities via Wi-Fi and 4G/2G. The payment application runs directly on the terminal itself. The device integrates multiple processing components: a main application processor, a secure element for cryptographic operations, and connectivity modules. The main processor handles the user interface and application logic, while the secure processor manages communication with payment cards and secure operations. The connectivity modules provide network capabilities.
 
 # Project Architecture
 
@@ -40,7 +40,7 @@ The application architecture follows a modular design with several key component
 
 - EMV Processing Layer : Implements EMV-compliant transaction processing for contact and contactless payments. It handles card authentication, cryptographic operations, and secure PIN entry.
 
-- UI Layer : Built with posmui library, providing a modern touchscreen interface with multiple screens for payment flow, settings, and transaction management.
+- UI Layer : Built with LVGL graphics library, providing a modern touchscreen interface with multiple screens for payment flow, settings, and transaction management.
 
 - Network Layer : Implements HTTP/HTTPS communication for transaction processing, enabling secure connections to payment processors.
 
@@ -84,115 +84,48 @@ This diagrams describes the general software architecture.
 
 The following is a complete card transaction process, with key function codes annotated.
 
-```
-Cardholder          EMV Chip Card         POS Terminal         Acquirer         Issuer
-    |                     |                    |                   |                |
-    | 1.Insert Card + Enter Amount + Confirm   |                   |                |
-    |----------------------------------------> |                   |                |
-    |                     |                    |                   |                |
-    |                     | 2.Application Selection Request        |                |
-    |                     |<---------------------------------------|                |
-    |                     |                    |                   |                |
-    |                     | 3.Application Selection Response       |                |
-    |                     |--------------------------------------->|                |
-    |                     |                    |                   |                |
-    |                     | 4.Read Application Data Request        |                |
-    |                     |<---------------------------------------|                |
-    |                     |                    |                   |                |
-    |                     | 5.Application Data Response            |                |
-    |                     |--------------------------------------->|                |
-    |                     |                    |                   |                |
-    |                     | 6.Offline Data Authentication (SDA/DDA/CDA)             |
-    |                     |<-------------------------------------->|                |
-    |                     |                    |                   |                |
-    |                     |                    | 7.Terminal Risk 
-                                             Assessment (Internal) |
-    |                     |                    |<----------------->|                |
-    |                     |                    |                   |                |
-    |                     |                    | 8.Online Authorization Request     |
-    |                     |                    |----------------------------------->|
-    |                     |                    |                   |                |
-    |                     |                    |                   | 9.Forward Authorization Request|
-    |                     |                    |                   |<---------------|
-    |                     |                    |                   |                |
-    |                     |                    |                   | 10.ARQC Verification Request |
-    |                     |                    |                   |--------------->|
-    |                     |                    |                   |                |
-    |                     |                    | 11.Forward ARQC Request            |
-    |                     |                    |<------------------|                |
-    |                     |                    |                   |                |
-    |                     | 12.ARQC Request                        |                |
-    |                     |<---------------------------------------|                |
-    |                     |                    |                   |                |
-    |                     | 13.ARPC Response                       |                |
-    |                     |--------------------------------------->|                |
-    |                     |                    |                   |                |
-    |                     |                    | 14.Upload ARPC Data                |
-    |                     |                    |----------------------------------->|
-    |                     |                    |                   |                |
-    |                     |                    |                   | 15.Forward ARPC Data|
-    |                     |                    |                   |--------------->|
-    |                     |                    |                   |                |
-    |                     |                    |                   |                |
-    |                     |                    |                   | 16.Authorization Result 
-                                                                    (Approve/Decline)|
-    |                     |                    |                   |<---------------|
-    |                     |                    |                   |                |
-    |                     |                    | 17.Forward Authorization Result    |
-    |                     |                    |<------------------|                |
-    |                     |                    |                   |                |
-    |                     | 18.Transaction Completion Request      |                |
-    |                     |<---------------------------------------|                |
-    |                     |                    |                   |                |
-    |                     | 19.Transaction Completion Confirmation |                |
-    |                     |--------------------------------------->|                |
-    |                     |                    |                   |                |
-    |                     | 20.Print Receipt + Prompt Card Removal |                |
-    |                     |<---------------------------------------|                |
-    |                     |                    |                   |                |
-    | 21.Remove Card + Take Receipt            |                   |                |
-    |<---------------------------------------- |                   |                |
-    |                     |                    |                   |                |
-```
+![](./readme_res/transflow1.png)
+
+![](./readme_res/transflow2.png)
 
 ## 3 TMS
 
 The device supports updating APP resource files and EMV parameters via OTA.
 
-[How to update app?](https://github.com/DspreadOrg/qpos-linux/blob/main/tools/Tms/APP/readme.md)
+[How to update app?](https://github.com/DspreadOrg/qpos-linux/blob/demo-with-lvgl/tools/tms/APP/readme.md)
 
-[How to update resource?](https://github.com/DspreadOrg/qpos-linux/blob/main/tools/Tms/Resource/readme.md)
+[How to update resource?](https://github.com/DspreadOrg/qpos-linux/blob/demo-with-lvgl/tools/tms/Resource/readme.md)
 
-[How to update emv?](https://github.com/DspreadOrg/qpos-linux/blob/main/tools/Tms/Emv/readme.md)
+[How to update emv?](https://github.com/DspreadOrg/qpos-linux/blob/demo-with-lvgl/tools/tms/Emv/readme.md)
 
 If TMS access and credentials are required, please contact technical personnel.
 
-Here is how to use TMS in the demo.Please refer to [ota. c](https://github.com/DspreadOrg/qpos-linux/blob/main/app_demo/linux_pos_app/src/business/ota.c).
+Here is how to use TMS in the demo.Please refer to [app_ota. c](https://github.com/DspreadOrg/qpos-linux/blob/demo-with-lvgl/app_demo/linux_pos_app/src/custom_app/ota/app_ota.c).
 
 ```
 void TmsDispCallback(u32 id, char *pMsg)
 {
     u32 i ;
+    char dispBuff[8] = {0};
+    int curValue = 0;
     OsLog(LOG_DEBUG,"Dspread: %s:id=%d",__FUNCTION__,id);
     switch(id)
     {
         case TMS_DISP_START_CHECK:
-            TransView_vClearPort();
-            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"TMS Checking...");
-            break;
-        case TMS_DISP_DOWNLOADING_PROGRESS:
-            TransView_vShowLine(3,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,pMsg);
+            GuiEventRegister(LCD_DISP_OTA_CHECK);
             break;
         case TMS_DISP_START_DOWNLOAD:
-            TransView_vClearPort();
-            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"TMS Download...");
+            GuiEventRegister(LCD_DISP_OTA_DOWNLOAD_DISP);
+            break;
+        case TMS_DISP_DOWNLOADING_PROGRESS:
+            process = atoi(pMsg);
+            GuiEventRegister(LCD_DISP_OTA_DOWNLODING);
             break;
         case TMS_DISP_UPGRADING:
-            TransView_vClearPort();
-            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Upgrading...");
-        break;
+            GuiEventRegister(LCD_DISP_OTA_UPGRADING);
+            break;
         case TMS_DISP_HAVE_UPDATE_TASE:
-            gUpdateFlag = true;
+            GuiEventRegister(LCD_DISP_OTA_FIRMWARE_NEED_DOWNLOAD);
             break;
         default:
             break;
@@ -220,71 +153,107 @@ void larktms_init()
 
 #### 4.1.1Main Thread
 
-main() is the main thread. Be used to drawing UI
+appStart() is the main thread. Be used to drawing UI
 
 ```main.c
 int main(int argc, char *argv[])
 {
     PR_INT32 ret;
     ymframwork_init(argc, argv);//system api
-    App_nInitialization();
-    Idle_nEntery();
+      Disp_vRegisterPauseCallBack(lvgl_disp_pause);
+    Disp_vRegisterResumeCallBack(lvgl_disp_resume);
+    Disp_vInit(); //UI  init
+    Disp_vSetStatusBarStatus(0);
+    OsSetSysSleepStatus(1); //Temporarily set to not allow hibernation
+
+    char szAppId[] = "linux_pos_app";
+    OsLogSetTag(szAppId);  //set logcat tag
+    DB_bInit(szAppId); //database init
+    signalHandle();
+    EmvL2_Init();
+    thread_init();
+    if (pthread_create(&lvgl_tick_tid, NULL, tick_thread, NULL) != 0)
+        printf("can't create thread\n");
+
+    larktms_init();
+    appStart();
     ymframwork_finish(ret);//system api
     return 0;
 }
-```
-
-#### 4.1.2 Main Menu
-
-This is the main menu of the application, which includes menus for trading and management.
-
-```ui_main.c
-int TransEntery_nDoTransInDefaultEntry()
+ void appStart()
 {
-    PR_INT8 *pListItem[] = { (char *)"Sale",(char *)"Sign in",(char *)"Card Test",(char *)"Print",(char *)"Wireless",(char *)"WIFI",(char *)"LED",(char *)"About",(char *)"Other" };
-    PR_INT32 nNumOfItems = sizeof(pListItem) / sizeof(PR_INT8 *);
-    PR_INT32 nRet;
-    PR_INT32 nGetIndex;
+    if(lvgl_Queue_Init() != PR_NORMAL)
+    {
+        exit(1);
+    }
 
+    lvgl_init();
+    devInit();
+    GuiDisplay(LCD_DISP_WELCOME);
+
+    queue_message_body_t queMsg;
+    int ret = 0;
     while(1)
     {
-        TransView_vClearAllScreen();
-        nRet = TransView_nShowTableViewEx((char*)"MAIN MENU",(PR_INT8**)pListItem, nNumOfItems, 60,  &nGetIndex);
-        if(nRet == PR_NORMAL){
-            switch(nGetIndex){
-                case 0:
-                    CousumeTransProc();
-                    break;
-                case 1:
-                    SignIn_Unionpay(); 
-                    break;
-                case 2:
-                    Func_Card_Test();
-                    break;
-                case 3:
-                    PrintTest(1);
-                    break;
-                case 4:
-                    wirelessTest();
-                    break;
-                case 5:
-                    wifiTest();
-                    break;
-                case 6:
-                    LedTest();
-                    break;
-                case 7:
-                    AboutTest();
-                    break;
-                case 8:
-                    Func_Other_Test();    
-                    break;
-            }
-        }else if(nRet == RET_DRPOT_CANCEL || nRet == RET_DPORT_TIMEOUT){
-            break;
+        memset(&queMsg,0,sizeof(queue_message_body_t));
+        ret = -1;
+        ret = msgrcv(Lvgl_Queue_Id, &queMsg, sizeof(queue_message_body_t)-sizeof(long), 1, IPC_NOWAIT);
+        if (ret != -1)
+        {
+            GuiDisplay(queMsg.msg.msg_id);
         }
+        else
+        {
+            lv_task_handler();
+        }
+        OsSleep(CFG_LVGL_MS_PER_TICK);
     }
-    return PR_NORMAL;
+} 
+```
+
+#### 4.1.2 Trans thread
+
+This thread is used to execute transactions or perform time-consuming operations, such as searching for WIFI.
+
+```ui_main.c
+void *event_trans_thread(void *args)
+{
+    message_body_t msg;
+    int ret = 0;
+
+    key_t key;
+    char *file = "/tmp/event_msg";
+    FILE *fp = fopen(file, "w");
+    if (fp != NULL)
+    {
+        fclose(fp);
+    }
+
+    // Create a unique key
+    key = ftok("/tmp/event_msg", 'm');
+    if (key == -1) {
+        return NULL;
+    }
+
+        // Create a message queue
+    Event_Queue_Id = msgget(key, IPC_CREAT | 0666);
+    if (Event_Queue_Id == -1) {
+        DSP_Info("Event_Queue_Id create failed");
+        return NULL;
+    }
+    while(1)
+    {
+        memset(&msg,0,sizeof(message_body_t));
+        ret = -1;
+        ret = msgrcv(Event_Queue_Id, &msg, sizeof(message_body_t), 0, 0);
+        if (ret != -1)
+        {
+            event_trans_handle(msg.msg_id);
+            event_thread_mutex(MUTEX_OFF);    
+        }
+        OsSleep(10);
+    }
+
 }
 ```
 
@@ -296,14 +265,14 @@ Below are the initialization and startup functions related to EMV.
 static void Initialize_EMV_CallBackFun(EmvCallBack_t *pcallbackfun)
 {
     pcallbackfun->EMV_AidSelect = aidSelect;
-    pcallbackfun->EMV_SetKernelId = updateKernelId;
     pcallbackfun->EMV_ConfirmCardInfo = confirmCardInfo;
     pcallbackfun->EMV_InputPasswd = inputPasswd;
     pcallbackfun->EMV_CertConfirm = certConfirm;
     pcallbackfun->EMV_ProcessDisp = emv_process_disp;
     pcallbackfun->EMV_OnlineProcess = onlineProcess;
-    pcallbackfun->EMV_AfterSelectApp = updateTagAfterSelectApp;
-    pcallbackfun->EMV_AfterReadRecord = updateTagAfterReadRecord;
+    pcallbackfun->EMV_AfterSelectApp = NULL;
+    pcallbackfun->EMV_AfterReadRecord = NULL;
+    pcallbackfun->EMV_SetKernelId = NULL;
 }
 
 PR_INT32 EmvL2_Init(){
@@ -472,91 +441,28 @@ typedef enum
 When executing the issuer script during the contactless transaction process, it is necessary to call 'Emv_SetOnlineResult' api.Please note 'APP_POLL_CTL_MODE' or 'KERNEL_POLL_CTL_MODE' will control the card search mode
 
 ```
-PR_INT32 Emv_Auth(PR_INT8* pszAmount,PR_INT32 nRetSwipeType){
-    EmvTransParams_t emvTransParams;
-    PR_INT32 nEmvRet;
+PR_INT32 EmvL2_Proc(EmvTransParams_t emvTransParams){
+    EMV_L2_Return nEmvRet = APP_RC_START;
+    int ret = PR_FAILD;
 
-    memset(&emvTransParams,0x0,sizeof(EmvTransParams_t));
-    emvTransParams.trans_type = EMV_L2_SALE;  
-    memcpy((char *)emvTransParams.trans_amount,pszAmount,12);
-    emvTransParams.ec_support = 1; 
-    emvTransParams.sm_support = 0; 
-    emvTransParams.force_online_enable = 0; 
-    setTransTime(emvTransParams.trans_time);
-    Business_GetTradeTsc((char*)emvTransParams.tsc,sizeof(emvTransParams.tsc));
-    if(nRetSwipeType == INPUT_INSERTIC){
-        emvTransParams.icc_type = CONTACT_ICC;
-        emvTransParams.trans_flow = PBOC;  
-    }else{
-        emvTransParams.icc_type = CONTACTLESS_ICC;
-        emvTransParams.trans_flow = QPBOC;  
-    }
-    OsLog(LOG_DEBUG,"====EmvL2_Proc====");
-    nEmvRet = EmvL2_Proc(emvTransParams);
-    if(nEmvRet != PR_NORMAL){
-        TransView_vShowLine(3,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Failed");
-    }else{
-
-        if(emvTransParams.icc_type == CONTACTLESS_ICC)
+    nEmvRet = Emv_Process(emvTransParams);
+    if(emvTransParams.icc_type == CONTACTLESS_ICC && nEmvRet == APP_RC_COMPLETED)
+    {
+        // do contactless trans online request
+        EmvOnlineData_t emvOnlineData;
+        memset(&emvOnlineData,0,sizeof(EmvOnlineData_t));
+        ret = onlineProcess(&emvOnlineData);
+        if(ret == PR_NORMAL)
         {
-            EmvOnlineData_t emvOnlineData;
-            memset(&emvOnlineData,0,sizeof(EmvOnlineData_t));
-            nEmvRet = onlineProcess(&emvOnlineData);
-            if(nEmvRet == PR_NORMAL)
-            {
-                if(emvOnlineData.ackdatalen > 0)
-                {
-                    #ifdef APP_CTL_DOUBLE_TAP_POLL_CARD 
-                    int RetSwipeType = 0;
-                    CardDataInfo t_CardDataInfo;
-                    memset(&t_CardDataInfo,0x0,sizeof(CardDataInfo));
-                    if(ReadCardProc(NULL,30,&RetSwipeType,&t_CardDataInfo,CARD_NFC) == PR_NORMAL)
-                    {
-                        nEmvRet = Emv_SetOnlineResult(APP_POLL_CTL_MODE,&emvOnlineData);
-                        if(nEmvRet == PR_NORMAL)
-                        {
-                            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
-                        }
-                        else
-                        {
-                            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Failed");
-                        }
-                    }
-                    else
-                    {
-                        TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Failed");
-                    }
-                    #else
-                        nEmvRet = Emv_SetOnlineResult(KERNEL_POLL_CTL_MODE,&emvOnlineData);
-                        if(nEmvRet == PR_NORMAL)
-                        {
-                            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
-                        }
-                        else
-                        {
-                            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Failed");
-                        }
-                    #endif
-
-                }
-               else
-               {
-                    TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
-               }
-            }
+            if(memcmp(emvOnlineData.iccResponse,"00",2) == 0 && emvOnlineData.ackdatalen > 0)
+                ret = Emv_SetOnlineResult(KERNEL_POLL_CTL_MODE,&emvOnlineData);
         }
+
+        if(ret == PR_NORMAL)
+            nEmvRet = APP_RC_COMPLETED;
         else
-        {
-            TransView_vShowLine(2,EM_DTYPE_NORMAL,EM_ALIGN_CENTER,(char*)"Sale Sucess");
-        }
-
-#if POS_PAPER_TRADING
-        PrintOrder(2);
-#else   
-        PrintOrder(1);
-#endif 
+            nEmvRet = APP_RC_TERMINAL;
     }
-    KB_nWaitKeyMS(3*1000);
     return nEmvRet;
 }
 ```
@@ -567,12 +473,14 @@ If you have special requirements during EMV trading, you can complete them throu
     pcallbackfun->EMV_SetKernelId = updateKernelId;
 ```
 
- Forcefully modify the kernel that needs to be executed
+Forcefully modify the kernel that needs to be executed
 
-    pcallbackfun->EMV_AfterSelectApp = updateTagAfterSelectApp;
-    pcallbackfun->EMV_AfterReadRecord = updateTagAfterRea
+```
+pcallbackfun->EMV_AfterSelectApp = updateTagAfterSelectApp;
+pcallbackfun->EMV_AfterReadRecord = updateTagAfterRea
+```
 
-Force modification of TAG values 
+Force modification of TAG values
 
 ### 4.3 Network Api
 
