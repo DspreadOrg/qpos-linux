@@ -137,6 +137,7 @@ void Gprs_Init(){
 		#ifdef CFG_DBG
 		OsLog(LOG_ERROR,"Dspread: -------------------Sim instert-------------------");
 		#endif
+		g_sim_status = true;
 	}
 
 	if (status != 1)
@@ -163,8 +164,9 @@ void Wifi_Init()
     }
     else
     {
-        lvl = OsGetWifiSignalStrength();		
-		wifi_conn_status = true;	
+        lvl = OsGetWifiSignalStrength();	
+		if(lvl > 0)	
+			wifi_conn_status = true;	
         Set_dev_wifi_signal_lvl(lvl);
         memset(gAp,0,sizeof(ST_WifiApSet));
     }

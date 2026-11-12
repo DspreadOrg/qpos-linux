@@ -7,7 +7,7 @@ void PrintTest()
 void PrintStart(int nCount)
 {
     PR_INT32 ret;
-    PR_INT32 nElecSignRet;
+    PR_INT32 nElecSignRet = 0;
     PR_UINT8 temp[256];
     PR_INT8 FilePath[128] = {0};
 	PR_INT8 AppPath[128] = {0};
