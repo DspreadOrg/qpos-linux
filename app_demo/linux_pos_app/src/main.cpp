@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     Disp_vRegisterResumeCallBack(lvgl_disp_resume);
     Disp_vInit(); //UI  init
     Disp_vSetStatusBarStatus(0);
-    OsSetSysSleepStatus(1); //Temporarily set to  allow hibernation
+    OsSetSysSleepStatus(1); //Temporarily set to allow hibernation
 
     char szAppId[] = "linux_pos_app";
     OsLogSetTag(szAppId);  //set logcat tag
