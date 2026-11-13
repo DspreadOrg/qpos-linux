@@ -98,8 +98,11 @@ static void SignalConnecting_cb(lv_timer_t * timer)
 	if( Get_dev_gprs_signal_lvl() )
 	{
 		lv_timer_set_repeat_count(timer, 0);
-		get_name_operator(nameOperator);
-		DispSimConnectionOK(nameOperator);
+		if(Get_dev_wifi_signal_lvl() <= 0)
+		{
+			get_name_operator(nameOperator);
+			DispSimConnectionOK(nameOperator);
+		}
 	} 
 	else 
 	{
