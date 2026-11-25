@@ -224,7 +224,7 @@ int inputOfflinePasswd(char *pPin)
             }
             break;
         case EM_KEY_CANCEL:
-            ret = PR_CANCLE;
+            ret = RET_DRPOT_CANCEL;
              Disp_ReleasKey();
             goto EXIT;
             break;
@@ -241,7 +241,7 @@ int inputOfflinePasswd(char *pPin)
         };
         if((long)OsTimerCheck(&Timer) <= 0)
         {
-            ret = PR_TIMEOUT;
+            ret = RET_DPORT_TIMEOUT;
             break;
         }
     }
@@ -282,9 +282,11 @@ int inputPasswd(int type, char *pszPin){
 			return 8;
 		}
 		else if (ret == ERR_PED_NO_PIN_INPUT)
-		{
-			return 0;
-		}
+			return RET_DPORT_BYPASS;
+		else if(ret == ERR_PED_PIN_INPUT_CANCEL)
+			return RET_DRPOT_CANCEL;
+		else if(ret == ERR_PED_INPUT_PIN_TIMEOUT)
+			return RET_DPORT_TIMEOUT;
 		else
 			return -1;
 	}

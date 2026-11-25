@@ -138,6 +138,7 @@ void Gprs_Init(){
 		OsLog(LOG_ERROR,"Dspread: -------------------Sim instert-------------------");
 		#endif
 		g_sim_status = true;
+		Apn_cfg();
 	}
 
 	if (status != 1)
