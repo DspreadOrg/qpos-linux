@@ -228,28 +228,4 @@ void Apn_cfg()
 
     ret = OsSetApnParams(APN,APN_NAME,NULL);
     OsLog(LOG_ERROR,"Dspread: OsSetApnParams ret = %d",ret);
-
-    while(count > 0){
-        ret = OsWlCheck();
-        OsLog(LOG_ERROR,"Dspread: OsWlCheck = %d",ret);
-        if(ret == ERR_WL_NORSP){
-            OsSleep(1000);
-            count --;
-            continue;
-        }else{
-            break;
-        }
-    }
-    if(ret == ERR_WL_NOSIM ){
-        OsLog(LOG_ERROR,"Dspread: Sim Not Inserted\n");
-    }else if(ret != ERR_WL_NORSP && ret != RET_OK){
-        OsLog(LOG_ERROR,"Dspread: Network Connecting\n");
-        ret = OsWlLogin(APN,APN_NAME,NULL,0,15*1000,0,0);
-        if(ret == RET_OK)
-        {
-            OsLog(LOG_ERROR,"Dspread: Network Connected\n");
-        }
-    }
-
-	
 }

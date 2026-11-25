@@ -73,7 +73,6 @@ void SimConnecting_cb(lv_timer_t * timer)
 {
 	if(Get_dev_sim_status())
 	{
-		Apn_cfg();
 		lv_timer_set_repeat_count(timer, 0);
 		lv_timer_t * signalConnectingTimer= lv_timer_create(SignalConnecting_cb, 500, NULL);   
 		lv_timer_set_repeat_count(signalConnectingTimer, 20);
