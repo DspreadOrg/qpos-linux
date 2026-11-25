@@ -207,6 +207,7 @@ int inputPasswd(int cType, char *pszPin){
     if(cType == EMV_ONLINEPIN_INPUT){
 		nRet = TransView_nShowPinpadDukptView(PED_PIN_IPEK_INDEX,emvTransData.TransAmount,(PR_UINT8*)emvTransData.Pan,(char *)"0,6",0x20,60,emvTransData.PinKsn,PinBlock);
         TransView_vClearPort();
+		
 		switch (nRet)
 		{
 			case ERR_PED_NO_PIN_INPUT:
@@ -215,7 +216,7 @@ int inputPasswd(int cType, char *pszPin){
 				memcpy(emvTransData.PinBlock,PinBlock,8);
 				return 8;
 			default:
-				return PR_FAILD;
+				return nRet;
 		}
     }else{
 		pinLen = 0;
@@ -224,12 +225,13 @@ int inputPasswd(int cType, char *pszPin){
 		switch(nRet)
 		{
 			case PR_FAILD:
+				return RET_DPORT_FAILD;
             case PR_TIMEOUT:
-				return -1;
+				return RET_DPORT_TIMEOUT;
 			case PR_CANCLE:
-				return -3;
+				return RET_DRPOT_CANCEL;
 			case PR_BYPASS:
-				return 0;
+				return RET_DPORT_BYPASS;  // 0 bypass
 			default:
 				memcpy(pszPin,PinBlock,strlen((PR_INT8*)PinBlock));
                 printf("offline pin  %s  \n",(PR_INT8*)PinBlock);
@@ -661,6 +663,7 @@ PR_INT32 EmvL2_Proc(EmvTransParams_t emvTransParams){
     memcpy(emvTransData.TransAmount,emvTransParams.trans_amount,strlen((char*)emvTransParams.trans_amount));
 	emvTransData.Icc_Type = emvTransParams.icc_type;
     nEmvRet = Emv_Process(emvTransParams);
+	OsLog(LOG_DEBUG,"Emv_Process return %d",nEmvRet);
     if(nEmvRet == APP_RC_COMPLETED){
         return PR_NORMAL;
     }

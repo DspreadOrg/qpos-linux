@@ -250,7 +250,7 @@ typedef enum
 	APP_RC_NFC_MULTI_CARD,      //Multiple cards detected
 	APP_RC_NFC_TRY_AGAIN,       //NFC card tap, please try again
 	APP_RC_TRANS_REVERSEL,      //The server approved, but the second GAC of the card failed and a reorganization needs to be initiated
-
+	APP_RC_TIMEOUT,				//pin input timeout  20
 	APP_RC_NUMS,
 }EMV_L2_Return;
 
